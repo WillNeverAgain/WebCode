@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>当路行至尽头</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            background-color: #000000;
+            color: #e0e0e0;
+            overflow-x: hidden;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: rgba(26, 26, 26, 0.92);
+            min-height: 100vh;
+            box-shadow: 0 0 10px rgba(255,255,255,0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #f0f0f0;
+        }
+        h2 {
+            color: #d0d0d0;
+            border-bottom: 2px solid #d0d0d0;
+            padding-bottom: 5px;
+            text-align: center;
+        }
+        .scene > p:not(.dialogue):not(.intro) {
+            color: #f5e050; /* Soft yellow for narration */
+            margin: 15px 0;
+        }
+        .intro {
+            color: #a0e7a0; /* Light green for time/location/characters */
+            font-weight: bold;
+            margin: 15px 0;
+        }
+        .dialogue {
+            margin-left: 20px;
+            font-style: italic;
+            color: #e0e0e0; /* Light gray for dialogue */
+        }
+        .dialogue::before {
+            content: '“';
+            font-size: 1.2em;
+        }
+        .dialogue::after {
+            content: '”';
+            font-size: 1.2em;
+        }
+        .character {
+            font-weight: bold;
+            color: #4da8da;
+        }
+        .scene {
+            display: none;
+            animation: fadeIn 1s ease-in-out;
+        }
+        .scene.active {
+            display: block;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .next-btn, .prev-btn {
+            display: inline-block;
+            margin: 20px 10px;
+            padding: 10px 20px;
+            background-color: #34495e;
+            color: #ffffff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            text-align: center;
+            transition: background-color 0.3s;
+        }
+        .next-btn:hover, .prev-btn:hover {
+            background-color: #2c3e50;
+        }
+        .next-btn:disabled, .prev-btn:disabled {
+            background-color: #666666;
+            cursor: not-allowed;
+        }
+        .button-container {
+            text-align: center;
+        }
+
+    /* 全局复古纹理 + 噪点背景 */
+    body::before {
+        content: '';
+        position: fixed;
+        inset: 0;
+        background: 
+            linear-gradient(30deg, transparent 48%, rgba(70, 90, 110, 0.08) 50%, transparent 52%),
+            linear-gradient(-30deg, transparent 48%, rgba(70, 90, 110, 0.06) 50%, transparent 52%),
+            repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(30,35,45,0.05) 2px, rgba(30,35,45,0.05) 4px),
+            repeating-linear-gradient(90deg, transparent, transparent 2px, rgba(30,35,45,0.05) 2px, rgba(30,35,45,0.05) 4px),
+            url('https://assets.codepen.io/3522978/noise.png'), 
+            radial-gradient(circle at 30% 20%, #0a0f1a, #010101);
+        background-blend-mode: overlay, screen, multiply, normal;
+        opacity: 0.85;
+        pointer-events: none;
+        z-index: -2;
+        transition: opacity 0.3s ease;
+    }
+
+    .halftone-overlay {
+        position: fixed;
+        inset: 0;
+        width: 100vw;
+        height: 100vh;
+        object-fit: cover;
+        pointer-events: none;
+        mix-blend-mode: overlay;
+        opacity: 0.12;
+        z-index: -1;
+        transition: opacity 0.3s ease;
+    }
+
+    .vintage-bg {
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        z-index: 0;
+        overflow: hidden;
+        transition: opacity 0.3s ease;
+    }
+    .vintage-element {
+        position: absolute;
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        opacity: 0.05;
+        mix-blend-mode: multiply;
+        animation: driftVintage linear infinite, pulseVintage 28s ease-in-out infinite alternate;
+    }
+    @keyframes driftVintage {
+        0% { transform: translate(0, 0) rotate(0deg); }
+        100% { transform: translate(110px, 110px) rotate(360deg); }
+    }
+    @keyframes pulseVintage {
+        0% { opacity: 0.04; filter: brightness(0.9); }
+        100% { opacity: 0.1; filter: brightness(1.1); }
+    }
+    .v1 { background-image: url('https://i0.wp.com/heritagecalling.com/wp-content/uploads/2024/12/DP114585-St-Marys-Church-Kempley-Gloucestershire.jpg?ssl=1'); width: 380px; height: 380px; top: 3%; left: 0%; animation-duration: 170s, 24s; transform: rotate(50deg); }
+    .v2 { background-image: url('https://www.nationalww2museum.org/sites/default/files/2020-05/Riveter.jpg'); width: 550px; height: 180px; top: 18%; right: 4%; animation-duration: 190s, 28s; }
+    .v3 { background-image: url('https://render.fineartamerica.com/images/rendered/default/greeting-card/images/artworkimages/medium/2/andy-warhol-high-resolution-photo-art-collage-andy-warhol-collage.jpg'); width: 280px; height: 450px; bottom: 8%; left: 6%; animation-duration: 150s, 20s; transform: rotate(-32deg); }
+    .v4 { background-image: url('https://rubberdiamond.wordpress.com/wp-content/uploads/2014/01/schwitters.jpg'); width: 420px; height: 420px; top: 38%; left: 48%; animation-duration: 210s, 35s; transform: rotate(22deg); }
+    .v5 { background-image: url('https://www.heritage-print.com/p/731/study-poster-1920-artist-lissitzky-15000613.jpg.webp'); width: 620px; height: 140px; bottom: 4%; right: 8%; animation-duration: 180s, 26s; }
+    .v6 { background-image: url('https://blog.architizer.com/wp-content/uploads/deconstructivism.jpeg'); width: 230px; height: 560px; top: 6%; right: 1%; animation-duration: 160s, 22s; transform: rotate(90deg); }
+    .v7 { background-image: url('https://d31sxl6qgne2yj.cloudfront.net/wordpress/wp-content/uploads/20190102164052/Punk-Album-Covers-11x16.jpg'); width: 460px; height: 330px; bottom: 28%; left: 28%; animation-duration: 200s, 30s; transform: rotate(-28deg); }
+    .v8 { background-image: url('https://smarthistory.org/wp-content/uploads/2021/02/50935568273_37699017c0_o-scaled.jpg'); width: 350px; height: 130px; top: 50%; left: 12%; animation-duration: 140s, 18s; }
+    .v9 { background-image: url('https://postergroup.com/cdn/shop/products/Men-Working-Together-Poster.jpg?v=1746051175'); width: 180px; height: 400px; top: 12%; left: 62%; animation-duration: 230s, 38s; transform: rotate(72deg); }
+    .v10 { background-image: url('https://m.media-amazon.com/images/I/81SOUO-NbkL.jpg'); width: 560px; height: 280px; bottom: 18%; right: 22%; animation-duration: 170s, 27s; }
+    .v11 { background-image: url('https://cdn.britannica.com/94/5594-050-1C1166D6/Annunciation-Fra-Angelico-Florence-Museum-of-San.jpg'); width: 300px; height: 300px; top: 62%; left: 40%; animation-duration: 220s, 32s; transform: rotate(-45deg); }
+    .v12 { background-image: url('https://cdn11.bigcommerce.com/s-yzgoj/images/stencil/1280x1280/products/1320435/1708788/PSTJPA100339M__22686.1519281927.jpg?c=2'); width: 440px; height: 220px; top: 30%; left: 4%; animation-duration: 180s, 25s; }
+    .v13 { background-image: url('https://divinity.uchicago.edu/sites/default/files/styles/sightings_article_featured_image/public/2020-01/2c304455-66ca-4ae4-adc3-ba0ccc06b408_1_201_a.jpeg?itok=9v54XcIG'); width: 400px; height: 350px; top: 8%; left: 55%; animation-duration: 160s, 23s; transform: rotate(30deg); }
+    .v14 { background-image: url('https://www.saic.edu/sites/default/files/shorthand/stories/0Hw0PwtaAa/2025-09-29T19%3A38%3A15.732Z/assets/vpUp9CR2Fi/kurt-schwitters-843x626.jpg'); width: 500px; height: 200px; bottom: 35%; right: 10%; animation-duration: 190s, 27s; }
+    .v15 { background-image: url('https://cdn.kastatic.org/ka-perseus-images/aa552552150213036b99363b0dfb8ae811b8c08d.jpg'); width: 350px; height: 400px; top: 45%; right: 15%; animation-duration: 200s, 30s; transform: rotate(-20deg); }
+    </style>
+</head>
+<body>
+
+<!-- 复古背景层 -->
+<img class="halftone-overlay" src="https://gd-hbimg-edge.huaban.com/e136eab1362dfa41c0bf38aa7f48d9be4fe7332b172ae6-yQ7EZk?auth_key=1780243200-7a28c4fd8dba4f27bcbf1202f71a087e-0-cab91a5574991e7dfd11720f9ea5744c" alt="" decoding="async" referrerpolicy="no-referrer">
+<div class="vintage-bg">
+    <div class="vintage-element v1"></div><div class="vintage-element v2"></div><div class="vintage-element v3"></div>
+    <div class="vintage-element v4"></div><div class="vintage-element v5"></div><div class="vintage-element v6"></div>
+    <div class="vintage-element v7"></div><div class="vintage-element v8"></div><div class="vintage-element v9"></div>
+    <div class="vintage-element v10"></div><div class="vintage-element v11"></div><div class="vintage-element v12"></div>
+    <div class="vintage-element v13"></div><div class="vintage-element v14"></div><div class="vintage-element v15"></div>
+</div>
+
+    <div class="container">
+        <h1>当路行至尽头</h1>
+        <p align="center" style="color: #f5e050;">战壕里的风声，夹杂着炮火与叹息，是帝国的挽歌，也是战壕中人们的迷途。</p>
+
+        <div id="scene-0" class="scene active">
+            <div class="button-container">
+                <button class="next-btn" onclick="nextScene(0)">开始阅读</button>
+            </div>
+        </div>
+
+        <div id="scene-1" class="scene">
+            <h2>第一幕：寒夜歌声</h2>
+            <p class="intro"><strong>1914年12月24日</strong><br>德国西部前线，伊普尔附近<br><strong>角色：</strong>星宿，不来梅（同盟国阵地）。密西西比，白金汉，卡林卡（协约国阵地）</p>
+            <p>1914年圣诞前夜，伊普尔前线的战壕被冰霜覆盖，寒风夹杂着火药味刺入骨髓。德军与英法联军的战线僵持在无人区后，泥泞的壕沟里，士兵蜷缩在毯子里，冻僵的手指攥着步枪。</p>
+            <p>星宿小队分赴双方阵地，调查战场上的灵能异常。随行的还有刚刚加入研究院不久的不来梅。一位17岁的德意志贵族少年，穿着褪色的德意志军服，胸前的德意志雄鹰徽章在月光照耀下暗淡无光。他站在战壕边缘，凝视着对面的阵地，喃喃自语。</p>
+            <p><strong>同盟国阵地方面：</strong></p>
+            <p class="dialogue"><span class="character">不来梅：</span> 圣诞节.....教堂里面也该亮起烛光了吧。可这里....却只有月光与死亡。</p>
+            <p class="dialogue"><span class="character">不来梅：</span> 星宿小姐，我的德意志不该如此。战争吞噬着士兵，人们因为简单的理由就变为野兽……我们不能做些什么吗？</p>
+            <p class="dialogue"><span class="character">星宿（低声）：</span> 抱歉，不来梅。我们不能改变历史，但或许，今晚我们可以尝试做点什么。</p>
+            <p>不来梅与星宿继续向着战壕深处前进，目光扫过战壕里面蜷缩的士兵。年轻的面孔，满身泥泞、沿途的士兵投来异样的目光，他们认出不来梅的服饰与勋章，低声议论着。</p>
+            <p class="dialogue">“又来一个少爷？来前线装装样子？”</p>
+            <p class="dialogue">“不好说，也有挺多少爷不是在和我们并肩作战吗？”</p>
+            <p class="dialogue">“看他这样子，像是吓坏了……”</p>
+            <p>不来梅低着头，避开他们的目光。他想起了自己在研究院之中学到的历史，战争的失败，凡尔赛的屈辱，德意志滑向更深的深渊。他的心像被针刺，贵族的荣耀与反战的信念在他心中撕扯。</p>
+            <p>一阵低沉的歌声传来，一个灰头土脸的年轻人低声唱着《平安夜，圣善夜》。歌声微弱，这一丝微弱的歌声夹杂着远处零星的炮火声飘向无人区，飘向对面的协约国阵地。</p>
+            <p>低声哼歌的士兵注意到了不来梅也在旁白和他一起哼歌。</p>
+            <p class="dialogue"><span class="character">德军士兵：</span> 少爷，对面也在唱歌.....或许他们也想家了吧。</p>
+            <p class="dialogue"><span class="character">不来梅（轻声）：</span> 也许是吧.......可能今晚我们不是敌人。</p>
+            <p>不来梅低声加入合唱，德军营地逐渐响起齐声的《平安夜》，歌声在寒风中回荡，温暖了冰冷的战壕。</p>
+            <p><strong>协约国阵地方面：</strong></p>
+            <p class="dialogue"><span class="character">密西西比：</span> 这鬼地方比冰箱里面还冷！不知道星宿小姐那边怎么样了？这里看起来蛮正常的。</p>
+            <p class="dialogue"><span class="character">卡林卡（沉思）：</span> 不知道东线的环境是什么样的.....那些俄罗斯的底层士兵们......</p>
+            <p class="dialogue"><span class="character">白金汉：</span> 你们听见了吗，对面阵地在唱平安夜。</p>
+            <p>协约国的阵地内，一名苏格兰士兵拿起风笛也开始演奏起来。英军与法军也开始随着风笛唱起了歌，无人区的死寂被两边的歌声打破。此时，无论是哪一边，每个人都会回忆起最温暖的时刻，家乡。</p>
+            <p>夜色深沉，月光照耀无人区。一名德军士兵点燃蜡烛，插在战壕边缘，装饰着一棵用破布条与空弹壳装饰的半截枯树。</p>
+            <p class="dialogue"><span class="character">德军士兵：</span> 他们在演奏平安夜...</p>
+            <p>德军阵营陷入了短暂的寂静，随之而来的是更大的合唱。带头领唱的德军士兵举起了他“自制”的小圣诞树慢慢的走出战壕。这次迎接他的不是枪炮，而是掌声。他向无人区走着，一直到战场中央，一直到看清楚为他鼓掌的英军。</p>
+            <p class="dialogue"><span class="character">德军士兵：</span> 圣诞快乐，英格兰人。</p>
+            <p class="dialogue"><span class="character">英军士兵（笑）：</span> 圣诞快乐，德国人，但我们不是英格兰人，我们是苏格兰人，</p>
+            <p>英军营地随之爆发一阵欢笑。</p>
+            <p>不来梅看向身旁的星宿，眼中闪过犹豫与惊喜。</p>
+            <p class="dialogue"><span class="character">不来梅：</span> 星宿小姐，这或许是.....和平的时刻？</p>
+            <p>星宿点点头，也和士兵们走出了战壕。</p>
+            <p>士兵们聚在战壕上互相看着对方，直到指挥官的到来。德军，英法的指挥官走到了战场的中央。就站在那颗小圣诞树旁。经过讨论，他们做了一个决定，在平安夜停战一天，反正今晚上战争也不会有结果。</p>
+            <p>随后他们返回了各自的战壕，举杯出来。在互相说了一声“圣诞快乐”之后，协议就这样达成了。</p>
+            <p>他们身后的士兵们纷纷走出战壕，照明弹代替了节日的烟火，但此刻的无人区在照明弹的照耀下代表的不是死亡，而是希望。平时一片死寂的无人区喧嚣了起来。</p>
+            <div class="button-container">
+                <button class="prev-btn" onclick="prevScene(1)">上一幕</button>
+                <button class="next-btn" onclick="nextScene(1)">下一幕</button>
+            </div>
+        </div>
+
+        <div id="scene-2" class="scene">
+            <h2>第二幕：无人区的平安夜</h2>
+            <p class="intro"><strong>1914年12月24日</strong><br>伊普尔无人区<br><strong>角色：</strong>星宿、不来梅、卡林卡、白金汉、密西西比</p>
+            <p>士兵们在无人区里欢聚，此时并没有什么德军，英军，法军。只有活生生的普通人，为了活着的普通人。他们互相分享着自己获得的圣诞礼物，罐头，香槟，巧克力.....他们给对方展示自己的家庭和漂亮的妻子.....他们在无人区中央为战壕里收养的小猫取着名字......</p>
+            <p>最后他们一起脱下军帽，卸下阵营的象征，在一名神父的带领下，为逝者祈祷。无论虔诚与否，此刻，他们是朋友。</p>
+            <p>这里是前线，是炼狱，是火与铁，泪与血交织的无光之地。但他们至少今天用和平建造了一座能让自己喘息的乐园。</p>
+            <p>密西西比带着白金汉与叶尼塞穿越联军的人群，挤到了星宿的身旁</p>
+            <p class="dialogue"><span class="character">密西西比：</span> 星宿小姐！你们那边怎么样，我们这边冷得快没知觉了！</p>
+            <p class="dialogue"><span class="character">白金汉：</span> 目前协约国阵地并没有发现任何异常，星宿小姐那边呢？</p>
+            <p class="dialogue"><span class="character">星宿：</span> 我和不来梅也没有发现任何异常，难到说异常在无人区中央？</p>
+            <p class="dialogue"><span class="character">卡林卡（疑惑）：</span> 怎么感觉每次研究院提供的情报都有点.....偏差？</p>
+            <p class="dialogue"><span class="character">密西西比（吐槽）：</span> 这次至少还能定位到正确的地点和时间，我就怕下次把我们送到什么奇奇怪怪的地方去了。</p>
+            <p>一旁的不来梅坐在炮弹掀起的泥土堆上，翻开他手抄的诗集，读出《浮士德》。</p>
+            <p class="dialogue"><span class="character">不来梅：</span> 人只要心怀希望，就能超越苦难。今晚，我看到人类的灵魂....</p>
+            <p>一旁的法军前线指挥官看着不来梅坐在土堆上读着什么也走了过来。</p>
+            <p class="dialogue"><span class="character">皮埃尔：</span> 你好，我叫皮埃尔。要来一杯香槟吗？还有这些，小姐们？</p>
+            <p>密西西比接过皮埃尔的杯子大口喝了起来，丝毫不在意周围士兵的目光。等到密西西比干掉一整杯香槟后，周围的士兵爆发了热烈的掌声。</p>
+            <p class="dialogue"><span class="character">士兵们：</span>（欢呼声！）</p>
+            <p class="dialogue"><span class="character">密西西比（高兴）：</span> 谢谢，谢谢。</p>
+            <p class="dialogue"><span class="character">皮埃尔：</span> 是研究院的人员吗？刚刚我在战壕中注意到你们了。</p>
+            <p class="dialogue"><span class="character">星宿：</span> 是的，少尉先生。研究院方面通知我们这里有异常状况，我想作为指挥官，你不会拿自己士兵的生命来冒险吧。</p>
+            <p>皮埃尔顿了顿，看了看身后欢聚的士兵，不同的军装混杂在一起，就像战争从未发生过一般。</p>
+            <p class="dialogue"><span class="character">皮埃尔：</span> 请您们稍等，我去联系一下德军和英军的指挥官。</p>
+            <p>不一会儿，双方的指挥官来到了星宿身旁。</p>
+            <p class="dialogue"><span class="character">冯·施密特：</span> 您好，研究院的小姐。前线指挥部也接到了科隆研究院方面的通知，说你们会来。你们也在我方战壕处巡查了，没有发现什么异常。</p>
+            <p class="dialogue"><span class="character">布莱克：</span> 英军战壕处也没有发现任何异常，这位白金汉小姐也来过我们这里，还带着坎特伯雷大教堂的批文。</p>
+            <p class="dialogue"><span class="character">星宿：</span> 异常并不出自各方的阵地，而是在无人区里面。</p>
+            <p class="dialogue"><span class="character">皮埃尔：</span> 无人区？</p>
+            <p class="dialogue"><span class="character">星宿：</span> 诸位最近有发现什么异常吗？</p>
+            <p class="dialogue"><span class="character">布莱克：</span> 越临近圣诞节就越容易听见类似教堂的钟声，但这方圆十几里没有一栋完好的建筑。</p>
+            <p class="dialogue"><span class="character">冯·施密特：</span> 像是丧钟一般，我的士兵也经常对我说看见了死去的战友，我以为是压力导致的.....</p>
+            <p class="dialogue"><span class="character">皮埃尔：</span> 我方这边也是同样的状况，这些线索有用吗？</p>
+            <p class="dialogue"><span class="character">星宿：</span> 应该有用，既然异常情况如此明确，我们等待下次的异常出现就好。</p>
+            <p class="dialogue"><span class="character">皮埃尔：</span> 好，那么今天...</p>
+            <p class="dialogue"><span class="character">星宿（微笑）：</span> 今天就先庆祝吧，圣诞快乐。</p>
+            <div class="button-container">
+                <button class="prev-btn" onclick="prevScene(2)">上一幕</button>
+                <button class="next-btn" onclick="nextScene(2)">下一幕</button>
+            </div>
+        </div>
+
+        <div id="scene-3" class="scene">
+            <h2>第三幕：无人之境的微光</h2>
+            <p class="intro"><strong>1914年12月25日</strong><br>伊普尔无人区<br><strong>角色：</strong>星宿，不来梅，卡林卡，白金汉，密西西比</p>
+            <p>圣诞清晨，停战的气氛被无人区深处的钟声打破。刺耳低鸣，似逝者的叹息。在钟声回想之处满是战场残骸---士兵的尸体与遗物。</p>
+            <p>那是一处巨大的炮弹坑，里面有被血侵染的家书、铁十字勋章、毁坏的风笛，空气中弥漫着金属味。星宿小队与双方士兵们循着声音过来，部分人举起步枪瞄着弹坑向身边人说到。</p>
+            <p class="dialogue"><span class="character">士兵A：</span> 你们听见了吗？像是教堂的钟声。</p>
+            <p class="dialogue"><span class="character">士兵B：</span> 是从坑里传来的……</p>
+            <p>不来梅跳进炮弹坑，捡起了坑中尸体旁的家书。他盯着家书上的字，像是在摆脱什么而挣扎。“亲爱的玛利亚，我想回家。为什么我们要来到这里憎恨那些素未谋面的人们并朝他们开枪.......”</p>
+            <p class="dialogue"><span class="character">星宿：</span> 异常源头就在下面。</p>
+            <p>在星宿的指挥下，士兵们拿着铁锹开始向炮弹坑挖去，直到挖出一座十字架。</p>
+            <p class="dialogue"><span class="character">士兵A：</span> 下面是一座教堂吗？</p>
+            <p class="dialogue"><span class="character">士兵B：</span> 好像是教堂的顶座....往下挖一点应该就是教堂的钟了....</p>
+            <p>士兵们逐渐停止了手中的铁锹，一口青铜钟已经从泥泞中显现。上面弹痕累累，还有刻有许多拉丁文字符。</p>
+            <p class="dialogue"><span class="character">白金汉：</span> 是这口钟没错。上面刻着Pax Hominibus，是拉丁语，意思是愿人类和平。</p>
+            <p>士兵们听着这句话陷入了沉思，直到指挥官到来才把钟搬出炮弹坑。</p>
+            <p class="dialogue"><span class="character">皮埃尔：</span> 小姐们，问题解决了吗？</p>
+            <p class="dialogue"><span class="character">星宿：</span> 已经找到问题根源了，皮埃尔少尉。但是这口钟的具体背景我们也不知道，只能送回研究院瑞士总部。</p>
+            <p>灵能异常的“闹剧”很快就收场，士兵们陆续返回战壕，重新拿起步枪。但经历了昨晚上停战，虽然只有短短的一夜，可没有人再愿意向这些新认识的朋友开枪。士兵们举着步枪朝向对面，但手指却远离扳机。</p>
+            <p>士兵们面面相觑，看向了各自的指挥官。直到三位指挥官又回到了那颗小圣诞树旁。</p>
+            <p class="dialogue"><span class="character">布莱克：</span> 今天是圣诞节，耶稣的生日。埋葬逝者是理所应当的事情。</p>
+            <p class="dialogue"><span class="character">冯·施密特&皮埃尔：</span> 我们也这么认为。</p>
+            <p>在三方指挥官的带领下，士兵们通力合作，埋葬战死在这片土地的同胞。做完封装仪式的星宿小队也加入士兵们的队列。用木板制作简易十字架，插在坟前。</p>
+            <p class="dialogue"><span class="character">星宿：</span> 指挥官先生们，您们谁有多余的马车能借用一下，我们可不能把这东西搬回瑞士。</p>
+            <p>在三方的协作下，德国的车身，英法的马匹组成了运回钟的马车。星宿坐在车上，凝视战场。士兵们打扫完战场，开始踢起一颗不知从哪来的足球，欢笑声短暂掩盖了硝烟。</p>
+            <p class="dialogue"><span class="character">星宿（低声自语）：</span> 明天的战死，只会比昨日的幸福更加残酷.....</p>
+            <p>星宿动了动身，手臂上缠绕的狗牌碰撞发出了清脆的响声，那是逝去的朋友们。不来梅望向嬉戏的士兵，眼中满是忧伤。</p>
+            <p class="dialogue"><span class="character">不来梅：</span> 星宿小姐，他们明明成为了朋友....可.....难道他们回去就要转身射杀送他们礼物的朋友们吗？</p>
+            <p>星宿没有说话，只是静静地看着眼前的和平，短暂的和平。</p>
+            <p>在欢声笑语后，随之而来的是更加残酷和悲惨的故事。冯·施密特上尉来到星宿小队的马车前驻足，在犹豫不决许久后告诉了星宿小队一些信息。</p>
+            <p class="dialogue"><span class="character">冯·施密特：</span> 研究院的小姐，一会儿我们的炮兵就要开始对协约国的阵地展开炮击。回瑞士的时候，路上小心一点。或者，先来我们战壕躲避？</p>
+            <p>在德军指挥官的招呼下，英法的士兵也来到了德军的战壕中。不久，便是铺天盖地的炮弹砸向协约国的营地。士兵们蜷缩在同一战壕，紧紧相依。</p>
+            <p>炮击结束后，布莱克邀请德军到英军战壕躲避报复炮击。双方来来往往，直到上级指挥部告诉他们炮击已经停止。</p>
+            <p class="dialogue"><span class="character">冯·施密特：</span> 谢谢...</p>
+            <p class="dialogue"><span class="character">布莱克：</span> 也谢谢你们.....</p>
+            <p class="dialogue"><span class="character">冯·施密特：</span> 希望你们在接下来的战争中活下来。</p>
+            <p class="dialogue"><span class="character">皮埃尔：</span> 你也是。</p>
+            <p>然而，上层指挥部从士兵寄回的家书中发现了前线荒诞的“和平”。在双方刚结束炮击后不久，新来的部队与更高军衔的指挥官便来到了前线。</p>
+            <p>在炮击结束后，还有一名德军士兵在无人区之中找寻着什么，协约国指挥官看见之后便命令士兵开枪，可苏格兰士兵们犹豫不决，直到在长官的再三命令下才向天鸣枪警告。</p>
+            <p class="dialogue"><span class="character">协约国指挥官（怒吼）：</span> 你们在干什么！布莱克！皮埃尔！你们的士兵在干什么！</p>
+            <p>最终一声枪响打破了协约国战壕的喧嚣。那名士兵自杀了，倒在无人区中央，在那颗小小的圣诞树旁，和他唯一的亲人长眠在了一起。</p>
+            <div class="button-container">
+                <button class="prev-btn" onclick="prevScene(3)">上一幕</button>
+                <button class="next-btn" onclick="nextScene(3)">下一幕</button>
+            </div>
+        </div>
+
+        <div id="scene-4" class="scene">
+            <h2>第四幕：当路行至尽头</h2>
+            <p class="intro"><strong>1914年12月25日</strong><br>伊普尔无人区<br><strong>角色：</strong>星宿，不来梅，卡林卡，白金汉，密西西比</p>
+            <p class="dialogue"><span class="character">协约国指挥官（冷声）：</span> 研究院的人？昨天你们不是已经解决了问题吗？现在快点离开。</p>
+            <p>马车行驶在协约国阵地，路旁是昨晚共度佳节的士兵，他们目送着星宿小队的离开。就在此时，炮弹在马车附近爆炸，冲击波将星宿掀下马车。</p>
+            <p class="dialogue"><span class="character">卡林卡（喊道）：</span> 星宿小姐！白金汉，密西西比，你们快架车走，我去背星宿小姐。</p>
+            <p class="dialogue"><span class="character">密西西比（咒骂）：</span> 小心点，卡林卡姐。Goddamn，这轮子陷入泥坑里面了。</p>
+            <p>此时的德军士兵们开始向协约国阵地发起冲锋，越来越近的冲锋声换来的却是纹丝不动的马车。</p>
+            <p class="dialogue"><span class="character">白金汉：</span> 不行，马匹也拉不动。轮子彻底陷入泥潭了。</p>
+            <p>这时一队协约国士兵在一侧开始帮忙推车，还有一队刚刚冲到面前的德军士兵。是昨晚结识的“好友”。</p>
+            <p class="dialogue"><span class="character">德军士兵：</span> 加油，推！再加把劲。</p>
+            <p class="dialogue"><span class="character">英军士兵：</span> 你们得活着回去，我们还有很多家书在你们身上，记得帮我们寄回去！</p>
+            <p class="dialogue"><span class="character">法军士兵：</span> 快！快！轮子要出来了！研究院的诸位，不要忘了我们的故事......</p>
+            <p>马车脱困，叶尼塞也背着星宿来到了马车旁。</p>
+            <p class="dialogue"><span class="character">德军士兵：</span> 快走，我帮你们看着我方大部队。</p>
+            <p>混乱之后，战场重归于寂静。星宿捂着脑袋从马车的车斗上坐了起来。</p>
+            <p class="dialogue"><span class="character">星宿（低声）：</span> 该死....</p>
+            <p class="dialogue"><span class="character">白金汉：</span> 星宿，你可吓死我们了。</p>
+            <p class="dialogue"><span class="character">密西西比：</span> 对啊对啊，你出了什么事情我们怎么交代。</p>
+            <p>星宿回头，硝烟弥漫的战场上，冯·施密特与皮埃尔的尸体相依，布莱克的遗体不远处，似在死前试图爬向同伴。小圣诞树孤立在无人区中央，上面的破布条在炮火中飘摇。</p>
+            <p>不来梅望着重回战场的士兵，眼中满是破碎的悲伤。</p>
+            <p class="dialogue"><span class="character">不来梅：</span> 他们明明成为了朋友……可转眼间，就要互相射杀......</p>
+            <p>小队在尸体注视下穿越泥泞，擦肩而过的是赶赴战场的新兵。马车渐渐消失在地平线上，直到行至道路尽头。</p>
+            <div class="button-container">
+                <button class="prev-btn" onclick="prevScene(4)">上一幕</button>
+                <button class="next-btn" disabled>故事结束</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function nextScene(current) {
+            const currentScene = document.getElementById(`scene-${current}`);
+            const nextScene = document.getElementById(`scene-${current + 1}`);
+            
+            if (nextScene) {
+                currentScene.classList.remove('active');
+                nextScene.classList.add('active');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        }
+
+        function prevScene(current) {
+            const currentScene = document.getElementById(`scene-${current}`);
+            const prevScene = document.getElementById(`scene-${current - 1}`);
+            
+            if (prevScene) {
+                currentScene.classList.remove('active');
+                prevScene.classList.add('active');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        }
+    </script>
+</body>
+</html>

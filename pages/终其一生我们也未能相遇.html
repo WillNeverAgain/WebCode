@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>终其一生我们也未能相遇</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            background-color: #000000;
+            color: #e0e0e0;
+            overflow-x: hidden;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: rgba(26, 26, 26, 0.92);
+            min-height: 100vh;
+            box-shadow: 0 0 10px rgba(255,255,255,0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #f0f0f0;
+        }
+        h2 {
+            color: #d0d0d0;
+            border-bottom: 2px solid #d0d0d0;
+            padding-bottom: 5px;
+            text-align: center;
+        }
+        .scene > p:not(.dialogue):not(.intro) {
+            color: #f5e050; /* Soft yellow for narration */
+            margin: 15px 0;
+        }
+        .intro {
+            color: #a0e7a0; /* Light green for time/location/characters */
+            font-weight: bold;
+            margin: 15px 0;
+        }
+        .dialogue {
+            margin-left: 20px;
+            font-style: italic;
+            color: #e0e0e0;
+        }
+        .dialogue::before {
+            content: '“';
+            font-size: 1.2em;
+        }
+        .dialogue::after {
+            content: '”';
+            font-size: 1.2em;
+        }
+        .character {
+            font-weight: bold;
+            color: #4da8da;
+        }
+        .scene {
+            display: none;
+            animation: fadeIn 1s ease-in-out;
+        }
+        .scene.active {
+            display: block;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .next-btn, .prev-btn {
+            display: inline-block;
+            margin: 20px 10px;
+            padding: 10px 20px;
+            background-color: #34495e;
+            color: #ffffff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            text-align: center;
+            transition: background-color 0.3s;
+        }
+        .next-btn:hover, .prev-btn:hover {
+            background-color: #2c3e50;
+        }
+        .next-btn:disabled, .prev-btn:disabled {
+            background-color: #666666;
+            cursor: not-allowed;
+        }
+        .button-container {
+            text-align: center;
+        }
+
+    /* 全局复古纹理 + 噪点背景 */
+    body::before {
+        content: '';
+        position: fixed;
+        inset: 0;
+        background: 
+            linear-gradient(30deg, transparent 48%, rgba(70, 90, 110, 0.08) 50%, transparent 52%),
+            linear-gradient(-30deg, transparent 48%, rgba(70, 90, 110, 0.06) 50%, transparent 52%),
+            repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(30,35,45,0.05) 2px, rgba(30,35,45,0.05) 4px),
+            repeating-linear-gradient(90deg, transparent, transparent 2px, rgba(30,35,45,0.05) 2px, rgba(30,35,45,0.05) 4px),
+            url('https://assets.codepen.io/3522978/noise.png'), 
+            radial-gradient(circle at 30% 20%, #0a0f1a, #010101);
+        background-blend-mode: overlay, screen, multiply, normal;
+        opacity: 0.85;
+        pointer-events: none;
+        z-index: -2;
+        transition: opacity 0.3s ease;
+    }
+
+    .halftone-overlay {
+        position: fixed;
+        inset: 0;
+        width: 100vw;
+        height: 100vh;
+        object-fit: cover;
+        pointer-events: none;
+        mix-blend-mode: overlay;
+        opacity: 0.12;
+        z-index: -1;
+        transition: opacity 0.3s ease;
+    }
+
+    .vintage-bg {
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        z-index: 0;
+        overflow: hidden;
+        transition: opacity 0.3s ease;
+    }
+    .vintage-element {
+        position: absolute;
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        opacity: 0.05;
+        mix-blend-mode: multiply;
+        animation: driftVintage linear infinite, pulseVintage 28s ease-in-out infinite alternate;
+    }
+    @keyframes driftVintage {
+        0% { transform: translate(0, 0) rotate(0deg); }
+        100% { transform: translate(110px, 110px) rotate(360deg); }
+    }
+    @keyframes pulseVintage {
+        0% { opacity: 0.04; filter: brightness(0.9); }
+        100% { opacity: 0.1; filter: brightness(1.1); }
+    }
+    .v1 { background-image: url('https://i0.wp.com/heritagecalling.com/wp-content/uploads/2024/12/DP114585-St-Marys-Church-Kempley-Gloucestershire.jpg?ssl=1'); width: 380px; height: 380px; top: 3%; left: 0%; animation-duration: 170s, 24s; transform: rotate(50deg); }
+    .v2 { background-image: url('https://www.nationalww2museum.org/sites/default/files/2020-05/Riveter.jpg'); width: 550px; height: 180px; top: 18%; right: 4%; animation-duration: 190s, 28s; }
+    .v3 { background-image: url('https://render.fineartamerica.com/images/rendered/default/greeting-card/images/artworkimages/medium/2/andy-warhol-high-resolution-photo-art-collage-andy-warhol-collage.jpg'); width: 280px; height: 450px; bottom: 8%; left: 6%; animation-duration: 150s, 20s; transform: rotate(-32deg); }
+    .v4 { background-image: url('https://rubberdiamond.wordpress.com/wp-content/uploads/2014/01/schwitters.jpg'); width: 420px; height: 420px; top: 38%; left: 48%; animation-duration: 210s, 35s; transform: rotate(22deg); }
+    .v5 { background-image: url('https://www.heritage-print.com/p/731/study-poster-1920-artist-lissitzky-15000613.jpg.webp'); width: 620px; height: 140px; bottom: 4%; right: 8%; animation-duration: 180s, 26s; }
+    .v6 { background-image: url('https://blog.architizer.com/wp-content/uploads/deconstructivism.jpeg'); width: 230px; height: 560px; top: 6%; right: 1%; animation-duration: 160s, 22s; transform: rotate(90deg); }
+    .v7 { background-image: url('https://d31sxl6qgne2yj.cloudfront.net/wordpress/wp-content/uploads/20190102164052/Punk-Album-Covers-11x16.jpg'); width: 460px; height: 330px; bottom: 28%; left: 28%; animation-duration: 200s, 30s; transform: rotate(-28deg); }
+    .v8 { background-image: url('https://smarthistory.org/wp-content/uploads/2021/02/50935568273_37699017c0_o-scaled.jpg'); width: 350px; height: 130px; top: 50%; left: 12%; animation-duration: 140s, 18s; }
+    .v9 { background-image: url('https://postergroup.com/cdn/shop/products/Men-Working-Together-Poster.jpg?v=1746051175'); width: 180px; height: 400px; top: 12%; left: 62%; animation-duration: 230s, 38s; transform: rotate(72deg); }
+    .v10 { background-image: url('https://m.media-amazon.com/images/I/81SOUO-NbkL.jpg'); width: 560px; height: 280px; bottom: 18%; right: 22%; animation-duration: 170s, 27s; }
+    .v11 { background-image: url('https://cdn.britannica.com/94/5594-050-1C1166D6/Annunciation-Fra-Angelico-Florence-Museum-of-San.jpg'); width: 300px; height: 300px; top: 62%; left: 40%; animation-duration: 220s, 32s; transform: rotate(-45deg); }
+    .v12 { background-image: url('https://cdn11.bigcommerce.com/s-yzgoj/images/stencil/1280x1280/products/1320435/1708788/PSTJPA100339M__22686.1519281927.jpg?c=2'); width: 440px; height: 220px; top: 30%; left: 4%; animation-duration: 180s, 25s; }
+    .v13 { background-image: url('https://divinity.uchicago.edu/sites/default/files/styles/sightings_article_featured_image/public/2020-01/2c304455-66ca-4ae4-adc3-ba0ccc06b408_1_201_a.jpeg?itok=9v54XcIG'); width: 400px; height: 350px; top: 8%; left: 55%; animation-duration: 160s, 23s; transform: rotate(30deg); }
+    .v14 { background-image: url('https://www.saic.edu/sites/default/files/shorthand/stories/0Hw0PwtaAa/2025-09-29T19%3A38%3A15.732Z/assets/vpUp9CR2Fi/kurt-schwitters-843x626.jpg'); width: 500px; height: 200px; bottom: 35%; right: 10%; animation-duration: 190s, 27s; }
+    .v15 { background-image: url('https://cdn.kastatic.org/ka-perseus-images/aa552552150213036b99363b0dfb8ae811b8c08d.jpg'); width: 350px; height: 400px; top: 45%; right: 15%; animation-duration: 200s, 30s; transform: rotate(-20deg); }
+    </style>
+</head>
+<body>
+
+<!-- 复古背景层 -->
+<img class="halftone-overlay" src="https://gd-hbimg-edge.huaban.com/e136eab1362dfa41c0bf38aa7f48d9be4fe7332b172ae6-yQ7EZk?auth_key=1780243200-7a28c4fd8dba4f27bcbf1202f71a087e-0-cab91a5574991e7dfd11720f9ea5744c" alt="" decoding="async" referrerpolicy="no-referrer">
+<div class="vintage-bg">
+    <div class="vintage-element v1"></div><div class="vintage-element v2"></div><div class="vintage-element v3"></div>
+    <div class="vintage-element v4"></div><div class="vintage-element v5"></div><div class="vintage-element v6"></div>
+    <div class="vintage-element v7"></div><div class="vintage-element v8"></div><div class="vintage-element v9"></div>
+    <div class="vintage-element v10"></div><div class="vintage-element v11"></div><div class="vintage-element v12"></div>
+    <div class="vintage-element v13"></div><div class="vintage-element v14"></div><div class="vintage-element v15"></div>
+</div>
+
+    <div class="container">
+        <h1>终其一生我们也未能相遇</h1>
+        <p align="center" style="color: #f5e050;">我站在人群的中央，却孤独得如此荒唐</p>
+
+        <div id="scene-0" class="scene active">
+            <div class="button-container">
+                <button class="next-btn" onclick="nextScene(0)">开始阅读</button>
+            </div>
+        </div>
+
+        <div id="scene-1" class="scene">
+            <h2>第一节：往事如昔</h2>
+            <p class="intro">2048年11月8日<br>瑞士·锡永　米斯泰研究院总部<br><strong>角色：</strong>喀琅施塔得，星宿，卡林卡</p>
+            <p>登记大厅像个巨大的冷冻库，顶灯一闪一闪，发出嗡嗡的电流声。 墙上的时钟在此时停在21:45，那恰好正是阿芙乐尔号开炮的时刻左右。</p>
+            <p>喀琅施塔得站在登记台前，大衣扣得一丝不苟，铜扣在冷光下像一排沉默的子弹。她把军帽拿在手里，指尖一下一下摩挲帽檐上那个1917年的战斗痕迹。</p>
+            <p>帽檐里层缝着一张极小的照片，是小时候的她与玛莎在离别前拍的照片，两人虽对着镜头严肃的站着，但却有着一丝丝的笑容。此时玛莎已经离开了她，只剩下衣服上玛莎的血迹。</p>
+            <p>登记员是个二十出头的姑娘，制服袖口绣着“行政处实习生”的蓝章。她看见那顶军帽上飘带上的俄语和浑身是血的星宿，先是愣了三秒，手里的平板“啪”的一声掉在桌上。</p>
+            <p class="dialogue"><span class="character">登记员：</span> 星宿小姐..你们这是？【英语】</p>
+            <p>星宿摆了摆手，示意登记员继续。实习生小姑娘语无伦次的应对着这自己从未见过的情况。</p>
+            <p class="dialogue"><span class="character">登记员：</span> 请……请填表，请问您的代号是？【俄语】</p>
+            <p class="dialogue"><span class="character">喀琅施塔得：</span> 喀琅施塔得，俄国那个喀琅施塔得要塞。【俄语】</p>
+            <p class="dialogue"><span class="character">登记员：</span> 个人信息…… 【俄语】</p>
+            <p>喀琅施塔得拿过笔，歪歪扭扭写下，她写得很慢，笔尖在纸上划出沙沙声，像1917年期盼已久后终于迎来的曙光一般，沉浸在其中慢慢的感受着。她把表格拍在桌上。</p>
+            <p class="dialogue"><span class="character">喀琅施塔得：</span> 走吧，星宿同志。你们需要的手续办完了。</p>
+            <p>她冷静得像个刚从战场下来的战争疯子，眼底却藏着一丝没人看见的、近乎病态的期待。</p>
+            <p>星宿没说话，只是伸手，轻轻按了按她肩膀。</p>
+            <p class="dialogue"><span class="character">星宿：</span> 同志，这一周你先好好休息...</p>
+            <p>星宿知道在学习了历史之后，支撑这位少女唯一活下去动力的期待也要被彻底的掐灭。</p>
+            <p>走廊比大厅更冷，墙壁是研究院标准的灰白色，整个建筑像一具巨大的棺材。喀琅施塔得走在前头，靴子踩得“咔哒咔哒”响，水兵大衣下摆扫过地面，带起一阵细微的尘土。</p>
+            <p>她停住脚步，转头看向墙上的一块电子屏，上面滚动播放着研究院宣传片：守护历史，为人类与人类文明存续服务。她盯着屏幕上那行字笑了，笑得肩膀直抖。</p>
+            <p class="dialogue"><span class="character">喀琅施塔得：</span> 看你们宣传的口号，我们也算是同志了吧？</p>
+            <p>星宿小队宿舍区·公共休息室，休息室比走廊暖和一点，角落里一台老咖啡机咕噜咕噜冒着热气。喀琅施塔得一屁股坐进沙发拿着了一瓶从1917带回来的酒。</p>
+            <p class="dialogue"><span class="character">喀琅施塔得：</span> 你们这里装修的像是沙皇的皇宫一样...真是.....</p>
+            <p>喀琅施塔得将说了一半的话咽了回去。</p>
+            <p>她对着酒瓶喝了几口，把酒瓶往桌上一放，“咚”一声，瓶底搁在桌上，震得咖啡机都抖了一下。</p>
+            <p class="dialogue"><span class="character">喀琅施塔得：</span> 你们说过，会让我看看现在的俄罗斯和乌克兰，看看我们的付出究竟带来了什么结果。你不会骗我吧。</p>
+            <p class="dialogue"><span class="character">星宿：</span> 不会，在你准备好接受后，就带你到莫斯科、红场、阿芙乐尔号、冬宫…… 你想去哪儿，我都带你去。</p>
+            <p class="dialogue"><span class="character">喀琅施塔得：</span> 准备好？准备好是什么意思？</p>
+            <p>喀琅施塔得声音越来越低，到最后几乎听不见，在疑惑自己是否听错了。</p>
+            <p class="dialogue"><span class="character">星宿：</span> 同志，你要现在研究院里面先呆几个月左右，了解好有关现代社会的部分知识，和学习历史。</p>
+            <p>喀琅施塔得答应了下来，看着她对着结果期待的样子，星宿不敢直视。</p>
+            <p>在知道了喀琅施塔得的特殊身世后，许多研究俄罗斯的研究员都不怎么敢给喀琅施塔得上课。在讲述到1921年喀琅施塔得水兵起义事件和坦波夫起义事件时，他们已经能想到喀琅施塔得的是如何的崩溃了。</p>
+            <p>但最终，这一切都会来临。</p>
+            <p>在几个月的学习之中，喀琅施塔得渐渐的了解到了现代的生活方式，但她的历史课程学习却迟迟没有推进。直到卡林卡做担保，她陪护着喀琅施塔得上课，才有研究员愿意前来教学。</p>
+            <p>但在没有学习的期间，安奈不住自己内心病态般的喀琅施塔得还是翻阅着相关的历史书籍和资料，自己已经窥见了那不堪的冰山一角。</p>
+            <p class="dialogue"><span class="character">喀琅施塔得：</span> 这...这不是真的....他们怎么会！</p>
+            <p>她多么渴望和期待课程上教的知识和书本里面完全不一样，她多么的渴望有人告诉她这本书是错的。可是这就是事实....</p>
+            <p>在了解布尔什维克向民众开枪以及喀琅施塔得起义和坦波夫起义的完整事情的经过后，教室里面安静得可怕。研究员看着喀琅施塔得颤抖的瞳孔，冷汗直冒。</p>
+            <p>在死一般的寂静后是一阵无奈的笑，那是多么的瘆人与恐怖。卡林卡示意让研究员离开，自己准备安抚喀琅施塔得，</p>
+            <p class="dialogue"><span class="character">喀琅施塔得：</span> 卡林卡同志，所以说，这些都是真的？我们所做的一切努力都是白费的吗？</p>
+            <p>喀琅施塔得继续翻阅着面前的书，越来越快，越来越急，她表情镇静，但是身体在颤栗。</p>
+            <p class="dialogue"><span class="character">喀琅施塔得：</span> 为什么革命成功后，我们还要对着自己的同胞开枪。</p>
+            <p>卡林卡轻握住了喀琅施塔得颤栗的手臂，试图安抚着她，但被喀琅施塔得一下甩开。</p>
+            <p class="dialogue"><span class="character">喀琅施塔得：</span> 这些人都是革命的英雄，只是提出了合理的诉求.....最后却被扣上了叛徒的罪名...</p>
+            <p class="dialogue"><span class="character">喀琅施塔得：</span> 现如今，一切都又回到了原点..像是从来没有发生过一样。</p>
+            <p>手中的书页渐渐地被握紧的手撕裂开来，成为一团掉在地上。</p>
+            <p class="dialogue"><span class="character">喀琅施塔得：</span> 要是我没有和星宿同志一起回来，我是不是也会死在喀琅施塔得起义那天，被扣上叛徒的罪名....</p>
+            <p>教室里静得能听见心跳的声音。 投影仪的光还停在那页： 【1921年3月17日，喀琅施塔得要塞陷落，起义者8000余人被处决或送往集中营……】</p>
+            <p>卡林卡站在喀琅施塔得的身边，手中也死死攥着那本书。她深吸一口气，还是说出了自己不想说的话。</p>
+            <p class="dialogue"><span class="character">卡林卡：</span> 喀琅施塔得……你冷静一点。那时候党内有内奸，外有帝国主义包围网，……</p>
+            <p>说到一半时她停住了，因为她看见喀琅施塔得的瞳孔在抖，像两颗随时会炸碎的炮弹。</p>
+            <p class="dialogue"><span class="character">喀琅施塔得：</span> 内奸？</p>
+            <p>她慢慢抬头，嘴角扯出一个扭曲的笑。</p>
+            <p class="dialogue"><span class="character">喀琅施塔得：</span> 那我们算什么？那些在冰面上被你们用着机枪，冲锋枪扫射的水兵，也是内奸吗？ 明明是我们在付出，到头来还是骗了我们。卡林卡同志，你告诉我..这些人是内奸吗？</p>
+            <p class="dialogue"><span class="character">卡林卡：</span> 那是特殊时期的非常措施！不然帝国主义会卷土重来！ 我们后来打败了外国干涉者，打败了纳粹！用的是同一个红军，同一面红旗！</p>
+            <p class="dialogue"><span class="character">喀琅施塔得：</span> 打败外国干涉者？ 那为什么1937年图哈切夫斯基自己也被枪毙了？ 为什么后来的大清洗几乎毁了红军”？ 为什么……为什么我们的血，最后只换来了一堆新的沙皇？！</p>
+            <p>她一步步逼近卡林卡，手指几乎戳到对方军装上的金星勋章。</p>
+            <p class="dialogue"><span class="character">喀琅施塔得：</span> 红军已经死了！在1921年你们亲自把他们推进冰窟窿里面的！</p>
+            <p class="dialogue"><span class="character">卡林卡：</span> 你胡说！</p>
+            <p class="dialogue"><span class="character">喀琅施塔得：</span> 我说，红军已经在1921年已经被你们亲自杀死了！</p>
+            <p class="dialogue"><span class="character">卡林卡：</span>Сука！你胡说！</p>
+            <p class="dialogue"><span class="character">喀琅施塔得：</span> 那你告诉我！ 你1941年守列宁格勒的时候，喊的是“为了祖国，为了斯大林”，对吧？ 可我1917年喊的是“一切权力归苏维埃”！ 不是归一个新的沙皇！不是归古拉格！不是归后来让坦克碾过布拉格和布达佩斯的独裁者！</p>
+            <p class="dialogue"><span class="character">喀琅施塔得：</span> 名为苏维埃的政权却镇压着农民的起义和合理的诉求，这真是讽刺啊.....</p>
+            <p>卡林卡终于爆发了，她一把抓住喀琅施塔得的手腕甩开。喀琅施塔得脸上结结实实的的挨了一拳，鼻血瞬间流了下来，她愣了一会儿，擦了擦鼻血。</p>
+            <p class="dialogue"><span class="character">卡林卡：</span> 你懂什么！你懂什么！德国人把我们的城市围成死地，我亲眼看见我的战友被冻死、饿死、炸死！ 如果没有那个所谓“新的沙皇”，集权的“中央”，你以为我们能把红旗插到柏林？你以为你那点纯洁的理想，就能挡得住几百万德军？！</p>
+            <p class="dialogue"><span class="character">喀琅施塔得：</span>看啊！这就是你们的做派吗？！</p>
+            <p>喀琅施塔得拽着卡林卡的衣领，两人瞬间扭打在了一起。星宿一直沉默地站在门口，此刻终于走进来。 她没说话，只是伸手，把两人拉开。</p>
+            <p>两人松开手，后退两步。喀琅施塔得像被抽走了所有力气，一屁股坐回椅子上，抱着那瓶从1917年带回的烈酒，却再也没力气拧开瓶。卡林卡站在原地，嘴唇动了动，想说什么，用着几乎哀求的口吻最终只挤出一句。</p>
+            <p class="dialogue"><span class="character">卡林卡：</span> ……至少，我们活下来了。 至少，我们也曾辉煌过。</p>
+            <p class="dialogue"><span class="character">喀琅施塔得：</span> 可我的战友和同志没活下来， 他们连知道自己死得毫无意义的机会都没有....甚至还是所谓的“叛徒“。</p>
+            <p>教室里再次陷入死寂。投影仪的光自动熄灭，屏幕上最后停留的那些词，像一把钝刀，慢慢割着两人的信仰：起义，水兵，农民，镇压，红军......</p>
+            <p class="dialogue"><span class="character">喀琅施塔得：</span> 1937年把同志们一个个拉去枪毙又叫什么？ 叫“必要代价”？叫“历史必然”？ 叶尼塞同志，你杀法西斯的时候喊的口号，和图哈切夫斯基杀我们的时候是一样的，“为了祖国”。这就是我们革命所带来的新世界吗？</p>
+            <p>卡林卡被戳到痛处， 嗓音又一下子拔高。</p>
+            <p class="dialogue"><span class="character">卡林卡：</span> 如果没有粮食征收， 没有强力中央，乌克兰现在早就是德国人的粮仓！ 你那点浪漫的苏维埃幻想，喂不了为理想奋斗的战士！</p>
+            <p>喀琅施塔得猛地一拍桌子，1917年的那瓶伏特加滚到地上，摔得粉碎。</p>
+            <p class="dialogue"><span class="character">喀琅施塔得：</span> 那你就喂饱了？喂出了古拉格！喂出了布拉格之春的坦克！我们革命就是为了要各个国家独立自主！但你们俄罗斯人又强迫大家加入你们的战车！</p>
+            <p>喀琅施塔得的嘴唇在抖，像一条离水的鱼。 她盯着课本上燃烧的基辅插图，突然弯下腰，干呕了一声，却什么也吐不出来。</p>
+            <p class="dialogue"><span class="character">星宿：</span>够了！你们俩谁也说服不了谁，也不需要说服。</p>
+            <p>她转向喀琅施塔得，目光第一次没有躲。</p>
+            <p class="dialogue"><span class="character">星宿：</span> 你不是想亲眼看看现在的俄罗斯和乌克兰吗？……我带你去，现在就去。 红场、阿芙乐尔号、冬宫、喀琅施塔得要塞……你想去哪儿，我都陪你。 你想骂就骂，想哭就哭，想砸就砸。 但别在这儿，把自己憋疯了。</p>
+            <p>喀琅施塔得抬起头，眼泪糊了一脸，却像突然抓住了救命稻草。</p>
+            <p class="dialogue"><span class="character">喀琅施塔得：</span> ……现在？我害怕现在我没有勇气...</p>
+            <p>卡林卡张了张嘴，想说什么，最终还是咽了下去，伸手把喀琅施塔得肩上的大衣领子理好，像1941年给新兵整理军装那样。</p>
+            <p class="dialogue"><span class="character">卡林卡：</span> 去吧。 去了……别恨我们。 至少，别恨活下来的人。</p>
+            <p>喀琅施塔得没回答。 她只是弯腰捡起那瓶摔碎的伏特加瓶子，把剩下的一点酒倒在掌心，仰头喝干。 酒液混着干呕的血丝从嘴角流下来，像一条细小的红旗。</p>
+            <p class="dialogue"><span class="character">喀琅施塔得：</span> 走吧，星宿同志。 带我去看看…… 我们换来的这个世界，现在是个什么样子。</p>
+            <p>她转身往外走，背影笔直，像又回到了1917年。 只是这一次， 她要去参加的，是一场迟到了整整130年的葬礼。</p>
+            <div class="button-container">
+                <button class="prev-btn" onclick="prevScene(1)">上一幕</button>
+                <button class="next-btn" onclick="nextScene(1)">下一幕</button>
+            </div>
+        </div>
+
+        <div id="scene-2" class="scene">
+            <h2>第二节：巨人陨落</h2>
+            <p class="intro">2048年12月29日　凌晨4:17<br>俄罗斯·圣彼得堡　涅瓦河畔<br><strong>角色：</strong>喀琅施塔得，星宿，卡林卡</p>
+            <p>夜色像一块浸了血的旧布，沉沉压在河面上。</p>
+            <p>阿芙乐尔号巡洋舰静静地停泊在永泊码头，船体被博物馆的白炽灯照成苍白的铁棺材。</p>
+            <p>舰艏那门炮高高昂起，却永远指向了天空，再也不会发出1917年的那一声震碎旧世界的怒吼。</p>
+            <p>喀琅施塔得站在跳板尽头，军靴踩在金属板上发出空洞的“咚、咚”。她没上舰，只是站在岸边，像被一根看不见的绳子勒住脖子。</p>
+            <p>星宿和卡林卡站在她身后半步，隔着一段谁也不敢逾越的距离。</p>
+            <p class="dialogue"><span class="character">喀琅施塔得：</span> ……原来它变成博物馆了。那声炮响，换回了什么....至少它还在。</p>
+            <p>她终于迈步，沿着跳板走上甲板。她伸手，指尖碰到冰冷的炮管，像触电一样缩回来，又强迫自己重新贴上去。</p>
+            <p>她走到那门炮前，双手死死抱住炮管，像抱住一个死去百年的战友回忆，述说着曾经经历的往事。</p>
+            <p class="dialogue"><span class="character">喀琅施塔得：</span> 同志们……我们在这里集合！我们在这里等信号！等这一炮打响，全世界都会听见！</p>
+            <p>她的声音越来越小，回荡在空荡的甲板上，却只换来周围零零散散游客异样的目光。</p>
+            <p>喀琅施塔得没有理会任何人，她把额头抵在炮管上。她突然转身，踉跄两步，抓住星宿的衣领，眼睛里全是血丝。</p>
+            <p class="dialogue"><span class="character">喀琅施塔得：</span> 告诉我！星宿同志，这艘船最后一次开炮，是什么时候？是进攻敌人，还是轰我们自己人？还是……再也没再开过？</p>
+            <p class="dialogue"><span class="character">星宿：</span> 1923年起，阿芙乐尔号被编为训练舰。但二战时期它的部分火炮被拆下用于列宁格勒防御保卫着苏联，而它自己...本身因无力抵挡德军的轰炸在港口自沉，直到战争后期，才被打捞出水并进行了修复。</p>
+            <p>涅瓦河的风刮过，吹起她大衣下摆，大衣上一片暗红的血迹在灯光下像一面永远不会再升起的旗。</p>
+            <p>卡林卡终于走上前，单膝跪在她面前，把自己的军帽轻轻盖在她颤抖的肩上。</p>
+            <p class="dialogue"><span class="character">卡林卡：</span> ……对不起。</p>
+            <p>喀琅施塔得没抬头，只是伸出手，死死攥住卡林卡的军帽边缘。天边泛起鱼肚白。第一缕晨光照在阿芙乐尔号的炮管上，却照不进喀琅施塔得的心。</p>
+            <p class="dialogue"><span class="character">喀琅施塔得（抽噎着）：</span>为什么....为什么...他们最后都骗了我.....我感觉我做的一切都毫无意义...</p>
+            <p class="dialogue"><span class="character">喀琅施塔得（抽噎着）：</span>下一站……带我去喀琅施塔得要塞。我想看看，他们到底把我的名字，刻成了什么样子。</p>
+            <p>冬天的波罗的海结着薄冰，风像锯子一样刮在脸上。喀琅施塔得要塞的灰色混凝土工事在海雾里像一排巨大的墓碑。只有零星的游客和三个人站在当年起义者最后防线的残墙前的少女。</p>
+            <p>喀琅施塔得踩着碎冰，一步一步走向中央那座被炮弹削去半边的堡垒。她大衣下摆沾着涅瓦河的水，已经冻成了硬壳。</p>
+            <p>墙上有一块纪念碑，刻着金色大字：“纪念1921年喀琅施塔得起义70周年 ——为了面包与自由”</p>
+            <p class="dialogue"><span class="character">喀琅施塔得：</span> 原来他们把我们改成了 “为了面包与自由”……而不是“叛乱分子”。</p>
+            <p>她突然转身，眼睛死死盯着卡林卡，声音陡然拔高，像是在审讯犯人一般在质问着她过激的言语。</p>
+            <p class="dialogue"><span class="character">喀琅施塔得（激动）：</span> 卡林卡同志！告诉我！我们喊“一切权力归苏维埃”的时候，你们后来喊的是什么？“一切权力归新沙皇”吗？！</p>
+            <p>卡林卡的脸色瞬间铁青，嘴唇绷成一条线，颤抖的回应着她过激的言语。</p>
+            <p class="dialogue"><span class="character">卡林卡：</span> 你又开始了！1921年是我们被逼无奈的！敌人在门外，饥荒在家里，如果不结束内乱，我们连1941年都撑不到！</p>
+            <p class="dialogue"><span class="character">喀琅施塔得：</span> 撑到了又怎样？去镇压自己人民？撑到1937年把自己的水兵一个个拉去枪毙？撑到1956年把坦克开进布达佩斯？卡林卡，你告诉我，我们当年在冰面上流过的血，到底喂肥了谁？</p>
+            <p>她猛地抓住卡林卡的衣领，声音嘶哑得变了调。</p>
+            <p class="dialogue"><span class="character">喀琅施塔得：</span> 你敢不敢承认！你们后来干的那些事，比沙皇还沙皇！</p>
+            <p>卡林卡一把甩开她的手，眼睛里燃着和1941年守城时一样的火：</p>
+            <p class="dialogue"><span class="character">卡林卡：</span> 那你敢不敢承认！没有后来所谓的“沙皇还是中央”，你1917年的浪漫早被邓尼金、高尔察克撕成碎片！你以为“面包与自由”能靠喊口号喊出来？我亲眼见过德国人把婴儿扔进火里！杀害我们的同胞兄弟！那些手无寸铁的平民！你那点纯洁，换不来胜利！</p>
+            <p>两人几乎鼻尖贴着鼻尖，呼吸里全是血腥味。星宿站在两人之间，手死死地握着两人的手臂，却一步也迈不进去。</p>
+            <p class="dialogue"><span class="character">喀琅施塔得：</span> 那就告诉我……为什么这块纪念碑上，只写“为了面包与自由”，却不写“被红军镇压”？为什么没人敢写，1921年3月17日那天，是我们自己人，把我们自己人，推进了冰窟窿？</p>
+            <p>她松开手，后退两步，背靠着冰冷的混凝土墙慢慢滑坐下去。大衣上的血迹蹭在墙上，像一面被撕碎的红旗。</p>
+            <p class="dialogue"><span class="character">喀琅施塔得：</span> 原来……我们连叛徒都不配做。我们只是……被悄悄擦掉的一页纸。</p>
+            <p>卡林卡站在原地，拳头攥得咯吱响，最终什么也没说，只是转身，一拳砸在纪念碑上。</p>
+            <p>金色大字被砸得掉了一块漆，露出底下灰白的底子。</p>
+            <p class="dialogue"><span class="character">卡林卡：</span> 喀琅施塔得同志，我们会记住这些.....博物馆里也有记载..只是这些地方...</p>
+            <p>星宿终于走上前，声音低得只有她们三个人能听见，</p>
+            <p class="dialogue"><span class="character">星宿：</span> 你们谁也不欠谁。你们只是……来到了不属于你们自己的时间，在错误的地点认识到了错误的人。抱歉，安娜，带你回来让你看见了这些。</p>
+            <p>星宿伸手，把喀琅施塔得大衣上那块冻硬的血迹轻轻掰下一小块，攥在掌心，攥住一段烧不尽的火。</p>
+            <p>喀琅施塔得没动，只是抬头望向海面。远处，一艘现代驱逐舰缓缓驶过，军旗是白底蓝X的圣安德烈旗。她突然笑了，笑得像个孩子。</p>
+            <p class="dialogue"><span class="character">喀琅施塔得：</span> 看啊…… 连海军旗都换回来了。我们赢了整整一圈，又输了回去。</p>
+            <div class="button-container">
+                <button class="prev-btn" onclick="prevScene(2)">上一幕</button>
+                <button class="next-btn" onclick="nextScene(2)">下一幕</button>
+            </div>
+        </div>
+
+        <div id="scene-3" class="scene">
+            <h2>第三节：祖国在召唤</h2>
+            <p class="intro">2048年12月30日　黄昏<br>乌克兰·基辅　祖国母亲雕像广场<br><strong>角色：</strong>喀琅施塔得，星宿，卡林卡</p>
+            <p>基辅的冬日黄昏被一层薄雾笼罩，第聂伯河像一条冰冷的灰色丝带静静流淌。远处，那尊高达102米的“祖国母亲”雕像矗立在山岗之上，剑尖直指天空。曾经的苏联国徽位置，如今已被乌克兰的三叉戟徽章取代，在夕阳余晖下闪烁着冷峻的金属光泽。</p>
+            <p>喀琅施塔得站在雕像正下方，仰头凝视着那张巨大的金属面孔。雪花落在她水兵帽的飘带上，又迅速融化成水珠，顺着帽檐滑落。她把双手深深插进大衣口袋，手臂仍在微微颤抖。</p>
+            <p class="dialogue"><span class="character">喀琅施塔得（喃喃）：</span>……祖国母亲……原来你们把她留在了这里。可她身上的徽章，已经不是我们曾经所信仰的了。</p>
+            <p class="dialogue"><span class="character">星宿（轻声）：</span>喀琅施塔得同志，你在历史课上应该已经看到了。从1917年乌克兰人民共和国宣布独立，到后来被苏联吞并，再到1991年再度独立……你的祖国见证了太多变故。</p>
+            <p class="dialogue"><span class="character">喀琅施塔得（苦笑）：</span>是啊，看到了……书上写得清清楚楚。1917年，我们说要让各民族获得解放，大家喊着独立，我们却说“先联合起来打败白匪”。后来呢？他们终于独立了，可我们又用红军把他们重新按了回去。现在……又变了回去。星宿同志，你说……我们当年到底在干什么？</p>
+            <p>卡林卡站在喀琅施塔得左侧半步。她抬头看着雕像剑尖，声音带着一丝疲惫。</p>
+            <p class="dialogue"><span class="character">卡林卡：</span>喀琅施塔得同志，历史不是一条直线。曾经我们以为推翻沙皇就能让所有民族平等。可后来……民族问题比我们想象的复杂得多。</p>
+            <p class="dialogue"><span class="character">喀琅施塔得（声音骤然拔高）：</span>告诉我，卡林卡同志。1922年你们把乌克兰强行拉进苏联的时候，有没有想过有一天它会再次离开？我们口口声声说“斯拉夫兄弟”，可最后呢？手足相残！我们自己人打自己人，</p>
+            <p class="dialogue"><span class="character">星宿：</span>安娜……你出生在帝俄时代的乌克兰，那时候很多人和你一样，梦想着一个没有沙皇、没有压迫的联合。可是历史……它从来不会按照我们想象的剧本走。</p>
+            <p>喀琅施塔得没有立刻反驳。她只是伸出手，轻轻触碰雕像基座上那道被新涂层覆盖却仍隐约可见的旧锤镰痕迹。指尖在冰冷的金属上停留了很久，像在抚摸一个早已死去的亲人。</p>
+            <p class="dialogue"><span class="character">喀琅施塔得（声音颤抖）：</span>……斯拉夫兄弟……我们曾经是兄弟啊。1917年，我们一起在彼得格勒的街头喊“面包、和平、土地”。现在呢？斯拉夫人之间互相憎恨，互相敌视.....</p>
+            <p class="dialogue"><span class="character">喀琅施塔得：</span>联合？哈哈哈...联合....我们曾经的口号是“各民族一律平等”！可后来呢？大清洗、饥荒、坦克开进布拉格……我们用意识形态和泛斯拉夫主义把所有斯拉夫兄弟绑在一起，最后却绑出了更多的仇恨！</p>
+            <p class="dialogue"><span class="character">喀琅施塔得（眼眶逐渐湿润）：</span>我懂……我当然懂。我在书里看到了乌克兰大饥荒，看到了1937年的大清洗，看到了1941年德国人把基辅变成地狱，也看到了1991年他们终于把红旗降下来……可我还是忍不住想问，我们当年在到底换来了什么？换来了斯拉夫兄弟互相残杀？</p>
+            <p>喀琅施塔得忽然往前走了两步，声音越来越大，像要把积压了一百三十年的委屈全部吼出来。</p>
+            <p class="dialogue"><span class="character">喀琅施塔得（哽咽）：</span>卡林卡同志！你1941年在列宁格勒守城的时候，喊的是“为了祖国母亲”！那时候的祖国母亲，和现在这座雕像，是同一个人吗？她到底是苏联的母亲，还是乌克兰的母亲？还是……她根本不知道自己是谁？</p>
+            <p class="dialogue"><span class="character">卡林卡（声音也开始颤抖）：</span>……她一直都是同一个人。只是我们给她穿上了不同的衣服。1991年前，她是我们所有人的母亲；1991年后，她看着我们自己把自己撕成十几块。</p>
+            <p>喀琅施塔得的肩膀突然剧烈地抖动起来。她死死盯着雕像那张冰冷而坚定的金属面孔，眼泪终于忍不住夺眶而出，顺着脸颊滑落，在寒风中迅速结成细小的冰珠。</p>
+            <p class="dialogue"><span class="character">喀琅施塔得（哭腔）：</span>……我明白了。我终于明白了。我们当年做的一切……都是白费的。我们喊着解放各民族，结果最后把兄弟们绑得更紧；我们喊着推翻沙皇，结果自己又变成了新的沙皇...</p>
+            <p class="dialogue"><span class="character">喀琅施塔得（哭腔）：</span>结果最后连斯拉夫兄弟都互相举起了枪……我们流了那么多血，死了那么多同志，到头来……连自己的母亲究竟是谁也认不出来了</p>
+            <p>喀琅施塔得忽然跪坐在雪地上，双手抱住头，哭声压抑却越来越大。</p>
+            <p class="dialogue"><span class="character">喀琅施塔得（哭喊）：</span>我……我以为我们革命是为了让所有人都能过上好日子……结果呢？大家最后终于独立了，可他们独立的第一件事，就是把我们的徽章与曾经的信仰砸下来！我们当年在喀琅施塔得要塞喊的口号，现在听起来多可笑啊……“一切权力归苏维埃”？苏维埃最后把他们自己的水兵推进了冰窟窿！</p>
+            <p>星宿蹲下来，轻轻把喀琅施塔得抱进怀里，没有说话，只是用手一下一下拍着她的后背。</p>
+            <p class="dialogue"><span class="character">卡林卡（声音沙哑）：</span>同志……别哭了。至少……至少我们曾经相信过。至少你们当年是真的想让所有兄弟都过上好日子。</p>
+            <p class="dialogue"><span class="character">喀琅施塔得（泣不成声）：</span>相信……相信又有什么用？结果换来了兄弟相残，换来了母亲都认不出来的今天……卡林卡同志，你告诉我……我们当年在伏尔加河边、在彼得格勒喊的那些口号……到底值不值得？</p>
+            <p class="dialogue"><span class="character">星宿：</span>值得。因为你们相信过。因为你们至少尝试过。如果连尝试都不敢，那才真的是白费。</p>
+            <p class="dialogue"><span class="character">喀琅施塔得（哽咽）：</span>……我的家乡，先是梦想独立，后来被“解放”，再后来又一次独立……整整一百年，它兜了一个大圈，才终于走回自己想走的路。可我呢？付出了所有……结果我做的一切，都是白费的吗？</p>
+            <p>喀琅施塔得把脸埋在星宿的肩头，哭声渐渐小了下去，却仍止不住地颤抖。她望着雕像上方那枚闪着冷光的乌克兰三叉戟。</p>
+            <p class="dialogue"><span class="character">喀琅施塔得（哽咽）：</span>……妈妈，你终于独立了。可我……却再也回不去了。</p>
+            <p>泪水终于决堤。喀琅施塔得跪在星宿怀里，肩膀剧烈颤抖，哭声被风撕成碎片。</p>
+            <p class="dialogue"><span class="character">喀琅施塔得（哭喊）：</span>我以为革命之后，所有斯拉夫兄弟都会成为一家人……</p>
+            <p class="dialogue"><span class="character">喀琅施塔得（抽泣）：</span>可最后呢？我们自己人打自己人！波兰人打俄罗斯人，俄罗斯人打乌克兰人……卡林卡同志，我到底为谁而战？！我到底……为谁而死？！我究竟是什么啊....</p>
+            <p>雪越下越大，把三人的身影渐渐淹没在白茫茫的世界里。远处，基辅的现代高楼灯火通明，与这座曾经属于苏联、如今属于乌克兰的巨型雕像，形成刺眼却又悲凉的对比。</p>
+            <p class="dialogue"><span class="character">喀琅施塔得（抽噎）：</span>星宿同志，带我走吧……我不想再待在这里了....</p>
+            <p>喀琅施塔得没有立刻站起来。她只是最后看了一眼那尊高耸的“祖国母亲”，伸出手，轻轻触碰基座上那道被新涂层覆盖却仍隐约可见的旧锤镰痕迹，在和一个早已死去的亲人告别。</p>
+    <div class="button-container">
+        <button class="prev-btn" onclick="prevScene(3)">上一幕</button>
+        <button class="next-btn" onclick="nextScene(3)">下一幕</button>
+    </div>
+</div>
+
+          <div id="scene-4" class="scene">
+            <h2>第四节：没有红旗的红场</h2>
+            <p class="intro">2048年12月31日　黄昏<br>俄罗斯·莫斯科　红场<br><strong>角色：</strong>喀琅施塔得，星宿，卡林卡</p>
+            <p>雪下得很大，像1917年那场革命的炮火被上帝翻了个面，只不过这次不是炮弹。克里姆林宫的红墙在雪里安静得近乎温柔，列宁墓前那行小字被雪盖住，只剩“ЛЕНИН”两个字母在风里倔强地亮着。</p>
+            <p>喀琅施塔得站在无名烈士墓前，军靴已经冻得发僵。她没戴帽子，雪落在她发梢上，又很快融化，像一场迟到了一百三十年的眼泪。</p>
+            <p>喀琅施塔得看着眼前的一切，鼻子一酸。她想起1917年的自己，那时候她们也以为，只要喊得够响，就能换来一个理想中的祖国和世界。</p>
+            <p class="dialogue"><span class="character">喀琅施塔得：</span> ……这里比我想象的，小。我以为胜利了以后，红场会铺满红旗，会有一百万人在唱《国际歌》。结果……就这么大点地方。</p>
+            <p>她顿了顿，目光扫过那些熙熙攘攘的路人，扫过长明火，扫过雪里排队的各地游客与正在讲解的导游。</p>
+            <p class="dialogue"><span class="character">卡林卡：</span> 可他们还在讲我们的故事。哪怕讲得不对，至少……还在讲。</p>
+            <p class="dialogue"><span class="character">卡林卡：</span> 1945年5月9日，红场上真的有一百万人。他们把纳粹军旗扔在列宁墓前。</p>
+            <p class="dialogue"><span class="character">喀琅施塔得：</span> 有人记得我们。或许这就……够了吧。</p>
+            <p>她站起身，雪从肩头滑落。她回头看卡林卡，第一次没有争吵，只是轻轻点了点头。</p>
+            <p class="dialogue"><span class="character">喀琅施塔得：</span> 走吧，我不想再吵了。吵赢了又能怎样？吵输了又怎么..这一切都发生了..</p>
+            <p>卡林卡嘴唇动了动，最终只是伸手，扶正了喀琅施塔得的军帽。</p>
+            <p class="dialogue"><span class="character">叶尼塞：</span> 走吧，同志。</p>
+            <p>喀琅施塔得没有释怀。只是突然明白，有些东西碎了，就碎了。剩下的碎片，也得拼成新的形状，继续往前走。而这就是现实。</p>
+            <p>雪还在下。红场很大，又很小。足够埋葬一个时代，也足够埋葬一个来自过去的女孩的未来幻梦与眼泪。</p>
+            <div class="button-container">
+                <button class="prev-btn" onclick="prevScene(4)">上一幕</button>
+                <button class="next-btn" disabled>故事结束</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function nextScene(current) {
+            const currentScene = document.getElementById(`scene-${current}`);
+            const nextScene = document.getElementById(`scene-${current + 1}`);
+            if (nextScene) {
+                currentScene.classList.remove('active');
+                nextScene.classList.add('active');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        }
+
+        function prevScene(current) {
+            const currentScene = document.getElementById(`scene-${current}`);
+            const prevScene = document.getElementById(`scene-${current - 1}`);
+            if (prevScene) {
+                currentScene.classList.remove('active');
+                prevScene.classList.add('active');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        }
+    </script>
+</body>
+</html>

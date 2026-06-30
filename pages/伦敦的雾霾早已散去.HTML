@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>伦敦的阴霾早已散去</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            background-color: #000000;
+            color: #e0e0e0;
+            overflow-x: hidden;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: rgba(26, 26, 26, 0.92);
+            min-height: 100vh;
+            box-shadow: 0 0 10px rgba(255,255,255,0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #f0f0f0;
+        }
+        h2 {
+            color: #d0d0d0;
+            border-bottom: 2px solid #d0d0d0;
+            padding-bottom: 5px;
+            text-align: center;
+        }
+        .scene > p:not(.dialogue):not(.intro) {
+            color: #f5e050; /* Soft yellow for narration */
+            margin: 15px 0;
+        }
+        .intro {
+            color: #a0e7a0; /* Light green for time/location/characters */
+            font-weight: bold;
+            margin: 15px 0;
+        }
+        .dialogue {
+            margin-left: 20px;
+            font-style: italic;
+            color: #e0e0e0; /* Light gray for dialogue */
+        }
+        .dialogue::before {
+            content: '“';
+            font-size: 1.2em;
+        }
+        .dialogue::after {
+            content: '”';
+            font-size: 1.2em;
+        }
+        .character {
+            font-weight: bold;
+            color: #4da8da;
+        }
+        .scene {
+            display: none;
+            animation: fadeIn 1s ease-in-out;
+        }
+        .scene.active {
+            display: block;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .next-btn, .prev-btn {
+            display: inline-block;
+            margin: 20px 10px;
+            padding: 10px 20px;
+            background-color: #34495e;
+            color: #ffffff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            text-align: center;
+            transition: background-color 0.3s;
+        }
+        .next-btn:hover, .prev-btn:hover {
+            background-color: #2c3e50;
+        }
+        .next-btn:disabled, .prev-btn:disabled {
+            background-color: #666666;
+            cursor: not-allowed;
+        }
+        .button-container {
+            text-align: center;
+        }
+
+    /* 全局复古纹理 + 噪点背景 */
+    body::before {
+        content: '';
+        position: fixed;
+        inset: 0;
+        background: 
+            linear-gradient(30deg, transparent 48%, rgba(70, 90, 110, 0.08) 50%, transparent 52%),
+            linear-gradient(-30deg, transparent 48%, rgba(70, 90, 110, 0.06) 50%, transparent 52%),
+            repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(30,35,45,0.05) 2px, rgba(30,35,45,0.05) 4px),
+            repeating-linear-gradient(90deg, transparent, transparent 2px, rgba(30,35,45,0.05) 2px, rgba(30,35,45,0.05) 4px),
+            url('https://assets.codepen.io/3522978/noise.png'), 
+            radial-gradient(circle at 30% 20%, #0a0f1a, #010101);
+        background-blend-mode: overlay, screen, multiply, normal;
+        opacity: 0.85;
+        pointer-events: none;
+        z-index: -2;
+        transition: opacity 0.3s ease;
+    }
+
+    .halftone-overlay {
+        position: fixed;
+        inset: 0;
+        width: 100vw;
+        height: 100vh;
+        object-fit: cover;
+        pointer-events: none;
+        mix-blend-mode: overlay;
+        opacity: 0.12;
+        z-index: -1;
+        transition: opacity 0.3s ease;
+    }
+
+    .vintage-bg {
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        z-index: 0;
+        overflow: hidden;
+        transition: opacity 0.3s ease;
+    }
+    .vintage-element {
+        position: absolute;
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        opacity: 0.05;
+        mix-blend-mode: multiply;
+        animation: driftVintage linear infinite, pulseVintage 28s ease-in-out infinite alternate;
+    }
+    @keyframes driftVintage {
+        0% { transform: translate(0, 0) rotate(0deg); }
+        100% { transform: translate(110px, 110px) rotate(360deg); }
+    }
+    @keyframes pulseVintage {
+        0% { opacity: 0.04; filter: brightness(0.9); }
+        100% { opacity: 0.1; filter: brightness(1.1); }
+    }
+    .v1 { background-image: url('https://i0.wp.com/heritagecalling.com/wp-content/uploads/2024/12/DP114585-St-Marys-Church-Kempley-Gloucestershire.jpg?ssl=1'); width: 380px; height: 380px; top: 3%; left: 0%; animation-duration: 170s, 24s; transform: rotate(50deg); }
+    .v2 { background-image: url('https://www.nationalww2museum.org/sites/default/files/2020-05/Riveter.jpg'); width: 550px; height: 180px; top: 18%; right: 4%; animation-duration: 190s, 28s; }
+    .v3 { background-image: url('https://render.fineartamerica.com/images/rendered/default/greeting-card/images/artworkimages/medium/2/andy-warhol-high-resolution-photo-art-collage-andy-warhol-collage.jpg'); width: 280px; height: 450px; bottom: 8%; left: 6%; animation-duration: 150s, 20s; transform: rotate(-32deg); }
+    .v4 { background-image: url('https://rubberdiamond.wordpress.com/wp-content/uploads/2014/01/schwitters.jpg'); width: 420px; height: 420px; top: 38%; left: 48%; animation-duration: 210s, 35s; transform: rotate(22deg); }
+    .v5 { background-image: url('https://www.heritage-print.com/p/731/study-poster-1920-artist-lissitzky-15000613.jpg.webp'); width: 620px; height: 140px; bottom: 4%; right: 8%; animation-duration: 180s, 26s; }
+    .v6 { background-image: url('https://blog.architizer.com/wp-content/uploads/deconstructivism.jpeg'); width: 230px; height: 560px; top: 6%; right: 1%; animation-duration: 160s, 22s; transform: rotate(90deg); }
+    .v7 { background-image: url('https://d31sxl6qgne2yj.cloudfront.net/wordpress/wp-content/uploads/20190102164052/Punk-Album-Covers-11x16.jpg'); width: 460px; height: 330px; bottom: 28%; left: 28%; animation-duration: 200s, 30s; transform: rotate(-28deg); }
+    .v8 { background-image: url('https://smarthistory.org/wp-content/uploads/2021/02/50935568273_37699017c0_o-scaled.jpg'); width: 350px; height: 130px; top: 50%; left: 12%; animation-duration: 140s, 18s; }
+    .v9 { background-image: url('https://postergroup.com/cdn/shop/products/Men-Working-Together-Poster.jpg?v=1746051175'); width: 180px; height: 400px; top: 12%; left: 62%; animation-duration: 230s, 38s; transform: rotate(72deg); }
+    .v10 { background-image: url('https://m.media-amazon.com/images/I/81SOUO-NbkL.jpg'); width: 560px; height: 280px; bottom: 18%; right: 22%; animation-duration: 170s, 27s; }
+    .v11 { background-image: url('https://cdn.britannica.com/94/5594-050-1C1166D6/Annunciation-Fra-Angelico-Florence-Museum-of-San.jpg'); width: 300px; height: 300px; top: 62%; left: 40%; animation-duration: 220s, 32s; transform: rotate(-45deg); }
+    .v12 { background-image: url('https://cdn11.bigcommerce.com/s-yzgoj/images/stencil/1280x1280/products/1320435/1708788/PSTJPA100339M__22686.1519281927.jpg?c=2'); width: 440px; height: 220px; top: 30%; left: 4%; animation-duration: 180s, 25s; }
+    .v13 { background-image: url('https://divinity.uchicago.edu/sites/default/files/styles/sightings_article_featured_image/public/2020-01/2c304455-66ca-4ae4-adc3-ba0ccc06b408_1_201_a.jpeg?itok=9v54XcIG'); width: 400px; height: 350px; top: 8%; left: 55%; animation-duration: 160s, 23s; transform: rotate(30deg); }
+    .v14 { background-image: url('https://www.saic.edu/sites/default/files/shorthand/stories/0Hw0PwtaAa/2025-09-29T19%3A38%3A15.732Z/assets/vpUp9CR2Fi/kurt-schwitters-843x626.jpg'); width: 500px; height: 200px; bottom: 35%; right: 10%; animation-duration: 190s, 27s; }
+    .v15 { background-image: url('https://cdn.kastatic.org/ka-perseus-images/aa552552150213036b99363b0dfb8ae811b8c08d.jpg'); width: 350px; height: 400px; top: 45%; right: 15%; animation-duration: 200s, 30s; transform: rotate(-20deg); }
+    </style>
+</head>
+<body>
+
+<!-- 复古背景层 -->
+<img class="halftone-overlay" src="https://gd-hbimg-edge.huaban.com/e136eab1362dfa41c0bf38aa7f48d9be4fe7332b172ae6-yQ7EZk?auth_key=1780243200-7a28c4fd8dba4f27bcbf1202f71a087e-0-cab91a5574991e7dfd11720f9ea5744c" alt="" decoding="async" referrerpolicy="no-referrer">
+<div class="vintage-bg">
+    <div class="vintage-element v1"></div><div class="vintage-element v2"></div><div class="vintage-element v3"></div>
+    <div class="vintage-element v4"></div><div class="vintage-element v5"></div><div class="vintage-element v6"></div>
+    <div class="vintage-element v7"></div><div class="vintage-element v8"></div><div class="vintage-element v9"></div>
+    <div class="vintage-element v10"></div><div class="vintage-element v11"></div><div class="vintage-element v12"></div>
+    <div class="vintage-element v13"></div><div class="vintage-element v14"></div><div class="vintage-element v15"></div>
+</div>
+
+    <div class="container">
+        <h1>伦敦的阴霾早已散去</h1>
+        <p align="center" style="color: #f5e050;">短暂的休憩中，治愈着隐藏的伤痕。</p>
+
+        <div id="scene-0" class="scene active">
+            <div class="button-container">
+                <button class="next-btn" onclick="nextScene(0)">开始阅读</button>
+            </div>
+        </div>
+
+        <div id="scene-1" class="scene">
+            <h2>第一节：伦敦的晴空</h2>
+            <p class="intro"><strong>大不列颠及北爱尔联合王国（1888年灵能危机结束后，战后重建期）</strong><br>伦敦塔顶<br><strong>角色：</strong>星宿、莫妮卡</p>
+            <p>伦敦的阴霾早已散了，久违的阳光洒在英伦三岛，像一层薄薄的金纱，轻轻覆盖在满目疮痍的城市上。 1888年的灵能危机结束后，小队迎来了接近一周的休假。</p>
+            <p>只有星宿每天独自一人来伦敦塔顶，站在塔楼的露台上，俯瞰着下方缓慢却坚定地复苏的城市。脚下，塔桥的残骸已经被清理出一半，新的钢梁在阳光下闪着光。远处的金融区，起重机像巨人的手臂，一点点把废墟重新堆成高楼。 </p>
+            <p>星宿看着重建中的伦敦，明明是自己亲手守护过的城市，却总感觉像在看一场与自己无关的电影。</p>
+            <p class="dialogue"><span class="character">莫妮卡：</span> 真没想到现在的伦敦这么大，站在这里都看不到尽头。”</p>
+            <p>身后传来熟悉的、带着一丝慵懒的声音。 莫妮卡不知何时已经站在她身边，手里拿着一杯热拿铁，另一只手插在风衣口袋里。 </p>
+            <p class="dialogue"><span class="character">莫妮卡：</span> 不过，现在有近四分之一的区域被摧毁了。</p>
+            <p>星宿没有回头，只是轻轻“嗯”了一声。 </p>
+            <p class="dialogue"><span class="character">星宿：</span> 用不了多久，伦敦就会回到原来的样子。</p>
+            <p class="dialogue"><span class="character">莫妮卡：</span> 那会动用很多人力或者灵能者吧。</p>
+            <p>莫妮卡抿了一口咖啡，侧过身，静静地看着星宿的侧脸。 微风轻拂着泰晤士河，自从踏入1888年的裂隙后，星宿已经很久没有感受到这样的阳光与清风了。 </p>
+            <p>莫妮卡没有立刻接话，只是静静地观察。 她太熟悉那种眼神了，表面平静，底下却像被掏空了一块。 那是一种把自己逼到绝境后，还在假装一切正常的疲惫。莫妮卡自己也曾这样看着曼彻斯特的雨雾，度过无数个被家族抛弃的夜晚。</p>
+            <p class="dialogue"><span class="character">莫妮卡：</span>这一周假期里，你也没去找你的队员，天天都跑来这儿，看着这座城市一点点重建。</p>
+            <p class="dialogue"><span class="character">星宿：</span> 这一切才经历完不久，1888年的伦敦发生了很多，我想看看现在的伦敦，变成了什么样。</p>
+            <p>星宿的声音很轻，莫妮卡轻轻笑了一声，却没有笑意。</p>
+            <p class="dialogue"><span class="character">莫妮卡：</span> 就你一个人，天天在这里发呆。</p>
+            <p class="dialogue"><span class="character">星宿：</span> 我其实……</p>
+            <p class="dialogue"><span class="character">莫妮卡：</span> 别和我说什么‘研究院就是我家’这种疯话。</p>
+            <p>莫妮卡打断星宿，语气依旧温和却带着不容置疑的锋利，像一把裹着绒布的小刀。</p>
+            <p class="dialogue"><span class="character">莫妮卡:</span> 我曾经也在研究院常住过，但我从来没有把那里当作第二个‘家’。 那地方……只会让你越来越不会做人。</p>
+            <p>星宿终于转过头，望着莫妮卡。星宿的眼底，露出一丝很少见的茫然。</p>
+            <p class="dialogue"><span class="character">星宿：</span> 我也不知道我属于哪里。</p>
+            <p>这句话出口，连星宿自己都愣了一下。 像是把伤疤上的结痂，轻轻的撕了一点。</p>
+            <p>莫妮卡看见了星宿眼底那一闪而过的动摇，犹豫了片刻，最终还是决定把话题继续下去。 莫妮卡往前走了一步，离星宿更近了些。</p>
+            <p class="dialogue"><span class="character">莫妮卡：</span> 你小队的成员邀你一同回去，你也没跟她们走。</p>
+            <p class="dialogue"><span class="character">星宿：</span> 因为……不管去哪里，我总是显得格格不入。 即使我十分了解各地的风俗文化，但表现出来的，总像是刻意的。就像……在背台词。</p>
+            <p>星宿顿了顿，自嘲地笑了笑。</p>
+            <p class="dialogue"><span class="character">星宿：</span> 我怕她们觉得，我只是个……不会放松的怪物。</p>
+            <p>莫妮卡没有立刻安慰。只是静静地看着星宿，然后伸出手，轻轻握住星宿的手腕。</p>
+            <p class="dialogue"><span class="character">莫妮卡：</span> 想和我去玩吗？ 我知道一个好地方。</p>
+            <p class="dialogue"><span class="character">星宿：</span> 我还是……算了。</p>
+            <p>莫妮卡笑了笑，语气里带上一点少见的顽皮。</p>
+            <p class="dialogue"><span class="character">莫妮卡：</span> 只有我们两个人的地方，就我们两个，就一天。</p>
+            <p>星宿侧过头，不解地看着莫妮卡。 莫妮卡没有再解释，只是直接拉起星宿的手，往塔下走。</p>
+            <p class="dialogue"><span class="character">莫妮卡：</span> 晴天可是伦敦最难得的天气，别再耽误了。 你已经耽误自己太久了。</p>
+            <p>走出伦敦塔建筑群来到街上。 莫妮卡神神秘秘地左右张望，在确认周围没人注意。</p>
+            <p class="dialogue"><span class="character">星宿：</span> 这么神秘？难道你想要用你的妖精马车？</p>
+            <p class="dialogue"><span class="character">莫妮卡：</span> 毕竟是你们的时代，开马车总觉得怪怪的。 虽然‘大黑’和‘小黑’能规避人群，但总免不了有人会看见。</p>
+            <p>莫妮卡轻轻吹了一声清脆的口哨。 不远处，那辆朴素而古典的马车悄无声息地从街角出现，平稳地停在两人面前。 </p>
+            <p>莫妮卡打开车门，做了个“请”的手势。 </p>
+            <p class="dialogue"><span class="character">莫妮卡：</span>星宿小姐， 希望你这次不会再晕车了。</p>
+            <p>马车驶出伦敦市区后，莫妮卡才从车夫座回到车厢内，关上门，隔绝了外界的喧嚣。</p>
+            <p class="dialogue"><span class="character">莫妮卡：</span> 我专门挑了人少的路。 还好大家都在忙着重建，没人注意到我们。</p>
+            <p>星宿坐在对面的沙发上，看着窗外迅速后退的城市景观，渐渐变成开阔的田野与低矮的山丘。手指无意识地在膝盖上摩挲。</p>
+            <p class="dialogue"><span class="character">星宿：</span> 那……我们去哪里？</p>
+            <p class="dialogue"><span class="character">莫妮卡：</span> 温德米尔湖。离伦敦有一段距离。 小时候，母亲带我离开曼彻斯特时，曾在那边短暂住过一段时间。 那是……我唯一记得的、有点像‘家’的地方。</p>
+            <p class="dialogue"><span class="character">星宿：</span> 马车在当代城市的道路上行驶，不会很奇怪吗？</p>
+            <p class="dialogue"><span class="character">莫妮卡：</span> 我这几天也稍微做了点功课。 虽然还没完全掌握当代设备，但至少知道乡村公路上几乎没什么车。 即便有人看见一辆马车，也只会觉得是哪个复古爱好者的‘玩具’吧。</p>
+            <p class="dialogue"><span class="character">星宿：</span> 直接用灵能术式给马车套一层伪装，不是更方便吗？</p>
+            <p class="dialogue"><span class="character">莫妮卡：</span> 那样确实可行。但我现在…… 更想好好体验当下和真实的一切。 伪装太久了，反而忘了不伪装是什么感觉。 而且我想让你也试试，不伪装的样子。</p>
+            <p>星宿愣了一下，没说话。车厢里安静了一会儿，只有车轮滚过路面的轻微震动。</p>
+            <p class="dialogue"><span class="character">星宿：</span> 你想回曼彻斯特看看吗？</p>
+            <p>莫妮卡沉默片刻，摇了摇头。 </p>
+            <p class="dialogue"><span class="character">莫妮卡：</span> 我对那边没什么感觉。 就算回去，可能也只是为了找一些和灵能术式相关的旧资料。 故乡……对我来说，更像一个被划掉的词。 被家族划掉，被我自己划掉。</p>
+            <p class="dialogue"><span class="character">莫妮卡：</span> 可能温德米尔湖对我来说有点不一样。 那里很安静，只有湖水、风、和天。我想你也需要这样的地方。</p>
+            <p>星宿没有立刻回答，把额头抵在车窗上，看着远方隐约出现的湖光山色。</p>
+            <p class="dialogue"><span class="character">星宿：</span> 我从小就没有喘气的地方。 废墟里不能喘气，研究院里也不能。 我怕一喘气……一切就会再次消失。</p>
+            <p>莫妮卡伸手从车厢的小柜子里拿出一条薄毯，轻轻盖在星宿的膝盖上，然后很自然地握住星宿的手，十指相扣。</p>
+            <p class="dialogue"><span class="character">莫妮卡：</span> 现在可以试试。至少这一路，有我陪着你。</p>
+            <p>马车继续向前。 伦敦已经远远地落在身后。 车厢里，两个都曾以为自己无处可去的灵魂，第一次，静静地、毫无防备地共享了一段不需要伪装的旅程。</p>
+            <div class="button-container">
+                <button class="prev-btn" onclick="prevScene(1)">上一幕</button>
+                <button class="next-btn" onclick="nextScene(1)">下一幕</button>
+            </div>
+        </div>
+
+        <div id="scene-2" class="scene">
+            <h2>第二节：少女与秋千</h2>
+            <p class="intro"><strong>大不列颠及北爱尔兰联合王国（战后重建期）</strong><br>温德米尔湖畔<br><strong>角色：</strong>星宿、莫妮卡</p>
+            <p>马车在黄昏时分停在温德米尔湖畔。 夕阳把整个湖面染成一层流动的蜜色，远处的山脊被拉出柔软的剪影，水鸟偶尔掠过，留下一道细碎的波纹。 </p>
+            <p>莫妮卡先跳下马车，深吸一口气，然后回头向星宿伸出手。</p>
+            <p class="dialogue"><span class="character">莫妮卡：</span> 到了。别发呆了，下来吧。</p>
+            <p>星宿握住莫妮卡的手，踏上草地。 脚下的土地柔软，带着一点湿意。风从水面吹来，拂过脸颊，带着凉意，却不再刺骨。 </p>
+            <p>莫妮卡没有催促，从马车里取出旧毯子铺在草地上，又摆上小篮子。几块刚烤好的司康、一小罐草莓酱、一瓶自制的柠檬水、一小块奶酪。 一切都简单得像童年最普通的野餐，却在夕阳下显得格外珍贵。</p>
+            <p>两人并肩坐下，湖水在脚下轻轻拍岸。</p>
+            <p class="dialogue"><span class="character">莫妮卡：</span> 小时候，母亲带我来这里，只住了不到一个月。 那是逃离曼彻斯特后，我们最安静的一段日子。 她坐在这里织毛衣，我就在湖边扔石头，看水纹一圈一圈散开。 我那时傻乎乎地想，只要石头扔得够远，烦恼就会被水带走，再也不回来。</p>
+            <p>莫妮卡笑了笑，笑里带着一点苦涩，又带着一点释然。 星宿望着湖面，没有接话，只是把膝盖抱在胸前，下巴搁在上面。</p>
+            <p>沉默持续了很久，直到天边还剩下一抹深橙。</p>
+            <p class="dialogue"><span class="character">星宿：</span> 我小时候没有这样的地方。 只有废墟、怪物，还有等待有人来找我的日子。 后来被带到研究院，我以为那里就是终点了。 可现在连那里都……</p>
+            <p>星宿的声音在最后一个字上微微颤抖，像一根绷紧的弦，终于断裂开来一般。 星宿没有抬头，只是盯着湖面倒映的残阳，怕一抬头，眼泪就会掉下来。</p>
+            <p>莫妮卡没有立刻安慰。 只是把一块司康掰成两半，抹上草莓酱，递到星宿手里。</p>
+            <p class="dialogue"><span class="character">莫妮卡：</span> 先吃点东西。酸甜的，能让心里暖一点。</p>
+            <p>星宿接过，咬了一小口，嚼得很慢。 草莓的酸甜在舌尖散开，在品尝一种陌生的感觉。</p>
+            <p class="dialogue"><span class="character">莫妮卡：</span> 星宿，你知道我为什么带你来这里吗？</p>
+            <p>星宿摇头。</p>
+            <p class="dialogue"><span class="character">莫妮卡：</span> 因为我认得你现在的眼神。</p>
+            <p> 莫妮卡的语气像在讲一个很久以前的故事。</p>
+            <p class="dialogue"><span class="character">莫妮卡：</span> 那是一种……‘我已经没有地方可去’的眼神。我曾经也有过，一个人带着马车在伦敦街头奔波。 我以为自己再也不会有归属。 我甚至想过，如果妖精马车坏了，我就干脆躺在里面，等着被时间遗忘。</p>
+            <p>莫妮卡顿了顿，望向湖面。</p>
+            <p class="dialogue"><span class="character">莫妮卡：</span> 可后来我发现，归属不是一个地方，也不是一栋建筑。它是一些人，哪怕你们分开很远，哪怕中间隔着一切…… 只要想到她们，你就会知道，自己不是一个人。</p>
+            <p>星宿低着头，手指在司康上掐出浅浅的印子。</p>
+            <p class="dialogue"><span class="character">莫妮卡：</span> 你说你去哪里都格格不入。 那是当然的。废墟里没被救到的那些人，1888年死在你面前的那些人，你亲自做出的所有决定….普通的人可装不下这些，所以你才会觉得别扭。 但这不代表你不属于任何地方。它只代表……你需要一些，能同你背负起同样重量的家伙，在你身边。</p>
+            <p>莫妮卡她轻轻笑了一下，像在笑自己。</p>
+            <p class="dialogue"><span class="character">莫妮卡：</span> 比如那个总喊着要吃汉堡、却在最危险的时候把后背交给你的美国佬， 比如那个把勋章别在胸前、管所有人叫同志、却会在你受伤时哭得比谁都凶的大姐姐，比如那个优雅得让人自卑的皇室小姐…… 还有我，这个被家族扔掉的、住在马车里的失败人偶。</p>
+            <p>星宿终于抬头，手指微微颤抖，眼眶红了，却倔强地没让泪掉下来。 </p>
+            <p class="dialogue"><span class="character">星宿：</span> 可我……总觉得，我只会把麻烦带给她们。我怕她们有一天会发现，跟在我身边，太累了。</p>
+            <p>莫妮卡伸手，很自然地握住星宿的手，掌心贴掌心，十指相扣。</p>
+            <p class="dialogue"><span class="character">莫妮卡：</span> 星宿小姐。她们跟着你，是因为你从来没抛下过任何人和自己。这已经……比很多人一辈子做的都多了。</p>
+            <p>莫妮卡停顿了一下，像是在组织语言，又像是在给自己勇气。</p>
+            <p class="dialogue"><span class="character">莫妮卡：</span> 我知道那种感觉，觉得自己是麻烦制造机，觉得自己不配被照顾。当年被家族除名时，我也是这样。 我告诉自己我是个失败品，谁靠近谁倒霉。 可后来我发现…… 真正靠近你的人，从来不是因为你完美，而是因为她们看见了你宝贵的部分。</p>
+            <p>湖面上的风大了些，吹乱了星宿的头发。莫妮卡伸手，轻轻帮她别到耳后。</p>
+            <p class="dialogue"><span class="character">莫妮卡：</span> 星宿，你不需要一个‘家’来证明你属于哪里。 你已经有了，只是它不是一栋房子，而是一群人。她们现在散在各地，可她们都在想着你。就像你想着她们一样。 她们不是因为你强大才留在你身边，而是因为你让她们觉得……这个世界还没完全烂掉。</p>
+            <p>星宿的眼泪终于掉下来。不是嚎啕，只是无声地、一颗接一颗，落在毯子上。</p>
+            <p class="dialogue"><span class="character">星宿：</span> 我……好累。 我怕一停下来，就再也走不动了。</p>
+            <p>莫妮卡把星宿轻轻拉进怀里，让星宿的头靠在自己肩上。</p>
+            <p class="dialogue"><span class="character">莫妮卡 ：</span> 那就停一停。今天，这里只有我们。就哭一会儿，休息一会儿，我在这儿。</p>
+            <p>星宿的身体微微发抖。没有推开，只是把脸埋得更深。 很久很久以后，才依依不舍的分开。</p>
+            <p class="dialogue"><span class="character">星宿：</span> 谢谢你陪我，莫妮卡。</p>
+            <p>莫妮卡轻轻抚着星宿的背，像哄孩子一样安抚着。</p>
+            <p class="dialogue"><span class="character">莫妮卡：</span> 再带你去一个好地方！</p>
+            <p>莫妮卡带星宿来到一处地方，这是湖畔一处很少人来的角落。被灌木围住， 只有一架老旧的木头秋千，悬在两棵老树之间。</p>
+            <p>星宿坐在秋千上，双脚轻轻点地，让秋千慢慢的摇晃。荡着秋千， 看着天空。星宿荡得很慢。没哭也没笑。只是轻轻荡着，让风吹过脸。夕阳落在她身上，暖得像莫妮卡的怀抱。</p>
+            <p class="dialogue"><span class="character">星宿：</span> 原来……放松，是这样的感觉。</p>
+            <p>秋千摇晃着。风吹过，带走了一丝丝重量。星宿闭上眼感受风穿过指尖。</p>
+            <p>秋千晃得越来越慢。星宿坐在上面， 目光有些涣散，漂在很远的地方。莫妮卡与星宿并肩坐着，阳光斑驳地落在两人身上。</p>
+            <p class="dialogue"><span class="character">莫妮卡：</span> 这里不错吧，是个好地方。</p>
+            <p>星宿没回答，低头看着自己的手， 手指在膝盖上轻轻扣着，沉默了一会儿。</p>
+            <p class="dialogue"><span class="character">莫妮卡：</span> 在想任务？在想伙伴们？还是在想曾经发生过的一切？</p>
+            <p>星宿的身体微微一颤并没回答。</p>
+            <p class="dialogue"><span class="character">莫妮卡：</span> 别再想了，你已经做得够多了。</p>
+            <p>莫妮卡伸手握住了星宿的手，掌心很暖。星宿没抽开手，只是看着两人交握的手。</p>
+            <p>风吹过，秋千轻轻晃。两个少女，并肩坐着。夕阳洒下来，暖得像两人相互拥抱着。这里很安静，只有风声和她们的呼吸。星宿很轻地靠在莫妮卡肩上没再说话。只是让秋千再轻轻地晃一会儿。</p>
+            <p>莫妮卡从秋千上跳下来走到星宿身后。她双手轻轻握住秋千的两条链子确认了一下。</p>
+            <p class="dialogue"><span class="character">莫妮卡（带着一点顽皮）：</span> 星宿小姐， 抓好咯。</p>
+            <p>星宿还没反应过来，莫妮卡已经微微后撤，然后用力一推。秋千猛地向前荡去，风瞬间扑面而来，带着青草和夏日的暖香，吹乱了星宿的头发。星宿下意识抓紧链子。</p>
+            <p>秋千荡到最高点时， 温德米尔湖、远处的景色、还有那山后的橙光，全映进了她眼里，风在耳边呼啸。星宿轻轻的叫了出来，不是害怕。是那种久违的、几乎被遗忘的自由感。</p>
+            <p>秋千回落，又被莫妮卡推得更高。一次， 两次， 三次……星宿终于笑出声。 很小， 却止不住。像一个充满童真的孩子，像一位从没背负过任何负担的少女。</p>
+            <p>莫妮卡看着星宿的背影， 看着她的头发在风里飞扬， 听着她终于露出的笑声。</p>
+            <p class="dialogue"><span class="character">莫妮卡：</span> 看， 星宿小姐。你也会开心的！</p>
+            <p>星宿没回头。她只是抓紧链子，让秋千荡得更高。风吹过脸，吹干了所有没掉下来的泪。这一刻， 只有风，只有蓝天，只有莫妮卡的手，一下一下 把星宿推向更高的地方。</p>
+            <p>秋千晃啊晃，星宿在最高点时， 终于大声笑出来。很亮，很真也很开心。</p>
+            <p>湖水还在轻轻拍岸。夜色降临，星星一颗颗亮起。马车处，莫妮卡把毯子拉高，盖住两个人的肩膀，两人蜷缩在一起。</p>
+            <p class="dialogue"><span class="character">星宿：</span> 谢谢你，莫妮卡。</p>
+            <p>这一刻，没有灾难，没有任务，没有孤独。 只有两个，都曾以为自己无处可去的灵魂， 在湖边，星宿第一次允许自己， 脆弱地、真实地， 被另一个人轻轻抱着。</p>
+            <div class="button-container">
+                <button class="prev-btn" onclick="prevScene(2)">上一幕</button>
+                <button class="next-btn" disabled>故事结束（本篇完）</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function nextScene(current) {
+            const currentScene = document.getElementById(`scene-${current}`);
+            const nextScene = document.getElementById(`scene-${current + 1}`);
+            
+            if (nextScene) {
+                currentScene.classList.remove('active');
+                nextScene.classList.add('active');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        }
+
+        function prevScene(current) {
+            const currentScene = document.getElementById(`scene-${current}`);
+            const prevScene = document.getElementById(`scene-${current - 1}`);
+            
+            if (prevScene) {
+                currentScene.classList.remove('active');
+                prevScene.classList.add('active');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>这里的黎明静悄悄</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            background-color: #000000;
+            color: #e0e0e0;
+            overflow-x: hidden;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: rgba(26, 26, 26, 0.92);
+            min-height: 100vh;
+            box-shadow: 0 0 10px rgba(255,255,255,0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #f0f0f0;
+        }
+        h2 {
+            color: #d0d0d0;
+            border-bottom: 2px solid #d0d0d0;
+            padding-bottom: 5px;
+            text-align: center;
+        }
+        .scene > p:not(.dialogue):not(.intro):not(.note) {
+            color: #f5e050; /* Soft yellow for narration */
+            margin: 15px 0;
+        }
+        .intro {
+            color: #a0e7a0; /* Light green for time/location/characters */
+            font-weight: bold;
+            margin: 15px 0;
+        }
+        .dialogue {
+            margin-left: 20px;
+            font-style: italic;
+            color: #e0e0e0; /* Light gray for dialogue */
+        }
+        .dialogue::before {
+            content: '“';
+            font-size: 1.2em;
+        }
+        .dialogue::after {
+            content: '”';
+            font-size: 1.2em;
+        }
+        .character {
+            font-weight: bold;
+            color: #4da8da;
+        }
+        .note {
+            background-color: #2a2a2a;
+            border-left: 4px solid #a0e7a0;
+            padding: 10px;
+            margin: 15px 0;
+            color: #e0e0e0;
+            font-style: italic;
+        }
+        .scene {
+            display: none;
+            animation: fadeIn 1s ease-in-out;
+        }
+        .scene.active {
+            display: block;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .next-btn, .prev-btn {
+            display: inline-block;
+            margin: 20px 10px;
+            padding: 10px 20px;
+            background-color: #34495e;
+            color: #ffffff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            text-align: center;
+            transition: background-color 0.3s;
+        }
+        .next-btn:hover, .prev-btn:hover {
+            background-color: #2c3e50;
+        }
+        .next-btn:disabled, .prev-btn:disabled {
+            background-color: #666666;
+            cursor: not-allowed;
+        }
+        .button-container {
+            text-align: center;
+        }
+
+    /* 全局复古纹理 + 噪点背景 */
+    body::before {
+        content: '';
+        position: fixed;
+        inset: 0;
+        background: 
+            linear-gradient(30deg, transparent 48%, rgba(70, 90, 110, 0.08) 50%, transparent 52%),
+            linear-gradient(-30deg, transparent 48%, rgba(70, 90, 110, 0.06) 50%, transparent 52%),
+            repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(30,35,45,0.05) 2px, rgba(30,35,45,0.05) 4px),
+            repeating-linear-gradient(90deg, transparent, transparent 2px, rgba(30,35,45,0.05) 2px, rgba(30,35,45,0.05) 4px),
+            url('https://assets.codepen.io/3522978/noise.png'), 
+            radial-gradient(circle at 30% 20%, #0a0f1a, #010101);
+        background-blend-mode: overlay, screen, multiply, normal;
+        opacity: 0.85;
+        pointer-events: none;
+        z-index: -2;
+        transition: opacity 0.3s ease;
+    }
+
+    .halftone-overlay {
+        position: fixed;
+        inset: 0;
+        width: 100vw;
+        height: 100vh;
+        object-fit: cover;
+        pointer-events: none;
+        mix-blend-mode: overlay;
+        opacity: 0.12;
+        z-index: -1;
+        transition: opacity 0.3s ease;
+    }
+
+    .vintage-bg {
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        z-index: 0;
+        overflow: hidden;
+        transition: opacity 0.3s ease;
+    }
+    .vintage-element {
+        position: absolute;
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        opacity: 0.05;
+        mix-blend-mode: multiply;
+        animation: driftVintage linear infinite, pulseVintage 28s ease-in-out infinite alternate;
+    }
+    @keyframes driftVintage {
+        0% { transform: translate(0, 0) rotate(0deg); }
+        100% { transform: translate(110px, 110px) rotate(360deg); }
+    }
+    @keyframes pulseVintage {
+        0% { opacity: 0.04; filter: brightness(0.9); }
+        100% { opacity: 0.1; filter: brightness(1.1); }
+    }
+    .v1 { background-image: url('https://i0.wp.com/heritagecalling.com/wp-content/uploads/2024/12/DP114585-St-Marys-Church-Kempley-Gloucestershire.jpg?ssl=1'); width: 380px; height: 380px; top: 3%; left: 0%; animation-duration: 170s, 24s; transform: rotate(50deg); }
+    .v2 { background-image: url('https://www.nationalww2museum.org/sites/default/files/2020-05/Riveter.jpg'); width: 550px; height: 180px; top: 18%; right: 4%; animation-duration: 190s, 28s; }
+    .v3 { background-image: url('https://render.fineartamerica.com/images/rendered/default/greeting-card/images/artworkimages/medium/2/andy-warhol-high-resolution-photo-art-collage-andy-warhol-collage.jpg'); width: 280px; height: 450px; bottom: 8%; left: 6%; animation-duration: 150s, 20s; transform: rotate(-32deg); }
+    .v4 { background-image: url('https://rubberdiamond.wordpress.com/wp-content/uploads/2014/01/schwitters.jpg'); width: 420px; height: 420px; top: 38%; left: 48%; animation-duration: 210s, 35s; transform: rotate(22deg); }
+    .v5 { background-image: url('https://www.heritage-print.com/p/731/study-poster-1920-artist-lissitzky-15000613.jpg.webp'); width: 620px; height: 140px; bottom: 4%; right: 8%; animation-duration: 180s, 26s; }
+    .v6 { background-image: url('https://blog.architizer.com/wp-content/uploads/deconstructivism.jpeg'); width: 230px; height: 560px; top: 6%; right: 1%; animation-duration: 160s, 22s; transform: rotate(90deg); }
+    .v7 { background-image: url('https://d31sxl6qgne2yj.cloudfront.net/wordpress/wp-content/uploads/20190102164052/Punk-Album-Covers-11x16.jpg'); width: 460px; height: 330px; bottom: 28%; left: 28%; animation-duration: 200s, 30s; transform: rotate(-28deg); }
+    .v8 { background-image: url('https://smarthistory.org/wp-content/uploads/2021/02/50935568273_37699017c0_o-scaled.jpg'); width: 350px; height: 130px; top: 50%; left: 12%; animation-duration: 140s, 18s; }
+    .v9 { background-image: url('https://postergroup.com/cdn/shop/products/Men-Working-Together-Poster.jpg?v=1746051175'); width: 180px; height: 400px; top: 12%; left: 62%; animation-duration: 230s, 38s; transform: rotate(72deg); }
+    .v10 { background-image: url('https://m.media-amazon.com/images/I/81SOUO-NbkL.jpg'); width: 560px; height: 280px; bottom: 18%; right: 22%; animation-duration: 170s, 27s; }
+    .v11 { background-image: url('https://cdn.britannica.com/94/5594-050-1C1166D6/Annunciation-Fra-Angelico-Florence-Museum-of-San.jpg'); width: 300px; height: 300px; top: 62%; left: 40%; animation-duration: 220s, 32s; transform: rotate(-45deg); }
+    .v12 { background-image: url('https://cdn11.bigcommerce.com/s-yzgoj/images/stencil/1280x1280/products/1320435/1708788/PSTJPA100339M__22686.1519281927.jpg?c=2'); width: 440px; height: 220px; top: 30%; left: 4%; animation-duration: 180s, 25s; }
+    .v13 { background-image: url('https://divinity.uchicago.edu/sites/default/files/styles/sightings_article_featured_image/public/2020-01/2c304455-66ca-4ae4-adc3-ba0ccc06b408_1_201_a.jpeg?itok=9v54XcIG'); width: 400px; height: 350px; top: 8%; left: 55%; animation-duration: 160s, 23s; transform: rotate(30deg); }
+    .v14 { background-image: url('https://www.saic.edu/sites/default/files/shorthand/stories/0Hw0PwtaAa/2025-09-29T19%3A38%3A15.732Z/assets/vpUp9CR2Fi/kurt-schwitters-843x626.jpg'); width: 500px; height: 200px; bottom: 35%; right: 10%; animation-duration: 190s, 27s; }
+    .v15 { background-image: url('https://cdn.kastatic.org/ka-perseus-images/aa552552150213036b99363b0dfb8ae811b8c08d.jpg'); width: 350px; height: 400px; top: 45%; right: 15%; animation-duration: 200s, 30s; transform: rotate(-20deg); }
+    </style>
+</head>
+<body>
+
+<!-- 复古背景层 -->
+<img class="halftone-overlay" src="https://gd-hbimg-edge.huaban.com/e136eab1362dfa41c0bf38aa7f48d9be4fe7332b172ae6-yQ7EZk?auth_key=1780243200-7a28c4fd8dba4f27bcbf1202f71a087e-0-cab91a5574991e7dfd11720f9ea5744c" alt="" decoding="async" referrerpolicy="no-referrer">
+<div class="vintage-bg">
+    <div class="vintage-element v1"></div><div class="vintage-element v2"></div><div class="vintage-element v3"></div>
+    <div class="vintage-element v4"></div><div class="vintage-element v5"></div><div class="vintage-element v6"></div>
+    <div class="vintage-element v7"></div><div class="vintage-element v8"></div><div class="vintage-element v9"></div>
+    <div class="vintage-element v10"></div><div class="vintage-element v11"></div><div class="vintage-element v12"></div>
+    <div class="vintage-element v13"></div><div class="vintage-element v14"></div><div class="vintage-element v15"></div>
+</div>
+
+    <div class="container">
+        <h1>这里的黎明静悄悄</h1>
+        <p align="center" style="color: #f5e050;">人间毫无正义可言</p>
+        <p><strong>临时政府士兵视角旁白：</strong></p>
+        <p>俄罗斯的人性已经荡然无存了，布尔什维克，一群红色的魔鬼。寒风刺穿了我的军大衣，像是俄罗斯母亲在低声哭泣。那些布尔什维克的红旗在俄罗斯的大地上飘扬，像血污般玷污了这座城市的荣光。原来烧杀抢掠就是这些赤色野蛮人所谓的“自由”呵，现如今，我们被逼到这冰冷的街头，与那些自称“人民”的叛军对峙。</p>
+        <p><strong>红军士兵视角旁白：</strong></p>
+        <p>我们是为了谁而战？为了工人，为了人民，为了那些在资本家，贵族，沙皇的皮鞭下呻吟的人民。可每当我扣动扳机，我都在问自己：我们这是在自相残杀吗？杀死一个俄罗斯人，就能救赎另一个俄罗斯人吗？同志们说，这是革命的代价，是新世界的阵痛。可我看着伏尔加河的红旗，觉得它更像是俄罗斯流的血，凝固在寒风中。</p>
+
+        <div id="scene-0" class="scene active">
+            <div class="button-container">
+                <button class="next-btn" onclick="nextScene(0)">开始阅读</button>
+            </div>
+        </div>
+
+        <div id="scene-1" class="scene">
+            <h2>第一幕：寒冬中的守望</h2>
+            <p class="intro"><strong>2048年7月2日→1917年11月3日</strong><br>俄罗斯 圣彼得堡--喀琅施塔得<br><strong>角色：</strong>星宿，密西西比，卡林卡，白金汉，喀琅施塔得</p>
+            <p>冷冽的波罗的海风卷着雪花，拍打在喀琅施塔得港口的栈桥上。码头边的战舰在雾气中若隐若现，炮管上结着薄霜。空气中弥漫着火药与海水的咸腥味，远处传来低沉的钟声，仿佛在为即将到来的风暴预告。</p>
+            <p class="dialogue"><span class="character">卡林卡：</span>Сука，这里怎么变成了这个鬼样子。</p>
+            <p class="dialogue"><span class="character">密西西比：</span>哇哦，这里全被封锁了，看来情况比想象中的严重啊。</p>
+            <p class="dialogue"><span class="character">白金汉：</span>隐修会最近一直在制造各地的灾难，他们是有什么计划吗？</p>
+            <p class="dialogue"><span class="character">星宿：</span>先是伊斯坦布尔，后来是中欧信仰东正教的诸国，现在俄罗斯也出现了灾难，他们是想要对东正教的圣物下手。</p>
+            <p>几人穿过警戒线来到了灾区外围的驻地见到了这里的负责人。</p>
+            <p class="dialogue"><span class="character">封控指挥官：</span>星宿小姐，您们来了。很抱歉在百忙之中打搅你们，但是这次情况尤为特殊。</p>
+            <p class="dialogue"><span class="character">封控指挥官：</span>我们在灾难之中侦测到了异常单位，并且和对方进行了短暂交流。</p>
+            <p class="dialogue"><span class="character">封控指挥官：</span>正在我们想要进一步确定目标身份的时候，目标突然消失了，但不一会儿又突然出现，这种情况发生了几次。</p>
+            <p class="dialogue"><span class="character">星宿：</span>目标单位是人类灵能者还是实体灵能者？</p>
+            <p class="dialogue"><span class="character">封控指挥官：</span>目标单位是人类灵能者，看衣着是一位俄军的女水兵。通过与目标接触和对裂隙的勘探，不出意外的话，裂隙应该通往俄国十月革命时期前后的时间段。</p>
+            <p class="dialogue"><span class="character">卡林卡（激动）：</span> 十...十..十月革命？！</p>
+            <p class="dialogue"><span class="character">封控指挥官：</span>研究院几乎从未有过如此先例，我们只好拜托你们进入裂隙侦查了，目标代号暂定为喀琅施塔得，这些是我们和她接触后所记下的一些资料。</p>
+            <p class="dialogue"><span class="character">白金汉：</span> 感谢您的情报，指挥官先生。事不宜迟，我们快点出发吧。</p>
+            <p class="dialogue"><span class="character">卡林卡：</span> 咦？密西西比同志呢？</p>
+            <p class="dialogue"><span class="character">密西西比（大喘气）：</span> 我...我...我回来了，哎呀，累死我了。我...我刚刚去了一趟洗手间。</p>
+            <p class="dialogue"><span class="character">卡林卡：</span>哎，密西西比同志，下次请提前告诉大家好吗？不要再神秘消失了。 </p>
+            <p>小队来到灵能灾难深处穿越裂隙，白茫茫的一片映入眼帘。不远处的灯塔闪耀着阵阵的寒光，码头边的战舰在雾气中若隐若现，炮管上结着薄霜。</p>
+            <p class="dialogue"><span class="character">卡林卡：</span> 圣彼得堡...列宁格勒....没想到今天我们回到了这里。</p>
+            <p class="dialogue"><span class="character">卡林卡：</span> 那边是.....阿芙乐尔号。</p>
+            <p class="dialogue"><span class="character">密西西比：</span> 哇，卡林卡姐，你怎么也这么懂啊。</p>
+            <p class="dialogue"><span class="character">星宿：</span> 卡林卡是苏联人....还有，密西西比，回去你得好好补补课了，上课别再睡觉了。</p>
+            <p>星宿轻轻的敲了敲密西西比的头，低头看了看时间。</p>
+            <p class="dialogue"><span class="character">星宿：</span> 时间正好，根据情报。喀琅施塔得应该也在目标地点了。</p> 
+            <p>小队走向接头点，灯塔的寒光在雪花中闪烁。灯塔方向传来微弱的歌声。靠近时，一名身穿水兵服的女子从昏暗角落站起，帽上的飘带在风中微微晃动。少女警觉起来，拿着步枪面对众人。</p>
+            <p class="dialogue"><span class="character">少女（警惕）：</span> 你们，你们是谁！</p>
+            <p class="dialogue"><span class="character">密西西比：</span> 别激动！我们是接应的！有什么暗号吗？星宿，你们知道咋办吧？……</p>
+            <p class="dialogue"><span class="character">少女：</span> 是你们，未来的人？我还是不相信，但，这确实发生在我身上了。</p>
+            <p class="dialogue"><span class="character">卡林卡：</span> 经历了这一切后，你就会明白了，同志。</p>
+            <p class="dialogue"><span class="character">少女：</span> 你也是俄国人？</p>
+            <p class="dialogue"><span class="character">卡林卡：</span> 是的，准确来讲，应该是苏联人。</p>
+            <p class="dialogue"><span class="character">少女：</span> 苏联？是我们革命后的国家名吗？</p>
+            <p class="dialogue"><span class="character">卡林卡：</span> 还要在那之后。</p>
+            <p class="dialogue"><span class="character">少女（激动）：</span> 那这么说，我们革命会成功的？！同志，未来的俄罗斯怎么样，是不是大家都很幸福，社会也很公平。</p>
+            <p class="dialogue"><span class="character">卡林卡：</span> ......</p>
+            <p>卡林卡没有回答，她似乎有点木讷地看着少女，她不敢直视少女那双期待的眼眸，她不敢回答。</p>
+            <p class="dialogue"><span class="character">星宿：</span> 未来的故事，需要自己亲身经历才有意义。</p>
+            <p>少女点了点头，没有再追问下去。她低头抚摸军帽上的飘带，喃喃道。</p>
+            <p class="dialogue"><span class="character">少女：</span> 我在经历了那些怪象之后又回到了这里，但我却什么也记不起来，自己的名字，自己的家庭与背景。我只知道要革命，要拯救俄罗斯....还有自己的妹妹。</p>
+            <p class="dialogue"><span class="character">密西西比：</span> 会好起来的！我也是，刚刚经历这些之后是什么都记不起来，像是被人打晕了一样，脑袋嗡嗡的。</p>
+            <p class="dialogue"><span class="character">少女：</span> 你也经历了这样的事吗？你会说俄语？</p>
+            <p class="dialogue"><span class="character">密西西比：</span> 我不会俄语，喀琅施塔得应该是灵能者，所以能明白我说的意思。</p>
+            <p class="dialogue"><span class="character">喀琅施塔得：</span> 灵能者？那是什么？喀琅施塔得？你们为什么叫我喀琅施塔得？</p>
+            <p class="dialogue"><span class="character">星宿：</span> 研究院给你的代号是喀琅施塔得，但你想让我们叫什么都可以。这一切解释起来很复杂，等我们处理完一切后回到研究院后你会慢慢明白。</p>
+            <p class="dialogue"><span class="character">喀琅施塔得：</span> 喀琅施塔得？似乎我的一切都被绑定在了这里，连名字也是。</p>
+            <p>喀琅施塔得蹲下，靠着灯塔，眼中满是迷茫。</p>
+            <p class="dialogue"><span class="character">喀琅施塔得：</span> 你刚刚说了研究院？我在教堂里面听说过类似的组织，但教会不是.......</p>
+            <p class="dialogue"><span class="character">星宿：</span> 我们是独立于教会的存在，我们的宗旨是研究异常情况为人类文明服务。</p>
+            <p class="dialogue"><span class="character">喀琅施塔得：</span> 为人类文明服务？那我们也是同志吧！</p>
+            <p class="dialogue"><span class="character">密西西比：</span> 我和你的经历过差不多，但并没有回到其它时代。不知道你是怎么来到我们那个时代的。</p>
+            <p class="dialogue"><span class="character">喀琅施塔得：</span> 一天夜里，革命的同志们联系到了我们商量起义计划。我不知怎么的，突然有一种想出来走走的冲动。</p>
+            <p class="dialogue"><span class="character">喀琅施塔得：</span> 我慢慢来到了灯塔这里，当灯塔的灯光从我眼前闪过。我身边的一切都发生了变化，这可能就是你们口中所说的“灵能灾难”吧。</p>
+            <p class="dialogue"><span class="character">喀琅施塔得：</span> 在那里经历了一段类似炼狱一般的场景之后我遇见了你们组织的成员，不一会儿远处的亮光又将我带了回来，就像带我来的灯塔灯光一般。</p>
+            <p class="dialogue"><span class="character">喀琅施塔得：</span> 回来之后，我不知道为何，忘掉了大部分记忆，现如今的我.....又该叫什么....我又该怎么做.....</p>
+            <p>喀琅施塔得已经没有之前的那种过激的警惕性，缓慢的坐在灯塔旁的椅子上。她忽然抬头目光扫过眼前的三人。</p>
+            <p class="dialogue"><span class="character">喀琅施塔得：</span>那你们....是来做什么的？带我回去还是要来这边做什么....</p>
+            <p class="dialogue"><span class="character">星宿：</span> 两者都有，未来的俄罗斯发生了灾难，这也是你为什么会出现在我们时代的原因。我们是来阻止这一切的。</p>
+            <p class="dialogue"><span class="character">星宿：</span> 同志，我们会尽力为你找回你的过去，现在时候进行革命了。走吧，带我们去波罗的海舰队中央委员会，介绍‘外国的同志’。</p>
+            <p class="dialogue"><span class="character">喀琅施塔得：</span> 嗯....好，我就说你们是国外前来支援革命的同志，走吧。</p>
+            <p>小队踏上雪地，灯塔的一闪而过的光芒照耀着她们前进的道路，也似乎在照亮俄罗斯的命运。</p>
+            <div class="button-container">
+                <button class="prev-btn" onclick="prevScene(1)">上一幕</button>
+                <button class="next-btn" onclick="nextScene(1)">下一幕</button>
+            </div>
+        </div>
+
+        <div id="scene-2" class="scene">
+            <h2>第二幕：赤潮</h2>
+            <p class="intro"><strong>1917年11月4日</strong><br>俄罗斯 彼得格勒<br><strong>角色：</strong>星宿，密西西比，卡林卡，白金汉，喀琅施塔得</p>
+            <p>十一月的彼得格勒像一座即将爆发的火山。二月革命推翻沙皇后，临时政府却继续把俄罗斯拖在对德战争的泥潭里。前线不断失利，国内粮食短缺，工人和士兵的怒火始终在彼得格勒燃烧着。</p>
+            <p>街道上挤满了游行的人潮。工人、士兵、水兵、妇女……数万人高举红旗和标语，喊着“面包！和平！土地！”的口号，像一股赤色的洪流涌向冬宫方向。</p>
+            <p class="dialogue"><span class="character">卡林卡：</span> 十月革命这段历史.....我从老师和家人口中听过了无数次，但亲眼看见，心还是会颤抖。</p>
+            <p class="dialogue"><span class="character">星宿：</span> 诸位，保持警惕，随时可能会出现我们意想不到的情况发生。</p>
+            <p class="dialogue"><span class="character">喀琅施塔得：</span> 我们已经受够战争了，为什么我们推翻沙皇之后，他们还要让俄罗斯人去送死.....</p>
+            <p>星宿小队混在人群中，喀琅施塔得穿着水兵服走在最前面对着示威的人群们呼喊。</p>
+            <p class="dialogue"><span class="character">喀琅施塔得（高声）：</span>同志们！沙皇已经被推翻了，可临时政府还在把我们的兄弟送去当炮灰！他们答应给我们的和平呢？土地呢？我们不能再等了！</p>
+            <p class="dialogue"><span class="character">密西西比（小声）：</span>星宿姐她……好拼啊。明明前几天还失忆，现在喊起口号来像不要命一样。</p>
+            <p class="dialogue"><span class="character">星宿：</span>因为她只记得‘革命’两个字……对她来说，这就是全部。</p>
+            <p>人群的情绪被迅速点燃，口号声越来越响。突然，前方传来密集的枪声。</p>
+            <p>军校生和忠诚于临时政府的部队组成防线，对着手无寸铁的示威人群开枪。鲜血瞬间染红了街道，尖叫声、哭喊声、咒骂声混成一片。</p>
+            <p class="dialogue"><span class="character">喀琅施塔得（声音骤然拔高）：</span>他们……他们竟然对他们的人民开枪！？</p>
+            <p>喀琅施塔得踮起脚拼命往前看，想看清到底发生了什么。下一秒，她的瞳孔猛地收缩。</p>
+            <p>在对面临时政府军队的队列中，一名年轻的女准尉正举着指挥刀，高声下达射击命令。尽管脸上沾满泥污和血迹，那张脸却和喀琅施塔得记忆深处最柔软的部分完全重叠。</p>
+            <p class="dialogue"><span class="character">喀琅施塔得（颤抖）：</span>玛莎……？那是……玛莎！！！</p>
+            <p>喀琅施塔得疯了一样推开身边的人，径直朝着枪林弹雨冲去。</p>
+            <p class="dialogue"><span class="character">星宿：</span>喀琅施塔得！回来！危险！</p>
+            <p class="dialogue"><span class="character">密西西比：</span>卡林卡姐！她疯了！快把她拽回来！</p>
+            <p>喀琅施塔得完全听不进去。她眼中只有那个举刀的妹妹，嘴里反复念着同一个名字，脚步踉跄却无比坚定地冲向对面射击的枪口。</p>
+            <p class="dialogue"><span class="character">游行的群众：</span>安娜！快躲起来！</p>
+            <p>子弹在她身边呼啸而过，一颗擦着她的肩膀飞过，带起一抹血花。她却像感觉不到痛，依旧向前。</p>
+            <p>一只手猛地从侧面抓住她的水兵服后领，硬生生把她拽倒在地。卡林卡扑上来用身体压住她，把她往后拽。</p>
+            <p class="dialogue"><span class="character">卡林卡：</span>冷静！同志！你这样冲过去只会白白送死！</p>
+            <p class="dialogue"><span class="character">喀琅施塔得（哭腔）：</span>放开我！那是玛莎！我的妹妹！她为什么会在对面！……放开我啊！</p>
+            <p>她拼命扭动身体，眼泪混着血污在脸上横流。</p>
+            <p class="dialogue"><span class="character">喀琅施塔得（近乎崩溃）：</span>为什么……为什么她要对我们开枪？！她是被迫的，对不对？一定是临时政府逼她的！一定是……</p>
+            <p>枪声依旧密集。街道上已经躺满了尸体，鲜血顺着石板缝隙流淌。几人合力，才把彻底失去理智的喀琅施塔得拖进一条相对安全的巷子。</p>
+            <p>喀琅施塔得被按在墙边，胸口剧烈起伏，眼神空洞。她忽然用力捶打自己的脑袋，想要回忆起什么。</p>
+            <p class="dialogue"><span class="character">喀琅施塔得（哭腔）：</span>我什么都记不起来了……我只记得要革命……可玛莎为什么站在对面……这到底发生了什么……</p>
+            <p class="dialogue"><span class="character">白金汉：</span>潜意识里最珍贵的记忆不会轻易消失。见到玛莎，或许能帮你找回更多。但现在……我们必须先活下去。</p>
+            <p class="dialogue"><span class="character">密西西比：</span> 对啊……你刚才差点就没命了。喀琅施塔得，我们先回波罗的海舰队中央委员会，好不好？那里更安全……我们一起想办法。</p>
+            <p>卡林卡没有说话，只是默默把自己的外套披在喀琅施塔得肩上，遮住她肩膀的枪伤。</p>
+            <p>危机像一场无法停止的赤潮，吞没了这个城市，也第一次狠狠撕裂了喀琅施塔得那颗单纯而狂热的革命之心。</p>
+            <p>喀琅施塔得回到了波罗的海舰队中央委员会处理伤口，她和星宿约定今晚在彼得格勒一处不起眼的东正教小教堂见面。</p>
+            <p>夜色像一层厚重的黑纱，裹住了整座城市。星宿一行人沿着一条僻静的小巷，朝着这个时代米斯泰研究院的联络点赶去。</p>
+            <p>教堂的门虚掩着，里面一片漆黑。圣象被掀翻，蜡烛散落一地，空中弥漫着焚香与尘土的气味。</p>
+            <p class="dialogue"><span class="character">星宿：</span> 人去楼空了...找找看有没有什么线索。</p>
+            <p>小队翻寻着，在十字架的底座下找到一张纸条。</p>
+            <p class="note">致未来的同志：隐修会的人员已潜入临时政府军队。他们藏身于旧贵族区‘玫瑰庄园’。我们被迫转移至莫斯科。<br>——米斯泰研究院，俄罗斯彼得格勒分部。</p>
+            <p class="dialogue"><span class="character">密西西比：</span> 嘿！大家！我在这里发现了好多奇怪的标记，看起来像是东正教的标记改的。</p>
+            <p class="dialogue"><span class="character">密西西比：</span> 这些不会是那个拉斯普京搞的鬼吧？这不就是他的时代吗？</p>
+            <p class="dialogue"><span class="character">星宿：</span>  历史上他死于1916年，但我们知道，那不是真正的他。</p>
+            <p class="dialogue"><span class="character">白金汉：</span> 这个时代的研究院知道事情的内幕为什么不自己动手？</p>
+            <p class="dialogue"><span class="character">星宿：</span>  目前局势过于混乱，这个时代的研究院人员和我们有信息差，他们并不知道之后历史的正确走向。</p>
+            <p>门吱呀一声被推开，喀琅施塔得带着一队士兵来到了这里。</p>
+            <p class="dialogue"><span class="character">喀琅施塔得：</span> 同志们，我们来了，有什么新发现或计划吗？</p>
+            <p>卡林卡把发现的纸条递给了喀琅施塔得，喀琅施塔得接过纸条尴尬了一会又递给了卡林卡。</p>
+            <p class="dialogue"><span class="character">喀琅施塔得（尴尬）：</span> 呃....同志，你读给我听吧.....我不怎么识字。</p>
+            <p>卡林卡把纸条上的信息给喀琅施塔得复述了一遍。</p>
+            <p class="dialogue"><span class="character">喀琅施塔得（激动）：</span> 玫瑰庄园，那是旧贵族的宅邸。隐修会？就是他们后面捣鬼吗？玛莎.....就是他们把玛莎挟持了，对吗？我们走，现在就去！</p>
+            <p class="dialogue"><span class="character">密西西比：</span> 嘿，嘿！等等，等等。就我们这些人冲进去？安娜，你的肩膀还有伤呢！</p>
+            <p class="dialogue"><span class="character">喀琅施塔得：</span>外围还有我们的同志，一有信号，他们就会冲进来 。</p>
+            <p class="dialogue"><span class="character">星宿：</span> 安娜同志，你熟悉这片区域，有什么地方能潜入庄园吗？</p>
+            <p class="dialogue"><span class="character">喀琅施塔得：</span> 我们可以从附近的楼顶到庄园里面，走，跟我来。</p>
+            <p>夜色更深了。玫瑰庄园的铁门在月光下泛着冷光。喀琅施塔得带着十余名精锐赤卫队队员与星宿小队，悄无声息地潜到庄园附近的居民楼楼顶上。</p>
+           <p class="dialogue"><span class="character">喀琅施塔得：</span> 等等，那是？</p>
+            <p class="dialogue"><span class="character">喀琅施塔得：</span> 那是我妹妹！</p>
+            <p>喀琅施塔得的声音带有一丝颤抖，似乎在否定自己说的话。但眼前的事实又不得不让她承认，事情的确如此。</p>
+            <p>庭院中，妹妹玛莎的身影映入眼帘。她身穿军官制服，手持军刀，指挥十几名临时政府士兵布防。</p>
+            <p class="dialogue"><span class="character">喀琅施塔得：</span> 玛莎她不会自愿为这些人卖命的，或许我们可以接触她，找到解决的办法！</p>
+            <p class="dialogue"><span class="character">赤卫队成员：</span> 同志，我们听过你的故事，相信玛莎是被迫的。但……如果她自愿选择了另一条路呢？</p>
+            <p class="dialogue"><span class="character">喀琅施塔得：</span> 不可能！她不会自愿为这些人卖命！</p>
+            <p>喀琅施塔得的语气渐渐的微弱，有那么一瞬间，她也在害怕自己内心中最恐怖的想法。她眼中闪过恐惧，仿佛害怕内心最深的疑虑，玛莎或许真的选择了另一条路。</p>
+            <p class="dialogue"><span class="character">赤卫队成员：</span> 这把信号枪你拿着，情况不对我们里应外合。</p>
+            <p>喀琅施塔得接过信号枪，深吸一口气。她的钩锁轻响，缠住一处烟囱，借力跃过街道，钻进宅邸旁一栋附属楼的窗户。星宿几人紧随其后，小队悄无声息地潜入宅邸内部。在躲过巡逻的士兵后，来到了一处门前。</p>
+            <p class="dialogue"><span class="character">喀琅施塔得：</span> 这里就是指挥官办公室，我在屋顶观察过。</p>
+            <p>喀琅施塔得将手放在门把上，在平复了自己内心的情绪后打开了房门。房间里的玛莎正在整理文件，听到响动，猛地拔出左轮瞄准门口。</p>
+            <p class="dialogue"><span class="character">喀琅施塔得：</span> 玛莎...是你吗？</p>
+            <p>桌后的军官愣了一下，握住左轮的手在不停的颤抖，直至放下枪口。</p>
+            <p class="dialogue"><span class="character">玛莎：</span> 姐姐是你吗？安娜姐姐.........</p>
+            <p>喀琅施塔得呆呆的站在门口，几乎在这一瞬间，她想起了许多自己与妹妹的故事。</p>
+            <p>她们的贫农父母，伏尔加河边的童年，在父母死后，玛莎被贵族带走的那天。贵族给了自己一笔钱让自己生活。自己去城市当过工人，做过小贩。最后因为战事不断征召人员，自己也成为了一名水兵服役于波罗的海舰队。</p>
+            <p>两人同时冲向对方，紧紧抱住。</p>
+            <p class="dialogue"><span class="character">玛莎：</span> 姐姐，我还以为再也见不到你了。</p>
+            <p>办公室的壁炉余烬微光摇曳，空气中弥漫着焚香与火药的气味。安娜和玛莎紧紧相拥。</p>
+            <div class="button-container">
+                <button class="prev-btn" onclick="prevScene(2)">上一幕</button>
+                <button class="next-btn" onclick="nextScene(2)">下一幕</button>
+            </div>
+        </div>
+
+        <div id="scene-3" class="scene">
+            <h2>第三幕：罗斯的命运</h2>
+            <p class="intro"><strong>1917年11月6日</strong><br>俄罗斯 圣彼得堡，旧贵族区宅邸<br><strong>角色：</strong>星宿、密西西比、卡林卡、喀琅施塔得</p>
+            <p>玛莎锁上了们，享受着这梦不可求的团聚。</p>
+            <p class="dialogue"><span class="character">玛莎：</span> 姐姐……我以为再也见不到你了，你参军了？怎么还受伤了，彼得格勒如今这么乱，我好想回到我们曾经的小村庄。</p>
+            <p class="dialogue"><span class="character">喀琅施塔得：</span> 玛莎，你还记得我们小时候吗？经常在村边的河里抓鱼，你被带走后发生了什么，怎么穿着这身衣服。</p>
+            <p class="dialogue"><span class="character">玛莎：</span> 那个贵族对我很好，还让我上学，后来我上了军校。我在军校里每天都想你……二月革命推翻沙皇后，我以为终于能过上好日子了。可现在……到处都是枪声，到处都是死人……</p>
+            <p class="dialogue"><span class="character">喀琅施塔得：</span> 我知道……可只有彻底的革命才能结束这一切。临时政府还在把我们的兄弟姐妹送上战场，他们只是换了一批贵族而已。玛莎，跟我走吧，一起为真正的俄罗斯而战。</p>
+            <p>玛莎犹豫了一会，手微微一颤。</p>
+            <p class="dialogue"><span class="character">玛莎：</span> 姐姐……二月革命已经推翻沙皇了。我们现在需要的是稳定，是和平。继续流血，只会让俄罗斯更乱。</p>
+            <p class="dialogue"><span class="character">玛莎：</span> 临时政府虽然有缺点，但至少在努力结束战争。你呢？你要的革命……会让更多俄罗斯人死去。四月份出事后，你们不是也和我们一起组阁建立了联合政府吗？</p>
+            <p class="dialogue"><span class="character">喀琅施塔得（突然激动）：</span>那是孟什维克！和我们不一样！和平？那是假的和平！你们一边喊着停战，一边把大家推向德国人的枪口！只有布尔什维克才能真正把土地给农民，把工厂给工人。</p>
+            <p class="dialogue"><span class="character">喀琅施塔得（情绪过激）：</span>二月革命时，彼得格勒苏维埃向全世界呼吁和平，临时政府是公开支持的，但你们现在又在干什么！</p>
+            <p>喀琅施塔得的语气渐渐的微弱，有那么一瞬间，她也在害怕自己内心中最恐怖的想法。她眼中闪过恐惧，仿佛害怕内心最深的疑虑，玛莎或许真的选择了另一条路。</p>
+            <p class="dialogue"><span class="character">玛莎（同样激动起来）：</span>布尔什维克只会带来新的流血！姐姐，你忘了我们小时候吃的苦吗？我们就是因为贵族的压迫才失去父母的！现在你却要用同样的暴力去‘拯救’俄罗斯？！</p>
+            <p class="dialogue"><span class="character">玛莎：</span>你们和要德国人签订和平条约吗？割让我们的土地！这是在出卖俄罗斯！我们的斯拉夫兄弟被活生生的扔给了日耳曼人。</p>
+            <p class="dialogue"><span class="character">玛莎：</span>现在出卖我们的土地，出卖我们的同胞，之后的俄罗斯难道也会迎来异族的统治吗？德国人还在边境上虎视眈眈呢！他们可不管我们选出了什么样子的政府。</p>
+            <p class="dialogue"><span class="character">喀琅施塔得：</span> 我没有忘……正因为忘不了，我才要革命到底。玛莎，你被骗了。你被临时政府的谎言蒙蔽了。</p>
+            <p class="dialogue"><span class="character">玛莎：</span> 姐姐你现在满脑子只有‘革命’，却忘了我们小时候最想要的……只是一个能吃饱饭、不再分离的家。</p>
+            <p class="dialogue"><span class="character">喀琅施塔得（大喊）：</span> 正是因为这样！我们才要彻底的革命啊！</p>
+            <p>随后房间里陷入死一般的寂静。星宿一行人站在一旁，想要想开口打破僵局，却发现任何话此刻都显得苍白无力，直到过来好一会儿才冷静下来。两人都在试图说服对方，却发现对方眼里的火焰和自己一模一样，只是方向完全相反</p>
+            <p class="dialogue"><span class="character">星宿：</span> 安娜同志，现在还不是争论意识形态的时候.....我们需要找到隐修会的线索，阻止俄罗斯的情况进一步恶化。我们先......</p>
+            <p class="dialogue"><span class="character">喀琅施塔得：</span> 星宿同志！这是我们的俄罗斯！这是我们姐妹之间的事！你们又没有经历过伏尔加河边的饥荒，没有经历过沙皇的皮鞭，你怎么可能懂？！</p>
+            <p>星宿等人张了张嘴，却发现自己确实无话可说。她们没有活在1917年，没有尝过那个时代的苦，也没有亲眼见过姐妹被时代撕裂的痛苦，她们只能沉默。</p>
+            <p>卡林卡站在角落，却始终没有开口。</p>
+            <p>她想说：我知道革命之后会迎来更大的阵痛……我知道1921年的喀琅施塔得起义会被镇压……我知道苏联解体后的动荡……可这些话，她一个字也说不出口。</p>
+            <p>因为她自己也曾是那个时代的一分子，她同样被历史狠狠扇过耳光。她只能死死咬住下唇憋住，拳头捏得指节发白。</p>
+            <p>办公室里的空气像凝固了一样。姐妹俩对视着，谁也不肯先低头。说服不了对方，却又谁都不愿放开对方。</p>
+            <p class="dialogue"><span class="character">玛莎：</span> 安娜姐姐，你们来这里一定是有什么事情的吧....</p>
+            <p class="dialogue"><span class="character">喀琅施塔得：</span> 玛莎，现在有一些我们未知的势力在暗中破坏俄罗斯。我知道我们各有各的想法，但为了俄罗斯母亲.....</p>
+            <p class="dialogue"><span class="character">玛莎：</span> 姐姐，我知道了....</p>
+            <p>突然整栋建筑开始摇晃，埋伏在外围的赤卫队成员也赶到了庄园里面和守军开始对峙起来。</p>
+            <p class="dialogue"><span class="character">玛莎：</span>发生什么了？！快出去看看。</p>
+            <p>庄园里面，双方剑拔弩张，互相问责着对方。</p>
+            <p class="dialogue"><span class="character">赤卫队成员：</span>安娜同志！你没事吧，发生什么了！</p>
+            <p class="dialogue"><span class="character">临时政府士兵：</span>布尔什维克！放下武器！这里是军事重地！</p>
+            <p class="dialogue"><span class="character">玛莎：</span>大家，把枪放下！发生什么事情了，怎么会有震动。</p>
+            <p class="dialogue"><span class="character"> 慌张的临时政府士兵：</span>玛莎准尉！圣以撒教堂那边！出事了！</p>
+            <p class="dialogue"><span class="character">玛莎：</span>怎么了？出了什么事情？</p>
+            <p class="dialogue"><span class="character"> 慌张的临时政府士兵：</span>出现了一群怪人，不是俄罗斯人！不知道他们干了什么，圣以撒教堂那边出现了许多怪异的现象。</p>
+            <p class="dialogue"><span class="character">密西西比：</span>是隐修会他们！他们一定在找着什么东西。</p>
+            <p class="dialogue"><span class="character">喀琅施塔得（群情激奋）：</span>同志们，有人妄图颠覆我们的祖国，我们此时要联合起来。</p>
+            <p class="dialogue"><span class="character">喀琅施塔得：</span>姐姐，就算你已经选择好了自己的道路，但是为了俄罗斯，让我们一起把他们赶走好吗？</p>
+            <p class="dialogue"><span class="character">玛莎：</span>好。兄弟姐妹们，你们已经同德国人英勇的战斗过了，现如今还有外人要染指我们的祖国，即便现在俄罗斯如此混乱，大家政见不合，但是为了俄罗斯！</p>
+            <p>就这样，一个看似不可能的暂时性联盟就这样子成立了，一群由临时政府士兵和赤卫队以及星宿小队组成的联军奔向了圣以撒教堂。</p>
+            <div class="button-container">
+                <button class="prev-btn" onclick="prevScene(3)">上一幕</button>
+                <button class="next-btn" onclick="nextScene(3)">下一幕</button>
+            </div>
+        </div>
+
+        <div id="scene-4" class="scene">
+            <h2>第四幕：这里的黎明静悄悄</h2>
+            <p class="intro"><strong>1917年11月8日</strong><br>俄罗斯 圣彼得堡，圣以撒教堂<br><strong>角色：</strong>星宿、密西西比、卡林卡、喀琅施塔得，玛莎</p>
+            <p>教堂的广场中，雪花在灯光的光芒中飘舞，安娜和玛莎并肩而立。星宿紧盯着手中装置，灵能异常从教堂深处传来，愈发强烈。</p>
+            <p class="dialogue"><span class="character">卡林卡：</span> 玛莎，你们还能动员多少人，我们必须立刻行动。</p>
+            <p class="dialogue"><span class="character">玛莎：</span>我这里都是战场上退下来的残兵和女兵整合的部队，我也没有更多的兵力了。</p>
+            <p class="dialogue"><span class="character">星宿：</span> 我这里有线索，跟我来。</p>
+            <p>星宿来到了教堂正门。推开主建筑厚重的橡木门，墙壁上刻满西里尔字母与东正教壁画，天使的面孔在黑暗的光线中显得悲伤。士兵们小心前进，靴子在镶木地板上发出沉闷回响。</p>
+            <p>教堂里面已经是一片狼藉，很七竖八的尸体与各种烧焦的痕迹。</p>
+            <p class="dialogue"><span class="character">喀琅施塔得：</span> 天哪，到底发生了什么？</p>
+            <p class="dialogue"><span class="character">幸存的伤兵：</span> 准尉.....危险，我们的子弹打不中他们....</p>
+            <p class="dialogue"><span class="character">幸存的伤兵：</span> 有一群奇怪的人闯入了这里.......你们千万要小心.....</p>
+            <p class="dialogue"><span class="character">星宿：</span> Scheiße，大家小心，出现了异常状况立刻报告.....隐修会已经动手了。</p>
+            <p>幸存的伤兵渐渐的没有了气息，倒在了残骸之中。</p>
+            <p>众人开始小心翼翼的推进，喀琅施塔得走在最前面，玛莎紧跟在她身侧，两人并肩却始终保持着半步距离。那半步，是意识形态的鸿沟，也是刚刚才勉强弥合的姐妹情。</p>
+            <p class="dialogue"><span class="character">白金汉：</span> 星宿小姐，圣彼得堡这里有什么圣物吗？</p>
+            <p class="dialogue"><span class="character">星宿：</span>东罗马帝国末代公主索菲亚嫁给莫斯科大公，当时的随行人员来带了许多东正教圣物。或许，就有一件物品因为各种原因留在了这里。</p>
+            <p class="dialogue"><span class="character">喀琅施塔得：</span> 星宿同志，你是说那些宗教物品是真的？有奇怪的力量？难不成真有什么上帝？！</p>
+            <p class="dialogue"><span class="character">星宿：</span> 你误会了，安娜同志，那些力量只是暂时不知道怎么用科学理论解释而已，在我们的时代已经有许多突破了。</p>
+            <p class="dialogue"><span class="character">玛莎：</span> 你们的时代？姐姐，你的队友在说什么啊？</p>
+            <p class="dialogue"><span class="character">喀琅施塔得：</span> 这很难和你解释，玛莎。等我们出去后，我慢慢给你说.....你可能不会相信这一切。</p>
+            <p>头顶吊灯突然剧烈摇晃，整座教堂像被无形巨手摇动。穹顶壁画上的天使面孔扭曲变形，空气中响起一个低沉、带着蛊惑的笑声。</p>
+            <p class="dialogue"><span class="character">？？？：</span> 真是神奇啊，激进派和保守派在一起，还有一群研究院的小老鼠们.....</p>
+            <p>话音未落，教堂阴暗处突然冲出数十名隐修会成员，大战一触即发。</p>
+            <p class="dialogue"><span class="character">星宿：</span>敌袭！注意隐蔽！</p>
+            <p>枪声、喊杀声、灵能爆炸声瞬间填满大殿。赤卫队与临时政府士兵第一次并肩作战，却配合得无比娴熟。</p>
+            <p class="dialogue"><span class="character">星宿：</span>他们的目标是索菲亚公主带来的圣物，注意目标！</p>
+            <p>混乱中，一团团浓雾突然包围了众人。当浓雾散开后，只有喀琅施塔得和星宿出现在一处像是被拼凑出来的地方。</p>
+            <p class="dialogue"><span class="character">拉斯普京：</span> 看看吧，星宿，还有这位激动的水兵。你们现在为止而奋斗的世界是个什么样的。</p>
+            <p>周围漂浮着无数破碎的历史碎片：燃烧的冬宫、倒下的红旗、哭喊的群众、冰面上被机枪扫射的水兵……所有画面像碎玻璃般旋转。</p>
+            <p class="dialogue"><span class="character">拉斯普京：</span>不管是现在还是所谓的未来，人类始终没有改变自己的本质。</p>
+            <p class="dialogue"><span class="character">拉斯普京：</span>星宿，你的特殊能力让米斯泰研究院视你为珍宝。但你真的了解这个世界吗？安娜，你真的了解人性吗？</p>
+            <p class="dialogue"><span class="character">喀琅施塔得：</span> 你干了什么！这里是哪里！你这个神棍，明明已经死了！</p>
+            <p class="dialogue"><span class="character">拉斯普京：</span> 别激动，革命者。先听我说完。</p>
+            <p>喀琅施塔得想要反抗，发现在这里自己的身体完全不听使唤。</p>
+            <p class="dialogue"><span class="character">拉斯普京：</span>星宿，我相信你也见识到了许多，不管是过去还是你们所在的时代。</p>
+            <p class="dialogue"><span class="character">星宿：</span> 你想要表达什么。</p>
+            <p class="dialogue"><span class="character">拉斯普京：</span>不管是现在战争，革命的血海还是未来人们在屏幕前争吵，发布无意义的言论挑起对立，人类社会一直在分崩离析。</p>
+            <p class="dialogue"><span class="character">拉斯普京：</span>现代科技与制度让一些没有自理能力的人都能好好活着，让每个人都能发表所谓的意见，却养出一群无用的社会毒瘤。他们拖累文明的发展，他们不会思考，被各种信息摆布。</p>
+            <p class="dialogue"><span class="character">拉斯普京：</span>还有些高高在上的人他们说着冠冕堂皇的话，对着社会贪婪的索要，指指点点。</p>
+            <p class="dialogue"><span class="character">拉斯普京：</span> 研究院就是这样子为人类文明服务的？你也知道你们内部也有寄生虫，不是吗？</p>
+            <p class="dialogue"><span class="character">喀琅施塔得：</span> 闭嘴！你这是在动摇我们！我才不会信你的鬼话！</p>
+            <p>相比喀琅施塔得的激动，星宿没有反驳，也没有说话。她站在那片拼凑起来的废墟面前，只是静静的注视着，眼中透着复杂的情绪。</p>
+            <p class="dialogue"><span class="character">拉斯普京：</span> 星宿，你没有反驳，因为你也经历过许多，你也知道这些现象的存在，一直维持这样并不可取。加入我们，我们会让人类文明迈向新的层次。</p>
+            <p class="dialogue"><span class="character">喀琅施塔得：</span> 星宿同志！别被他影响了！那个家伙会幻术！</p>
+            <p class="dialogue"><span class="character">星宿：</span> 最后整个世界变成像你们一样的蜂巢思维吗？</p>
+            <p class="dialogue"><span class="character">拉斯普京：</span> 蜂巢思维？没有那么的极端，人类只是需要合适的领导带领来清除文明中的“毒瘤”。为了宏伟的蓝图，一切都是必要的。这不是我们大家所向往的美丽新世界吗？</p>
+            <p class="dialogue"><span class="character">星宿：</span> 美丽新世界？我相信你也知道美丽新世界这本书，你们太极端了！</p>
+            <p class="dialogue"><span class="character">拉斯普京：</span> 浪费心智是一件很可怕的事情，星宿。许多人有着自我意识却从不会去思考，他们被各种各样的观念束缚着内斗，这样子我们的文明不可能发展。</p>
+            <p class="dialogue"><span class="character">喀琅施塔得：</span> 你们说的这么冠冕堂皇，难道就能轻取别人的性命了吗。</p>
+            <p class="dialogue"><span class="character">拉斯普京：</span> 这是两难境地，电车难题。就像你在研究院所经历的一样。为了更大的善要行必要之恶，你不是也见识过了吗？</p>
+            <p>喀琅施塔得和星宿挣脱了拉斯普京的压制，对着拉斯普京举起了武器。。枪声在虚空回荡，画面骤然破碎。睁眼的瞬间，两人发现身处教堂的中央。</p>
+            <p>叶尼塞跪在地上，怀中抱着玛莎，她胸口还流淌着鲜血。星宿与喀琅施塔得的枪口还冒着烟</p>
+            <p class="dialogue"><span class="character">星宿（错愕）&喀琅施塔得（崩溃）：</span> 不！不！不！！</p>
+            <p class="dialogue"><span class="character">玛莎：</span> 姐姐....为什么.....就因为我们....不一样吗...</p>
+            <p class="dialogue"><span class="character">喀琅施塔得（崩溃）：</span> 不！不是这样的！玛莎，玛莎看着我....不是这样的啊！！</p>
+            <p class="dialogue"><span class="character">玛莎：</span>姐姐……我好冷….我在俄罗斯生活了这么久…第一次感觉冷….</p>
+            <p>手枪从手上滑落，星宿浑身在不停的颤抖。喀琅施塔得立刻扑到了马上面前。</p>
+            <p class="dialogue"><span class="character">玛莎：</span>姐姐……我们成功了….他们被我们击退了...但是我们的同胞们，都牺牲了...他们是为了祖国母亲，不是为了什么意识形态...</p>
+            <p class="dialogue"><span class="character">喀琅施塔得（崩溃）：</span>别说话了啊！！！星宿同志！卡林卡同志！大家！快....呜呜呜...快帮帮我，求求你们了！</p>
+            <p>白金汉检查着伤口，伤口为致命伤口，周围处蔓延着类似菌丝一般的黑丝。</p>
+            <p class="dialogue"><span class="character">白金汉：</span>伤口处有灵能侵蚀，已经出现晶体化了。玛莎是普通人，已经.....</p>
+            <p class="dialogue"><span class="character">喀琅施塔得（崩溃）：</span> 你胡说！你胡说！才没有什么侵蚀！玛莎会没事的！</p>
+            <p>白金汉被喀琅施塔得推开，密西西比拉住了白金汉。</p>
+            <p class="dialogue"><span class="character">喀琅施塔得（崩溃）：</span> 对不起，同志....求求你们....救救玛莎....</p>
+            <p class="dialogue"><span class="character">玛莎（虚弱）：</span> 姐姐....你没事就好.....我们回家吧。</p>
+            <p class="dialogue"><span class="character">玛莎（虚弱）：</span> 姐姐....我们至少重逢了..我好困.....我刚好不想打仗了....玛莎累了...</p>
+            <p>啜泣的喀琅施塔得低着头靠着怀中的玛莎久久没有放开。</p>
+            <p>隐修会虽然带走了圣物，但因为小队的干预，时间线并未被彻底破坏。教堂外的枪声渐渐平息，阿芙乐尔号的炮声在远处响起，十月革命按历史轨迹爆发了。</p>
+            <p>走出教堂，喀琅施塔得凝视冬宫方向，红旗在风中飘扬，与自己身上染红的水兵服是那么的相像。她的眼中既有希望，也有无尽的痛苦。</p>
+            <p>灯塔的光芒在雪中闪烁，照亮小队的归途，也诉说着俄罗斯的命运尚未尘埃落定。冬宫方向的黎明传来了革命的欢呼，而这里的黎明却静悄悄。</p>
+            <div class="button-container">
+                <button class="prev-btn" onclick="prevScene(4)">上一幕</button>
+                <button class="next-btn" disabled>故事结束</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function nextScene(current) {
+            const currentScene = document.getElementById(`scene-${current}`);
+            const nextScene = document.getElementById(`scene-${current + 1}`);
+            
+            if (nextScene) {
+                currentScene.classList.remove('active');
+                nextScene.classList.add('active');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        }
+
+        function prevScene(current) {
+            const currentScene = document.getElementById(`scene-${current}`);
+            const prevScene = document.getElementById(`scene-${current - 1}`);
+            
+            if (prevScene) {
+                currentScene.classList.remove('active');
+                prevScene.classList.add('active');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        }
+    </script>
+</body>
+</html>
