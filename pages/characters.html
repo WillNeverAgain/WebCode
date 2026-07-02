@@ -457,43 +457,7 @@
     <div class="progress-label">卷·录</div>
   </div>
 
-  <audio id="bgm" src="背景.MP3" loop preload="auto"></audio>
-
   <script>
-    // ========== 背景音乐逻辑 ==========
-    const audio = document.getElementById('bgm');
-
-    // 多重用户交互解锁自动播放（覆盖 click / 键盘 / 触屏）
-    function unlockAndPlay() {
-      if (audio.paused) {
-        audio.play().catch(() => {});
-      }
-    }
-    document.addEventListener('click', unlockAndPlay, { once: true });
-    document.addEventListener('keydown', unlockAndPlay, { once: true });
-    document.addEventListener('touchstart', unlockAndPlay, { once: true });
-
-    // 页面加载后也尝试播放（部分浏览器在历史交互后允许）
-    window.addEventListener('load', () => {
-      audio.play().catch(() => {});
-    });
-
-    // 页面隐藏/恢复时的播放控制
-    document.addEventListener('visibilitychange', () => {
-      if (!document.hidden && audio.paused) {
-        audio.play().catch(() => {});
-      }
-    });
-
-    // 循环播放
-    audio.addEventListener('ended', () => {
-      audio.currentTime = 0;
-      audio.play().catch(() => {});
-    });
-
-    // 清理旧版 localStorage 残留
-    try { localStorage.removeItem('bgm_playing_state'); } catch(e) {}
-
     // ========== 角色数据集（已从新版 characters.html 完整移植详细内容） ==========
     const characters = [
       { id: "xingxiu", name: "星宿", subtitle: "Xingxiu · 星宿", skill: "所属 · 米斯泰研究院 特别作战处",
