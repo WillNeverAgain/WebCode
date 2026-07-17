@@ -1,0 +1,894 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>在废墟中央渴望爱的少女</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            background-color: #000000;
+            color: #e0e0e0;
+            overflow-x: hidden;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: rgba(26, 26, 26, 0.92);
+            min-height: 100vh;
+            box-shadow: 0 0 10px rgba(255,255,255,0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #f0f0f0;
+        }
+        h2 {
+            color: #d0d0d0;
+            border-bottom: 2px solid #d0d0d0;
+            padding-bottom: 5px;
+            text-align: center;
+        }
+        .scene > p:not(.dialogue):not(.intro) {
+            color: #f5e050;
+            margin: 15px 0;
+        }
+        .intro {
+            color: #a0e7a0;
+            font-weight: bold;
+            margin: 15px 0;
+        }
+        .dialogue {
+            margin-left: 20px;
+            font-style: italic;
+            color: #e0e0e0;
+        }
+        .dialogue::before {
+            content: '“';
+            font-size: 1.2em;
+        }
+        .dialogue::after {
+            content: '”';
+            font-size: 1.2em;
+        }
+        .character {
+            font-weight: bold;
+            color: #4da8da;
+        }
+        .scene {
+            display: none;
+            animation: fadeIn 1s ease-in-out;
+        }
+        .scene.active {
+            display: block;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .next-btn, .prev-btn {
+            display: inline-block;
+            margin: 20px 10px;
+            padding: 10px 20px;
+            background-color: #34495e;
+            color: #ffffff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            text-align: center;
+            transition: background-color 0.3s;
+        }
+        .next-btn:hover, .prev-btn:hover {
+            background-color: #2c3e50;
+        }
+        .next-btn:disabled, .prev-btn:disabled {
+            background-color: #666666;
+            cursor: not-allowed;
+        }
+        .button-container {
+            text-align: center;
+        }
+
+    /* 全局复古纹理 + 噪点背景 */
+    body::before {
+        content: '';
+        position: fixed;
+        inset: 0;
+        background: 
+            linear-gradient(30deg, transparent 48%, rgba(70, 90, 110, 0.08) 50%, transparent 52%),
+            linear-gradient(-30deg, transparent 48%, rgba(70, 90, 110, 0.06) 50%, transparent 52%),
+            repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(30,35,45,0.05) 2px, rgba(30,35,45,0.05) 4px),
+            repeating-linear-gradient(90deg, transparent, transparent 2px, rgba(30,35,45,0.05) 2px, rgba(30,35,45,0.05) 4px),
+            url('https://assets.codepen.io/3522978/noise.png'), 
+            radial-gradient(circle at 30% 20%, #0a0f1a, #010101);
+        background-blend-mode: overlay, screen, multiply, normal;
+        opacity: 0.85;
+        pointer-events: none;
+        z-index: -2;
+        transition: opacity 0.3s ease;
+    }
+
+    .halftone-overlay {
+        position: fixed;
+        inset: 0;
+        width: 100vw;
+        height: 100vh;
+        object-fit: cover;
+        pointer-events: none;
+        mix-blend-mode: overlay;
+        opacity: 0.12;
+        z-index: -1;
+        transition: opacity 0.3s ease;
+    }
+
+    .vintage-bg {
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        z-index: 0;
+        overflow: hidden;
+        transition: opacity 0.3s ease;
+    }
+    .vintage-element {
+        position: absolute;
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        opacity: 0.05;
+        mix-blend-mode: multiply;
+        animation: driftVintage linear infinite, pulseVintage 28s ease-in-out infinite alternate;
+    }
+    @keyframes driftVintage {
+        0% { transform: translate(0, 0) rotate(0deg); }
+        100% { transform: translate(110px, 110px) rotate(360deg); }
+    }
+    @keyframes pulseVintage {
+        0% { opacity: 0.04; filter: brightness(0.9); }
+        100% { opacity: 0.1; filter: brightness(1.1); }
+    }
+    .v1 { background-image: url('https://i0.wp.com/heritagecalling.com/wp-content/uploads/2024/12/DP114585-St-Marys-Church-Kempley-Gloucestershire.jpg?ssl=1'); width: 380px; height: 380px; top: 3%; left: 0%; animation-duration: 170s, 24s; transform: rotate(50deg); }
+    .v2 { background-image: url('https://www.nationalww2museum.org/sites/default/files/2020-05/Riveter.jpg'); width: 550px; height: 180px; top: 18%; right: 4%; animation-duration: 190s, 28s; }
+    .v3 { background-image: url('https://render.fineartamerica.com/images/rendered/default/greeting-card/images/artworkimages/medium/2/andy-warhol-high-resolution-photo-art-collage-andy-warhol-collage.jpg'); width: 280px; height: 450px; bottom: 8%; left: 6%; animation-duration: 150s, 20s; transform: rotate(-32deg); }
+    .v4 { background-image: url('https://rubberdiamond.wordpress.com/wp-content/uploads/2014/01/schwitters.jpg'); width: 420px; height: 420px; top: 38%; left: 48%; animation-duration: 210s, 35s; transform: rotate(22deg); }
+    .v5 { background-image: url('https://www.heritage-print.com/p/731/study-poster-1920-artist-lissitzky-15000613.jpg.webp'); width: 620px; height: 140px; bottom: 4%; right: 8%; animation-duration: 180s, 26s; }
+    .v6 { background-image: url('https://blog.architizer.com/wp-content/uploads/deconstructivism.jpeg'); width: 230px; height: 560px; top: 6%; right: 1%; animation-duration: 160s, 22s; transform: rotate(90deg); }
+    .v7 { background-image: url('https://d31sxl6qgne2yj.cloudfront.net/wordpress/wp-content/uploads/20190102164052/Punk-Album-Covers-11x16.jpg'); width: 460px; height: 330px; bottom: 28%; left: 28%; animation-duration: 200s, 30s; transform: rotate(-28deg); }
+    .v8 { background-image: url('https://smarthistory.org/wp-content/uploads/2021/02/50935568273_37699017c0_o-scaled.jpg'); width: 350px; height: 130px; top: 50%; left: 12%; animation-duration: 140s, 18s; }
+    .v9 { background-image: url('https://postergroup.com/cdn/shop/products/Men-Working-Together-Poster.jpg?v=1746051175'); width: 180px; height: 400px; top: 12%; left: 62%; animation-duration: 230s, 38s; transform: rotate(72deg); }
+    .v10 { background-image: url('https://m.media-amazon.com/images/I/81SOUO-NbkL.jpg'); width: 560px; height: 280px; bottom: 18%; right: 22%; animation-duration: 170s, 27s; }
+    .v11 { background-image: url('https://cdn.britannica.com/94/5594-050-1C1166D6/Annunciation-Fra-Angelico-Florence-Museum-of-San.jpg'); width: 300px; height: 300px; top: 62%; left: 40%; animation-duration: 220s, 32s; transform: rotate(-45deg); }
+    .v12 { background-image: url('https://cdn11.bigcommerce.com/s-yzgoj/images/stencil/1280x1280/products/1320435/1708788/PSTJPA100339M__22686.1519281927.jpg?c=2'); width: 440px; height: 220px; top: 30%; left: 4%; animation-duration: 180s, 25s; }
+    .v13 { background-image: url('https://divinity.uchicago.edu/sites/default/files/styles/sightings_article_featured_image/public/2020-01/2c304455-66ca-4ae4-adc3-ba0ccc06b408_1_201_a.jpeg?itok=9v54XcIG'); width: 400px; height: 350px; top: 8%; left: 55%; animation-duration: 160s, 23s; transform: rotate(30deg); }
+    .v14 { background-image: url('https://www.saic.edu/sites/default/files/shorthand/stories/0Hw0PwtaAa/2025-09-29T19%3A38%3A15.732Z/assets/vpUp9CR2Fi/kurt-schwitters-843x626.jpg'); width: 500px; height: 200px; bottom: 35%; right: 10%; animation-duration: 190s, 27s; }
+    .v15 { background-image: url('https://cdn.kastatic.org/ka-perseus-images/aa552552150213036b99363b0dfb8ae811b8c08d.jpg'); width: 350px; height: 400px; top: 45%; right: 15%; animation-duration: 200s, 30s; transform: rotate(-20deg); }
+    </style>
+</head>
+<body>
+
+<!-- 复古背景层 -->
+<img class="halftone-overlay" src="https://gd-hbimg-edge.huaban.com/e136eab1362dfa41c0bf38aa7f48d9be4fe7332b172ae6-yQ7EZk?auth_key=1780243200-7a28c4fd8dba4f27bcbf1202f71a087e-0-cab91a5574991e7dfd11720f9ea5744c" alt="" decoding="async" referrerpolicy="no-referrer">
+<div class="vintage-bg">
+    <div class="vintage-element v1"></div><div class="vintage-element v2"></div><div class="vintage-element v3"></div>
+    <div class="vintage-element v4"></div><div class="vintage-element v5"></div><div class="vintage-element v6"></div>
+    <div class="vintage-element v7"></div><div class="vintage-element v8"></div><div class="vintage-element v9"></div>
+    <div class="vintage-element v10"></div><div class="vintage-element v11"></div><div class="vintage-element v12"></div>
+    <div class="vintage-element v13"></div><div class="vintage-element v14"></div><div class="vintage-element v15"></div>
+</div>
+
+    <div class="container">
+        <h1>在废墟中央渴望爱的少女</h1>
+        <p align="center" style="color: #f5e050;">孤独的太阳燃烧着，等待月亮已有千年</p>
+
+        <div id="scene-0" class="scene active">
+            <div class="button-container">
+                <button class="next-btn" onclick="nextScene(0)">开始阅读</button>
+            </div>
+        </div>
+
+        <div id="scene-1" class="scene">
+            <h2>一</h2>
+            <p class="intro"><strong>2039年6月1日</strong><br>地区：□□□<br><strong>角色：</strong>小女孩</p>
+            <p>2039年，一座都市下游的的灰色地带。一名小女孩背着一个破旧的帆布包，里面塞满了从旧货市场淘来的小玩意儿：生锈的怀表、奇奇怪怪的手工艺品、印着模糊花纹的明信片。她把它们摆在街角一张翻倒的木箱上，面前立着一块用马克笔写的小纸板“便宜卖，小孩自制”。</p>
+            <p>在她的眼中雨是灰色的，如同这座城市的底色和烟囱中吐出的烟。她蹲在纸板前，双手抱膝坐在一边，眼睛盯着来往的行人。没人停下，也没有人在意。偶尔有醉鬼踢翻她的箱子，她就默默捡起散落的物品，用袖子擦干净，再放回去。</p>
+            <p class="dialogue"><span class="character">小女孩：</span> 今天……又没卖出去。</p>
+            <p>她低声自言自语，在给自己道歉。声音很小，淹没在河面上传来的汽笛声里。</p>
+            <p>她不记得父母长什么样子。孤儿院的老嬷嬷说她是河边捡来的，说捡到她时的河水是黑的，像墨。她好奇着，河水何时清澈过，但也没有反驳嬷嬷的话。</p>
+            <p>太阳独自燃烧着，太阳总是孤独的。</p>
+            <p>下午四点十七分，灾难来了。</p>
+            <p>没有预兆。没有警报。先是河面突然鼓起，接着是尖锐的啸音，玻璃被巨力碾碎。整条街的玻璃同时炸裂，碎片像暴雨一般从天上倾泻。</p>
+            <p>小女孩条件反射地抱头，装满物品的帆布包被她死死护在胸前。然后是从未见过的光芒从河底升起，如同一颗病态的星星闪耀着。光不是暖的，是冷的、黏的，像要把人连皮带肉剥下来。路灯爆裂，电线在空中飞舞，火花溅在积水里，发出嗤嗤的响声。</p>
+            <p>怪物出现了。不是从地上的裂隙里爬出来，而是从人身上长出来。一个卖着纪念品的大叔先是僵住，然后皮肤开始长出透明的晶体，像冰凌从毛孔里刺出来。他尖叫着撕扯自己的脸，晶体越长越多，把他整张脸包成一面扭曲的镜子。最后他不再动，只是站在原地，变成了一座雕像。</p>
+            <p>小女孩的腿在发抖，她已经被吓傻了，完全愣在了原地。她看见一个抱着孩子的女人跑过来，孩子哭得撕心裂肺。下一秒，女人脚下冒出晶体，缠住她的腿。她尖叫着把孩子扔出去，孩子摔在水洼里，哭声戛然而止。</p>
+            <p class="dialogue"><span class="character">路过的女人：</span> 跑啊，孩子！……跑啊……</p>
+            <p>晶体爬上女人的腰、胸口、脖子，最后把她整张脸封住，像一颗被冰封的果实。</p>
+            <p>小女孩脑子里只有这一个念头，活下去。她抱起帆布包，转身就跑。鞋底被街道上的碎玻璃刺穿，脚底被划出血，她却感觉不到疼，不顾一切地向着看似安全的地方跑着。身后是尖叫、爆炸、晶体生长时那种令人毛骨悚然的咔嚓声。</p>
+            <p>小女孩钻进一条小巷，撞翻垃圾桶，钻进一个废弃的电话亭。电话亭的玻璃在刚刚已经被震碎了，风灌进来，带着血和烧焦的味道。她蜷缩在角落，双手死死捂住耳朵。</p>
+            <p>外面，熟悉的世界在碎裂。有人喊妈妈，有人喊救命，有人喊上帝。然后声音越来越少，只剩晶体生长的咔嚓声，和远处河面传来的低鸣。</p>
+            <p>小女孩的的牙齿在打颤。她不知道这是灵能灾难。她不知道什么是裂隙，什么是晶体化。她只知道：活下去....活下去....活下去。</p>
+            <p>她把帆布包打开，里面那些小玩意儿散了一地。她捡起那块缺针的指南针，指针在疯狂乱转，发了疯一般。她死死握住它，握住最后一根救命稻草。</p>
+            <p class="dialogue"><span class="character">小女孩：</span> 活下去……活下去……</p>
+            <p>她低声念着，声音细得像风。她记起来孤儿院的老嬷嬷说过的故事：太阳是孤独的，所以才那么亮。月亮也是孤独的，所以才那么冷。</p>
+            <p>她不知道自己的月亮在哪里。她只知道，在她的胸口，烧得她疼，却又舍不得熄灭，她只想活下去，仅此而已。动静渐渐地小了下去，小女孩试探性地走出了街道。</p>
+            <p>外面，晶体化的市民站在街道上。他们的身上散发着紫色的幽光，市民身上的晶体平面上映出同一个空洞的自己。</p>
+            <p>小女孩把脸埋进帆布包里。眼泪终于掉下来，砸在指南针上，指针晃了晃，最终停在某个方向，她不知道那是哪里。她只知道，她想要活下去。</p>
+            <p>雨停了，却没有带来清新。河流下游的街道已经被晶体反射的光芒染成一片病态的灰紫，空气里混着烧焦的橡胶味和晶体生长时那种甜腻的腐臭。怪物不再是人形，而是从尸体里爬出的东西。晶体藤蔓缠绕的肢体，断裂的骨头外翻成尖刺，空洞的眼眶里映着灰紫色的光，反射着同一个虚空。</p>
+            <p>小女孩蜷缩在一家倒塌的便利店货架后面，手里死死攥着那把从货架上捡来的水果刀。刀刃上还沾着刚刚撬开罐头的汁水，已经干涸成褐色。她呼吸得很轻，生怕被自己被怪物听见。自己的帆布包里面只剩半块面包和一瓶矿泉水。</p>
+            <p>门外传来脚步声，不是怪物的咔嚓声，是人类的。两个男人，一个拎着铁棍，一个抱着一个纸箱。纸箱里露出面包的包装和一罐牛肉罐头。</p>
+            <p>小女孩的喉咙动了动。她已经三天没好好吃东西了。胃里面像是有一把钝刀在搅动。</p>
+            <p>其中的一个男人低声咒骂，另一个喘着气。</p>
+            <p class="dialogue"><span class="character">男人A：</span> 妈的，那边有怪物爬出来了，快走！</p>
+            <p class="dialogue"><span class="character">男人B：</span> 等等……我看到里面好像有吃的……</p>
+            <p>小女孩的心跳猛地加速。她知道，如果他们进来，她会被发现。她知道，如果她不动，她会饿死。她慢慢爬起来，背贴着货架，握紧水果刀。当男人推开便利店倒塌的货架时，她猛地冲出去，一把夺过纸箱，转身就跑。男人愣了半秒，大吼着追上来。</p>
+            <p>小女孩钻进一条窄巷，身后传来怒骂和脚步声。她拐进一条窄巷的垃圾堆里，把纸箱里面的东西塞进帆布包，背起来，继续跑。</p>
+            <p>甩掉身后的人，她躲进一栋半塌的公寓楼，靠着墙滑坐下来。纸箱里只有半条面包和一罐快过期的牛肉。她撕开面包，塞进嘴里，嚼得很快。牛肉罐头打不开，她用刀撬，被撬开的铁皮扎得她满手鲜血。她吃得狼吞虎咽，汤汁顺着下巴滴到衣服上。</p>
+            <p>吃完，她看着空罐子，如同自己空洞的眼神。她没有哭。只是低声说了一句，像在对自己说，对不起……</p>
+            <p>日子像灰色的河流，一天一天流过去。她学会了观察，怪物怕光，怕火，怕噪音。她学会了偷，从其他幸存者的营地里偷食物，从废弃超市里翻罐头，从死人身上扒外套。她学会了躲，在下水道里，在屋顶上，在地铁站的黑暗角落。</p>
+            <p>她不再是那个十岁的孩子。眼里越来越没有光，她不爱笑了，也不爱哭了。活着像一台精密的机器，只计算着生存的概率。</p>
+            <p>有一次，她看见一个男人被怪物追杀。男人手里抱着一个背包，里面鼓鼓囊囊的，看得出有食物。怪物越来越近，男人摔倒，背包掉在地上。他爬起来，继续跑，背包被留在原地。</p>
+            <p>小女孩藏在阴影里，死死地盯着看着那只背包。她等怪物追远了，才走过去。背包里有一包小蛋糕、几瓶水、两包饼干。她把东西塞进帆布包，转身离开。听着身后传来男人被撕碎的惨叫，步子越来越快。她没有停下脚步，只是低声说了一句，在说服自己：我只是想要活下去……</p>
+            <p>她数日子已经数不清了，她在一栋废弃的低层办公楼顶层找到一个相对安全的废弃避难所。窗户被木板钉死，门自己找到了一根用铁链栓上，角落里有张破沙发和一堆旧报纸。她把帆布包扔在地上坐在沙发里。</p>
+            <p>窗外是死寂的城市，偶尔有怪物的咔嚓声。她看着窗缝里漏进来的阳光检查着储备。帆布包里只剩半瓶水和一块自己不知道省吃了多久的面包。食物快没了，冬天要来了，她可能活不过下一个月。</p>
+            <p>她终于哭了。不是嚎啕，是低低的抽泣，被压抑了久了，终于找到缝隙漏出来。眼泪掉在膝盖上，砸出一小片湿痕。</p>
+            <p class="dialogue"><span class="character">小女孩：</span> 有人吗……</p>
+            <p class="dialogue"><span class="character">小女孩：</span> 有人来找我吗……</p>
+            <p>她把脸埋进膝盖里，肩膀抖得厉害，但是谁会来找一个孤儿？</p>
+            <p class="dialogue"><span class="character">小女孩：</span> 我……我好怕……</p>
+            <p>城市已经不再是城市，而是一片灰紫色的坟场。街道被晶体藤蔓缠绕，如同血管在地面上暴涨。怪物游荡的声音像骨头摩擦，像指甲刮过黑板，像无数人在同时呻吟嘶吼。</p>
+            <p>小女孩已经不数日子了。帆布包越来越轻，食物吃完了，矿泉水只剩最后一口。她蜷在避难所的窗台后，盯着对面大楼的裂缝处的那个男人。那个男人之前被怪物抓伤过，估计坚持不了几天，她在等那个男人死去。</p>
+            <p>男人还没完全晶体化，他的右臂已经变成透明的晶柱，血管在里面像紫色的闪电在游走。他靠着墙，喘气喘得如同拉风箱，左眼还保留着人类的恐惧。他跑出来寻找食物遇到怪物的时候看见了对面窗户的小女孩，伸出没变晶体的左手，声音嘶哑着。</p>
+            <p class="dialogue"><span class="character">受伤的男人：</span> 小妹妹……帮帮我……我……我有吃的……</p>
+            <p>受伤的男人从口袋里掏出一块巧克力，包装纸皱巴巴的，上面沾了血。小女孩的胃猛地绞了一下。</p>
+            <p>她已经几天没吃东西了。喉咙干得像砂纸，舌头肿着。她慢慢从避难所出来来，握紧水果刀，走到男人面前。</p>
+            <p>男人眼睛亮了亮，伸出手想把巧克力递给她。小女孩看着那块巧克力，看着男人眼里的求生欲，看着他右臂晶体里游走的紫光。</p>
+            <p>她哭了，泪水从脸颊滑落。低低的、压抑的抽泣的说着对不起。</p>
+            <p>她的声音细得像风，但还是举起了手中的刀，手抖得像筛子。男人愣住了，眼睛睁大。</p>
+            <p class="dialogue"><span class="character">小女孩：</span> 别……别过来……怪物……怪物别过来……。</p>
+            <p>她哭嚎着后退，刀却没放下。男人从对面楼爬上来，咔嚓声越来越近。小女孩的眼泪掉在刀刃上。生存的本能如同野火，烧穿了理智。</p>
+            <p>她冲上去，一刀刺进男人胸口。颤抖的、绝望的、孩子气的。刀刃没入时，她哭得更大声，像在杀自己。</p>
+            <p>男人眼睛睁大，喉咙里发出咕的一声。血涌出来，热热的，溅在她手上。男人倒下去，巧克力掉在地上，滚进地上的杂物中。小女孩愣住了，刀从手里滑落，砸在地上当的一声。</p>
+            <p>她看着男人的尸体，看着他渐渐晶体化的脸，看着那双还睁着的眼睛。</p>
+            <p>她跪下来，双手颤抖着捡起巧克力。包装纸被血染红，她撕开，一股脑的塞进嘴里。</p>
+            <p>甜味在舌尖化开，也如同一把刀，割开她的喉咙。她哭着吃完那块巧克力，从男人身上搜出剩下的东西：半包烟、一把打火机、一张皱巴巴的照片。上面是一个女人和两个孩子。</p>
+            <p>不远处的，怪物咔嚓声越来越近，这些声音越来越刺耳，在嘲笑她的第一次杀人。</p>
+            <p>避难所里的食物早见底了。小女孩把最后一口水含在嘴里，慢慢咽下去，呆呆的坐在沙发上看着城市的街道。</p>
+            <p class="dialogue"><span class="character">小女孩：</span> 有人会来吗？</p>
+            <p>她低头，肩膀抖了抖。</p>
+            <p class="dialogue"><span class="character">小女孩：</span> 我……我只是想活下去……谁会来救一个孤儿呢？</p>
+            <p>她把脸埋进膝盖里，低低抽泣，一个世界遗忘的孩子。</p>
+            <p>城市已经死了。街道不再有汽车的轰鸣，只剩风吹过晶体藤蔓的咔嚓声，小女孩的帆布包空得像她的胃，里面只有一把生锈的水果刀和那张被血染红的照片。她把照片翻来覆去地看，在找一个自己不认识的家人。</p>
+            <p>不知道过了多久，也许一周，也许一个月，时间在灾难里失去了意义。城市里出现了陌生人。</p>
+            <p>他们穿着统一的深灰色防化服，胸口绣着一个陌生的徽记：一个环绕着六芒星的眼睛的图案，背景是联合国的背景。徽记上的眼睛像在凝视，又像在监视。</p>
+            <p>有些人戴着头盔和面罩，呼吸器发出低沉的嘶嘶声；有些人却只穿普通外套，甚至没戴手套，却能在晶体区自由行走，像是异常对他们无效。</p>
+            <p>出来寻找食物的小女孩躲在一家倒塌的书店二楼，从破窗帘的缝隙里观察他们。她看见一个没穿防护服的男人蹲在街角，用一种奇怪的仪器扫描一具晶体化的尸体。仪器发出蓝光，男人低声对耳麦说了什么，然后继续走。</p>
+            <p>小女孩的心跳加速。她本能地往后缩，呼吸压得很轻。这些从未见过的陌生人带着奇怪的装备，不怕怪物。</p>
+            <p>她摸了摸自己的旧衣服。她没有防护服，却也活到现在。这个发现让她产生了一丝好奇，又迅速被警惕压下去。</p>
+            <p>“离远点”</p>
+            <p>她低声对自己说，在警告一个不听话的孩子。</p>
+            <p>食物彻底见底了。最后半块面包被她分三天吃完，水也只剩瓶底的一点。她开始出现幻觉，闻到烤面包的香味，听见老嬷嬷叫她吃饭的声音。</p>
+            <p>那天，她循着记忆找到一条小街，街角有一家完好无损的咖啡厅。玻璃橱窗碎了，但门还锁着。她从窗户小心翼翼的翻进去。里面人去楼空，柜台后的咖啡机结了灰，地上散着翻倒的椅子。空气里残留着陈年的咖啡香。</p>
+            <p>小女孩直奔前台的玻璃橱柜，里面有几块没发霉的司康饼、一盒密封的马卡龙、一排瓶装矿泉水。她颤抖着撕开包装，把司康饼塞进嘴里。水灌下去，冰得她打了个激灵，却让她第一次感觉到自己还活着的真实感。</p>
+            <p>她坐在柜台后面，背靠着冰箱，低头吃着马卡龙。甜味在舌尖化开，她品尝着这熟悉又陌生的味道，这味道短暂的割开她胸口那团硬邦邦的恐惧。</p>
+            <p>眼泪掉在马卡龙上，甜得发苦。就在这时，咖啡厅的门被推开。小女孩猛地抬头，门口站着五个人，灰色防化服，胸口绣着那个眼睛徽记。他们目光锐利，如同在捕猎。</p>
+            <p>其中一个男人举起手，示意其他人散开包围。另一个女人低声对耳麦说了什么，然后看向柜台后的星宿。</p>
+            <p class="dialogue"><span class="character">全副武装的女人：</span> 一个孩子？</p>
+            <p>小女孩整个人僵住。她慢慢站起来，手里还抓着半块马卡龙，指尖沾着糖霜。她后退一步，直到背贴着冰箱无路可退。</p>
+            <p>本能告诉她跑。但腿软得迈不动。她看着他们，声音颤抖，却带着一点孩子气的倔强：</p>
+            <p class="dialogue"><span class="character">小女孩：</span> 你们……是谁？不要过来！</p>
+            <p>她挥舞着手中的那把水果刀，试图让这些不速之客不敢靠近。</p>
+            <p>咖啡厅的空气凝固了。那些奇怪的光从破碎的橱窗渗进来，照在这些怪人身上，像一张巨大的网，慢慢收紧。小女孩站在柜台后，手里还抓着半块马卡龙，指尖沾着糖霜。</p>
+            <p>那些人没有立刻上前。领头的一个女人举起一只手，示意其他人别动。她蹲下来，隔着柜台与小女孩平视。</p>
+            <p class="dialogue"><span class="character">全副武装的女人：</span> 小妹妹，别怕。我们不是坏人。</p>
+            <p>她打开防护服的遮光面罩，露出一张温柔的脸。眼睛里有疲惫，也有某种……怜悯。</p>
+            <p class="dialogue"><span class="character">全副武装的女人：</span> 我们是来……救人的。米斯泰研究院。你可以叫我艾琳。</p>
+            <p>她慢慢伸出手，掌心向上，示意着自己没有没有任何武器。</p>
+            <p>小女孩把水果刀举在胸前，刀尖抖得厉害。她的眼睛睁得很大，像两颗烧得发亮的太阳，却又随时可能熄灭。</p>
+            <p>艾琳没动，只是保持着那个姿势，声音更轻：</p>
+            <p class="dialogue"><span class="character">艾琳：</span> 我们看见你一个人在这里，这里很危险。那些晶体怪物它们会伤害你。</p>
+            <p>小女孩的喉咙动了动，颤颤巍巍的回答着。</p>
+            <p class="dialogue"><span class="character">小女孩：</span> 你们……不怕它们？</p>
+            <p>艾琳笑了笑，尽力的安抚着小女孩。</p>
+            <p class="dialogue"><span class="character">艾琳：</span> 我们有办法。不怕。</p>
+            <p>她慢慢站起来，对耳麦低声说了句什么，然后看向小女孩：</p>
+            <p class="dialogue"><span class="character">艾琳：</span> 可以让我检查一下你吗？不是伤害你，只是看看你有没有受伤，有没有被晶体感染。</p>
+            <p>小女孩犹豫了很久，无助、恐惧、孤独，像三把刀在她胸口搅动。最终，水果刀哐当一声掉在地上、不是信任，是绝望。</p>
+            <p>艾琳走近，动作很慢。她蹲下来，戴上手套，轻柔地检查小女孩的手臂、脖子、腿。</p>
+            <p>小女孩僵硬地站着不敢有一丝反抗的动作。检查到一半，艾琳突然停住。她的眼神变了，从温柔，到震惊，再到…一种难以置信的复杂。</p>
+            <p class="dialogue"><span class="character">艾琳：</span> 这孩子没有灵能波动。</p>
+            <p>她低声对耳麦说，声音带着颤抖。</p>
+            <p class="dialogue"><span class="character">艾琳：</span> 詹姆，你得过来一趟。这里有个孩子，她完全没有灵能反应，却在重灾区活了这么久。</p>
+            <p>短暂的沉默后，耳麦那头传来一个低沉的男声。</p>
+            <p class="dialogue"><span class="character">詹姆：</span> 我马上到。别惊动她。保持现状。</p>
+            <p>几分钟后，那个男人到了。他蹲在小女孩面前，与她平视。小女孩看着他，陌生，却不那么可怕。</p>
+            <p>詹姆声音很低，仿佛在和一个成年人说话一样，直来直去。</p>
+            <p class="dialogue"><span class="character">詹姆：</span> 你叫什么名字？</p>
+            <p>小女孩愣了愣，她低头，看着自己脏兮兮的手。</p>
+            <p class="dialogue"><span class="character">小女孩：</span> 我……我不知道。</p>
+            <p>她顿了顿，又补充。</p>
+            <p class="dialogue"><span class="character">小女孩：</span> 我是孤儿。孤儿院……在河边。可我现在……找不到了。</p>
+            <p>詹姆没表现出惊讶，只是点点头。</p>
+            <p class="dialogue"><span class="character">詹姆：</span> 你多大了？</p>
+            <p class="dialogue"><span class="character">小女孩：</span> 十岁。应该是。</p>
+            <p class="dialogue"><span class="character">詹姆：</span> 你是怎么活下来的？</p>
+            <p>小女孩沉默了很久，眼泪在眼眶里打转。</p>
+            <p class="dialogue"><span class="character">小女孩：</span> 跑。躲。偷吃的。杀……杀了一个怪物。</p>
+            <p>声音越来越小，像在忏悔，又像在陈述事实。</p>
+            <p class="dialogue"><span class="character">詹姆：</span> 你很勇敢。</p>
+            <p>我叫詹姆。米斯泰研究院特别调查员。</p>
+            <p class="dialogue"><span class="character">詹姆：</span> 这里很危险。你一个人活不下去的。</p>
+            <p class="dialogue"><span class="character">詹姆：</span> 跟我走吧。去一个叫米斯泰研究院的地方。那里有吃的，有床，很安全。</p>
+            <p class="dialogue"><span class="character">詹姆：</span> 如果你愿意，我可以给你取个名字。或者……你自己想一个。</p>
+            <p>小女孩看着他，看着那只伸出的手，看着窗外还在蔓延的奇怪的光芒和不远处怪物的嘶吼。她慢慢伸出手，小手冰冷，沾着糖霜和血迹。</p>
+            <p class="dialogue"><span class="character">小女孩：</span> 我……想活下去。</p>
+            <p class="dialogue"><span class="character">詹姆：</span> 好。从今天起，我就你叫星宿了。</p>
+            <p>直升机的旋翼声像巨兽的呼吸，震得星宿的耳膜发麻。她蜷缩在后座，双手死死抱住帆布包，那只从灾难一只陪着自己的背包。窗外是城市上空的灰云，灰暗的紫光从云层中撕开一道道裂口，天空在流血。</p>
+            <p>詹姆坐在一旁，回头看她一眼，声音透过直升机耳机传进来。</p>
+            <p class="dialogue"><span class="character">詹姆：</span> 别怕。很快就到了。</p>
+            <p>星宿没说话，只是把头低着看着燃烧的城市。她不怕詹姆，至少现在不怕。她怕的是自己醒来发现这一切是梦，怕梦醒后又回到那个满是晶体怪物和血的城市。</p>
+            <p>不知道过了多久，直升机开始下降，引擎声渐弱，视野里出现一座巨大的建筑群，灰色混凝土外墙爬满藤蔓，像是古老城堡与未来科技的诡异融合。停机坪上，几道身影等候，穿着灰色制服，胸口也都绣着那个眼睛徽记。</p>
+            <p>旋翼停转，舱门打开。冷风灌进来，带着雪山的味道。星宿被詹姆带下飞机，双脚触地时，她腿软得差点跪下。</p>
+            <p class="dialogue"><span class="character">詹姆：</span> 走吧。先检查身体。</p>
+            <p class="dialogue"><span class="character">小女孩：</span> 检查？</p>
+            <p class="dialogue"><span class="character">詹姆：</span> 只是看看你有没有受伤，有没有被那些晶体影响。不会疼。</p>
+            <p>星宿没点头，也没摇头。</p>
+            <p>医务室的灯光冷白，像手术台。星宿被带进一间玻璃隔间，里面站着三个穿白大褂的人，他们戴着透明面罩，声音从扬声器里传出来。</p>
+            <p class="dialogue"><span class="character">医护人员A：</span> 请脱掉外衣，躺到检查台上。</p>
+            <p>星宿呆在原地。她看着那些仪器：金属探头、闪烁的屏幕、悬浮的扫描臂，像活的怪物。</p>
+            <p>她想起晶体从人皮肤里长出来的样子。</p>
+            <p class="dialogue"><span class="character">星宿：</span> 我……我可以不脱吗？</p>
+            <p>星宿的声音颤抖着，随时要哭出来。</p>
+            <p>其中一个女人稍微温和的说着。</p>
+            <p class="dialogue"><span class="character">医护人员B：</span> 可以穿内衣。但外衣要脱。扫描需要。</p>
+            <p>星宿低头，慢慢脱掉外套和毛衣，只剩一件薄薄的背心和破洞裤子。她爬上检查台，躺下时冰冷的金属触碰到后背，她猛地一颤，双手死死抓住台边。</p>
+            <p>扫描臂从头顶降下，蓝光扫过她的身体，像无数只冰冷的手在抚摸。星宿闭上眼，眼泪从眼角滑落，掉落在金属台上。星宿在星宿默念着：别怕，很快就好了。</p>
+            <p>仪器嗡嗡响了很久，最终，屏幕上跳出一行红字：</p>
+            <p>【无灵能波动。无晶体感染迹象。生理年龄：10岁。健康状态：严重营养不良，轻度脱水，心理应激反应。】</p>
+            <p>医务室里安静了两秒，然后是低低的惊叹声。</p>
+            <p class="dialogue"><span class="character">医护人员A：</span> 完全免疫？难道说....</p>
+            <p class="dialogue"><span class="character">医护人员B：</span> 不可能?!竟然是零反应？难道说机器出问题了？再看看数据！</p>
+            <p>詹姆推门进来，目光落在星宿身上。</p>
+            <p class="dialogue"><span class="character">詹姆：</span> 我带她去食堂。先让她吃东西。你们去检查一下机器，快去！</p>
+            <p>食堂很大，现在这个点空荡荡的。詹姆领着星宿进来，让她坐在窗边。窗外是雪山，月光洒在白雪上，像一层银霜又像是一堵监狱的围墙。</p>
+            <p>服务员端来一盘热腾腾的食物，奶油蘑菇汤、烤面包、苹果派，还有一杯热巧克力。</p>
+            <p>星宿看着盘子，喉咙动了动，却没动勺子。</p>
+            <p class="dialogue"><span class="character">詹姆：</span> 吃吧。慢慢吃。不急。</p>
+            <p>星宿这才低头，拿起勺子，小口小口喝汤。热流顺着喉咙下去，她眼眶突然红了，她第一次感受到了自己还活着的感觉。</p>
+            <p class="dialogue"><span class="character">詹姆：</span> 米斯泰研究院会是你的家。</p>
+            <p>星宿没有看着他，只是自顾自的吃着东西，抽泣着。泪水划过脸颊滴落进热汤里面，滴答作响。</p>
+            <p>第二天清晨，研究院总部的走廊被晨光染成浅金色。星宿换上了一套崭新的衣服，衣服是詹姆昨晚让人送来的，尺码刚好，却让她觉得陌生，感觉自己披了一层不属于自己的皮肤。</p>
+            <p>她站在自己房间门口，手指轻轻扣着门框，目光落在走廊尽头的那群人身上。</p>
+            <p>五六个人，西装革履的和白大褂的混在一起。手里拿着平板和厚厚的报告夹。他们围成半圈，指着自己的房门，低声争执，声音压得很低，却还是断断续续飘过来。</p>
+            <p class="dialogue">零灵能反应，生理指标正常，纯纯的普通人，但免疫机制完全不符合已知模型……</p>
+            <p class="dialogue">如果她真的是先天免疫体，那整个灵能理论和晶体化防治体系都要重写……</p>
+            <p class="dialogue">太危险了，我们应该先隔离观察……”</p>
+            <p class="dialogue">但詹姆特别调查员坚持要直接纳入特别培养计划，你们知道他的理由……</p>
+            <p class="dialogue">风险评估报告里写得很清楚，她的情绪稳定性……</p>
+            <p class="dialogue">但她才十岁！怎么能让一个十岁的孩子去...唉...</p>
+            <p>星宿站在原地，背贴着门，看着眼前的一切。</p>
+            <p>她不怕死，灾难里，她见过太多死法。被晶体吞噬、被怪物撕碎、在饥饿中慢慢枯萎。她都熬过来了，她怕的是未知。这些人在争的她，好像不是她。他们说的零灵能反应免疫机制特别培养，每一个词都如此陌生。</p>
+            <p>她忽然想起那天在咖啡厅，詹姆蹲下来时说的那句话：从今天起，你叫星宿。</p>
+            <p>她当时没哭，只是握住了他的手，因为她想要逃离。现在，她忽然想哭。不是因为害怕，而是因为她突然意识到，自己连自己是谁都不知道，自从灾难后，她忘掉了很多，甚至是孤儿院的记忆。</p>
+            <p>脚步声从走廊另一头传来。是詹姆走了过来。</p>
+            <p class="dialogue"><span class="character">詹姆：</span> 星宿。他们在讨论你的检查结果。你听见了？</p>
+            <p class="dialogue"><span class="character">星宿：</span> 他们说我……我很特殊。</p>
+            <p class="dialogue"><span class="character">詹姆：</span> 是。你很特殊。</p>
+            <p>詹姆伸手想摸摸她的头安抚她，却在半空停住。</p>
+            <p class="dialogue"><span class="character">詹姆：</span> 但这不是坏事。特殊意味着，你可能改变很多东西。</p>
+            <p>星宿低头，看着自己的新衣服。新鞋，新袜，新的一切。她忽然觉得，这些衣服像一层壳，把她和过去的自己隔开了。</p>
+            <p class="dialogue"><span class="character">星宿：</span> 但是我……我怕。怕我不是我。他们说的‘我’，我听不懂。可他们说的……好像才是真的我。</p>
+            <p class="dialogue"><span class="character">詹姆：</span> 你就是你。星宿。</p>
+            <p>詹姆顿了顿，终于把手放在她头上，很轻地揉了揉。</p>
+            <p class="dialogue"><span class="character">詹姆：</span> 那些报告、那些词……只是描述。不是定义。</p>
+            <p>他站起来，把手伸给她。</p>
+            <p class="dialogue"><span class="character">詹姆：</span> 走吧。先去吃早餐。</p>
+            <p>早餐餐厅的暖光洒在长桌上，热巧克力的甜香混着烤面包的麦香。星宿坐在窗边，手里捧着一杯热可可，勺子在杯沿轻轻敲击，在敲打自己的思绪。窗外是雪山，这里美好的像梦境一般。</p>
+            <p>星宿低头看着杯子里缓缓旋转的泡沫，脑海里却闪回那些灰紫色的日子片段。曾经的她，十岁，孤儿院里十几个孩子挤在一张大床上，冬天被子不够，总是有人半夜哭着说冷。孤儿院的食物不够吃的时候，她白天就溜出去，在街角摆摊卖捡来的小玩意儿。赚到的钱买面包，分给更小的孩子，自己只吃边角的硬皮。</p>
+            <p>灾难后，为了活下去，一切变得更残酷。为了活下去，她偷过别人的食物，抢过别人的背包，甚至杀了人。每一次，都安慰自己，自己只是想要活下去。每一次，都在心里默念，凡事都有代价。</p>
+            <p>现在呢？干净的衣服、热腾腾的早餐、温暖的房间、詹姆的温柔、研究院的保护……一切像梦。她不必再挤床，不必再为一块面包拼命，不必再为了活下去而伤害别人。</p>
+            <p>可代价呢？她忽然觉得闷得慌。热可可的甜味在舌尖化开，却甜的让她想吐。她低声呢喃，像在问自己，也像在问空气：代价是什么？</p>
+            <p>她想起詹姆昨晚说的那句话：你很特殊。 想起医务室里那些人震惊的眼神。想起自己被称作零灵能反应先天免疫体。</p>
+            <p>她忽然明白了一点，这一切的安全、食物、温暖、名字都不是白来的。代价是她不再是普通人。她成了实验品样本希望。她被需要，却也被监视。她被保护，却也被研究。</p>
+            <p>眼泪掉进热可可里，荡起一圈涟漪。</p>
+            <p class="dialogue"><span class="character">星宿：</span> 我以为，活下去就够了。可现在……活下去以后呢？</p>
+            <p>热可可凉了，她没喝完。只是抱着杯子，坐在那里。一颗曾孤独燃烧的太阳，开始害怕迟来的陪伴。</p>
+            <div class="button-container">
+                <button class="prev-btn" onclick="prevScene(1)">上一章</button>
+                <button class="next-btn" onclick="nextScene(1)">下一章</button>
+            </div>
+        </div>
+
+        <div id="scene-2" class="scene">
+            <h2>二</h2>
+            <p>渐渐地，星宿开始在研究院里面被安排学习。</p>
+            <p>研究院的教育区设在建筑群的东翼，一整层楼被改造成教室、图书馆、训练场和宿舍。墙壁是浅灰色，带着金属质感，地板是柔软的防滑材料。</p>
+            <p>每天早上七点半，铃声准时响起。星宿和其他孩子一起走进教室，有十几个孩子，年龄从八岁到十三岁不等。全是灵能者，有的来自主动加入的灵能者，有的像她一样，是在灾难中被研究院捡回来的。</p>
+            <p>但她是唯一一个普通人。</p>
+            <p>第一堂课是灵能基础认知。讲师是个二十多岁的少女，姓李，戴着无框眼镜，她让孩子们轮流展示自己的能力。</p>
+            <p>一个叫艾米的女孩伸出手，掌心升起一团淡蓝色的光球；一个叫卡尔的男孩让桌上的笔悬浮起来，转圈，像在跳芭蕾；还有一个来自东欧的小男孩，低声说了句波兰语，教室里所有人的同时回应着，用着不同的语言。</p>
+            <p>星宿坐在最后一排，双手交叠在膝盖上，盯着桌面。她听不懂波兰语，各种声音直接钻进脑子里，她不知道发生了什么，为什么大家都能听懂波兰语。</p>
+            <p>闲暇时间，她被单独安排去语言课。一间小教室，只有她和一个叫玛丽的老师，老师教她汉语、法语、俄语.....甚至一点拉丁语。</p>
+            <p>星宿学得很认真。她记得每一个单词，每一个发音。但她不爱开口。她发现，灵能者之不需要懂对方的母语，能直接听懂对方想要表达的意思。</p>
+            <p>而她，只能靠翻译、靠感觉、靠手势。每当教室里突然响起跨语言的的对话，她就觉得自己像个聋子站在一群人中间。</p>
+            <p>研究院对她的待遇是最好的。单人间，有独立卫浴，有阳台看雪山。三餐有人送到房间，或者专属餐厅。衣服永远干净，鞋子永远合脚。詹姆每周都会来看她一次，带着一本童话书，或者一盒精致的点心。詹姆总是对她说：慢慢来。你不用急着证明什么。</p>
+            <p>但星宿知道，有些东西是证明不了的。夜晚，她常常站在阳台上，看雪山上的月亮。</p>
+            <p>月亮很冷，很远，像一面镜子也像曾经在黑暗中还在闪耀的她。月亮需要太阳才能发光，夜晚的太阳也需要月亮才能衬托。她不怕孤独，她在灾难里早就习惯了。</p>
+            <p>但她怕的是，自己永远是那个格格不入的人，永远是那个普通的例外。永远是那个被特殊对待，却永远无法融入的孤儿。明明自己已经站在了人群中央，却为何还是孤独的如此荒唐。</p>
+            <p>她低头，看着自己掌心。掌心很干净，没有晶体，没有灵能痕迹。只是普通人的手。</p>
+            <p>她把双手抱紧，像在抱住那个从未有过的、温暖的家，即使现在格格不入，但至少，能吃个饱饭，或许心情差的时候还能吃个披萨。</p>
+            <p>几乎半年了，星宿已经习惯了这种安静，习惯了坐在最后一排，习惯了别人用灵能跨母语聊天时她只能低头写字，习惯了课间别人围在一起讨论能力。</p>
+            <p>那天是周一，早上八点十五分。整间教室的人都迷迷糊糊的，直到教室门被推开，李老师走进来，身后跟着一个女孩。女孩的笑声打破了沉静。</p>
+            <p>女孩十几岁左右，和自己差不多，高挑，棕色长发扎成高马尾，穿着研究院统一的灰色校服，却把袖子卷到手肘，领口解开两颗扣子，露出一点牛仔外套的边。她脸上带着大大咧咧的笑，像一位刚从街头打完球回来的活力少女。</p>
+            <p class="dialogue"><span class="character">李老师：</span> 同学们安静一下。今天我们班来了一位新同学，从美国分部转来。大家欢迎！</p>
+            <p>女孩往前一步，声音响亮，带着浓重的得克萨斯口音。</p>
+            <p class="dialogue"><span class="character">密西西比：</span> 嘿！大家好！我代号密西西比！灵能类型是……嗯，咱也不知道形容这些鬼玩意。性格嘛……自来熟，以后请多关照啦！</p>
+            <p>她说完还比了个耶的手势，教室里响起稀稀拉拉的掌声和几声笑声。</p>
+            <p class="dialogue"><span class="character">李老师：</span> 密西西比，你就坐星宿旁边吧。星宿是班长，有什么不懂的可以问她。</p>
+            <p>密西西比的目光一下子锁定星宿，眼睛亮得像发现了新玩具。她大步走过来，直接在星宿旁边的空位坐下，椅子被她拉得吱呀一声。</p>
+            <p class="dialogue"><span class="character">密西西比：</span> 嘿！星宿对吧？以后请多指教啦！</p>
+            <p>她伸出手，笑得露出虎牙。</p>
+            <p>星宿愣了半秒。半年里，没人主动坐她旁边，从来没有人对自己笑的那么天真。她犹豫了一下，慢慢伸出自己的手。掌心冰冷，指尖还有一点墨水渍。</p>
+            <p class="dialogue"><span class="character">星宿：</span> 你好。</p>
+            <p>密西西比握住她的手，用力的摇着。</p>
+            <p class="dialogue"><span class="character">密西西比：</span> 哇，你手好凉！是不是早上没好好吃饭？没事，以后我罩着你！想吃啥喝啥跟我说！</p>
+            <p>星宿的手被她握得有点疼，却没抽回来。她低头，看着两人交握的手。</p>
+            <p>上课铃响了。密西西比没听讲，而是侧头看星宿，低声问着。</p>
+            <p class="dialogue"><span class="character">密西西比：</span> 星宿，你能力是什么呀？</p>
+            <p>星宿低头写字没有看密西西比。</p>
+            <p class="dialogue"><span class="character">星宿：</span> 我没有能力。</p>
+            <p>密西西比愣了愣，眼睛睁大，靠星宿更近了一些。</p>
+            <p class="dialogue"><span class="character">密西西比：</span> 啥？没有？那你怎么进研究院的？</p>
+            <p>星宿没抬头，只是继续记着笔记。</p>
+            <p class="dialogue"><span class="character">星宿：</span> 詹姆先生带我来的。</p>
+            <p>密西西比哦了一声，没再追问。只是忽然伸手，从自己口袋里掏出一颗巧克力，塞到星宿手里。</p>
+            <p class="dialogue"><span class="character">密西西比：</span> 给！甜的，吃完心情会好点。</p>
+            <p>星宿看着那颗巧克力，包装纸皱巴巴的，被攥过很多次。</p>
+            <p>她慢慢拆开，塞进嘴里。甜味在舌尖化开，像一把温柔的钥匙，打开了她胸口那扇尘封了半年的门。</p>
+            <p>她低头，小声说了一句，几乎听不见。</p>
+            <p class="dialogue"><span class="character">星宿:</span> 谢谢。</p>
+            <p>密西西比咧嘴一笑，露出虎牙。</p>
+            <p class="dialogue"><span class="character">密西西比：</span> 不客气！以后天天有！</p>
+            <p>下课铃刚响过。星宿没有外出休息，依旧坐在最后一排靠窗的位置，面前摊着一本俄语语法书，手里握着笔，却半天没写下一个字。</p>
+            <p>密西西比突然把椅子侧过来，吱呀一声，胳膊肘直接搁在星宿的课桌上。</p>
+            <p class="dialogue"><span class="character">密西西比：</span> 嘿！星宿！</p>
+            <p>星宿抬眼，没说话，只是把笔停在纸上，等着密西西比的各种奇怪问题。</p>
+            <p>密西西比也不客气，眼睛亮晶晶地盯着她。</p>
+            <p class="dialogue"><span class="character">密西西比：</span> 大家都有那个什么灵能，你没有？可你偏偏在这儿，还坐最后一排，像个神秘小侦探似的。</p>
+            <p>星宿低头，笔尖在纸上轻轻点了一下。</p>
+            <p class="dialogue"><span class="character">密西西比：</span> 那你真名叫什么呀？密西西比是我代号，真名是苏珊娜·李·哈珀。你呢？星宿是代号吧？总不能真叫这个，多酷啊！</p>
+            <p>星宿的手指在笔杆上轻轻扣了扣，声音更低。</p>
+            <p class="dialogue"><span class="character">星宿：</span> 我没有真名。</p>
+            <p>密西西比愣住，眼睛眨了眨，像没听懂。</p>
+            <p class="dialogue"><span class="character">密西西比：</span> 没有？那‘星宿’……就是你的名字了？</p>
+            <p>星宿点点头，目光落在课本上某个单词，却始终读不出来。</p>
+            <p>密西西比哇哦了一声，忽然伸手拍了拍星宿的肩膀，力道不轻不重。</p>
+            <p class="dialogue"><span class="character">密西西比：</span> 那以后我就叫一直管你叫星宿啦！超好听的！比我的苏珊娜高级多了！</p>
+            <p>她总是笑得是那么开心，又问着。</p>
+            <p class="dialogue"><span class="character">密西西比：</span> 你喜欢吃啥呀？甜的咸的？汉堡薯条还是中式炒饭？我超爱汉堡！下次我带你去食堂吃双层芝士的，保证你吃完还想吃！</p>
+            <p>星宿的嘴角微微动了动，想笑，又忍住了。</p>
+            <p class="dialogue"><span class="character">星宿：</span> 都可以。</p>
+            <p>密西西比不依不饶的问着，越来越靠近星宿。</p>
+            <p class="dialogue"><span class="character">密西西比：</span> 那你平时喜欢干啥？看书？画画？还是偷偷练格斗？我看你走路稳得很，肯定练过吧？</p>
+            <p>星宿侧过头终于看向密西西比。</p>
+            <p class="dialogue"><span class="character">星宿：</span> 我以前……没什么时间喜欢什么。</p>
+            <p>密西西比眨眨眼，忽然安静下来，盯着星宿的看了几秒。</p>
+            <p class="dialogue"><span class="character">密西西比：</span> 你以前过得挺苦吧？</p>
+            <p>星宿没回答，密西西比忽然伸手，从口袋里掏出一颗巧克力，塞到星宿手里，就像早上刚刚来的那样。</p>
+            <p class="dialogue"><span class="character">密西西比：</span> 给。再吃一块。吃完心情会好点。</p>
+            <p>星宿看着那颗巧克力，打趣的说着。</p>
+            <p class="dialogue"><span class="character">星宿：</span> 谢谢。你的衣兜是什么小仓库吗？</p>
+            <p class="dialogue"><span class="character">密西西比：</span> 哇，原来你会开玩笑啊？我一直以为你是什么冰块呢....那个叫，怎么形容来着？哎呀，算了，不管啦。</p>
+            <p class="dialogue"><span class="character">密西西比：</span> 那，星宿。以后想加入哪个部门呀？联情局？武装部？还是研究部？我想去武装部，揍那些怪物超爽！</p>
+            <p>星宿沉默了很久，终于放下笔，也侧着身面对密西西比</p>
+            <p class="dialogue"><span class="character">星宿：</span> 我不知道。</p>
+            <p class="dialogue"><span class="character">密西西比：</span> 不知道？那你来研究院干嘛？难道是要去拯救世界？</p>
+            <p>她笑得很大声，像在开玩笑。</p>
+            <p>星宿抬头，看了她一眼。眼睛很亮，却又很深。</p>
+            <p class="dialogue"><span class="character">星宿：</span> 或许吧。</p>
+            <p>声音很轻，像在问自己，也像在回答。密西西比突然伸手揉乱星宿的头发。</p>
+            <p class="dialogue"><span class="character">密西西比：</span> 行吧！不管你以后干啥，拯救世界也行，吃汉堡也行！我都支持你哦。</p>
+            <p>星宿没躲，任由她揉。头发乱了，她也没去理。或许这是她第一次感受到这里同龄人的关怀，她想起了曾经孤儿院的日子，曾经那些和自己共同生活的同伴。</p>
+            <p>她低头，嘴角艰难的弯起一点很小的弧度，转瞬即逝。</p>
+            <p class="dialogue"><span class="character">星宿：</span> 嗯....</p>
+            <p>日子一年一年吹过去，十六岁的星宿已经长高了，肩膀不再瘦弱，眉眼间多了几分冷冽的锋芒。研究院的制服穿在她身上，如同一件盔甲不张扬，却带着一种拒人千里的距离感。她还是不爱说话，不爱笑，走廊里遇见人，也只是微微点头，眼神平静的看不出任何情感。</p>
+            <p>但密西西比不在乎。她走路带风，说话带笑，研究院里几乎每个人都认识她，她见到熟人就打招呼，见吃的就去蹭，需要写作业就去抄。她似乎和每个人关系都很好要，但似乎只有星宿能无限包容她的闹腾。</p>
+            <p>她们成了形影不离的朋友。上课坐同桌，下课一起去食堂，训练时一起组队，假期时一起窝在星宿的单人间看电影。密西西比管星宿叫星宿姐或冰山美人，星宿管她叫密西西比，偶尔叫着苏珊娜。</p>
+            <p>密西西比最喜欢的事，就是在考试前一天晚上冲进星宿房间，抱着枕头撒娇说着：星宿姐～明天灵能理论考，我又没复习……你帮我划重点呗？</p>
+            <p>星宿总是叹一口气，却还是把笔记推过去，声音淡淡的回应着：自己看。别抄。</p>
+            <p>结果考试时，密西西比还是会偷偷瞄星宿的卷子。星宿从来不挡，甚至会故意把卷子偏一点，让她看得更清楚。密西西比考完总是第一个冲到星宿面前，抱着她的胳膊晃。</p>
+            <p class="dialogue"><span class="character">密西西比：</span> 星宿姐你太好了！这次肯定又能及格！晚上请你吃双层芝士汉堡！</p>
+            <p>星宿被她晃得晃，没有推开，只是尽量的保持平衡低声说着。</p>
+            <p class="dialogue"><span class="character">星宿：</span> 少吃点垃圾食品。</p>
+            <p class="dialogue"><span class="character">密西西比：</span> 星宿姐你嘴上嫌弃，心里明明超想吃！</p>
+            <p>日子就这样一天天过去。星宿还是那个冷冽高冷的星宿，话少，没有多余的表情，眼神永远平静得像深潭。但在密西西比面前，她会多说几句话，会在对方饿了时默默把自己的那份甜点推过去，会在对方熬夜打游戏时披着毯子坐在旁边陪到天亮。</p>
+            <p>密西西比也知道，星宿不爱表现，不爱说心里话。但她不在乎，因为她知道，星宿的冷，是盔甲。盔甲下面，是那个在灵能灾难里活下来的、孤独了太久的小女孩，如同自己一样。</p>
+            <p>有一天，下课铃响了，教室里立刻乱成一团。同学们三三两两往外走，有人抱怨今天的灵能理论课又枯燥得想睡觉，有人已经在讨论晚饭吃什么。星宿坐在靠窗的位置，慢条斯理地把笔记本合上，笔帽扣好，动作一如既往地慢而整齐。</p>
+            <p>密西西比在一旁戳着星宿，脸上挂着那种藏都藏不住的兴奋。</p>
+            <p class="dialogue"><span class="character">密西西比：</span> 星宿姐！走走走～下课了！带你去个超级好玩的地方！</p>
+            <p>星宿抬头看着密西西比，表情没什么变化，只是把笔记本塞进背包的动作停了半秒。</p>
+            <p class="dialogue"><span class="character">星宿：</span> 好玩的地方？</p>
+            <p>星宿的声音十分平静，带着一点惯有的疏离感，却没有拒绝密西西比的意思。走廊上人来人往，密西西比时不时回头冲着星宿笑，夸张的形容着那处好玩的地方。</p>
+            <p>出了教学楼，密西西比直接拽着星宿的衣服往研究院一处偏僻的角落走着。那条路平时没什么人，树影斑驳，夕阳从枝叶间漏下来，地面点缀了一层碎金。</p>
+            <p class="dialogue"><span class="character">密西西比：</span> 保证你没来过！超级隐秘！走快点～</p>
+            <p class="dialogue"><span class="character">星宿：</span> 到底是什么地方？</p>
+            <p>星宿的声音还是淡淡的，却比平时多了几分好奇。她侧头看着密西西比，侧脸被夕阳镀了层金，笑得没心没肺。</p>
+            <p class="dialogue"><span class="character">密西西比：</span> 到了你就知道啦，绝对……超级治愈！</p>
+            <p>小路越走越窄，最后变成一条被野草掩盖的羊肠小道。密西西比忽然停下，转身冲着星宿神秘兮兮的眨眼。</p>
+            <p class="dialogue"><span class="character">密西西比：</span> 闭眼！</p>
+            <p class="dialogue"><span class="character">星宿：</span> 诶？怎么了？</p>
+            <p>密西西比双手合十，带着乞求的语气软下来，扭捏的对星宿撒着娇。</p>
+            <p class="dialogue"><span class="character">密西西比：</span> 相信我一次嘛，星宿姐，我们的冰山美人～就三秒！我带你看个好东西，保证不骗你。</p>
+            <p>星宿沉默了两秒，终于闭上眼睛。</p>
+            <p class="dialogue"><span class="character">星宿：</span> 苏珊娜！不要说那个词语！.....但要抓紧我，我看不见路了。</p>
+            <p>密西西比立刻兴奋地耶了一声，拉着星宿的手，小心翼翼地往前走。脚步声踩在落叶上，沙沙作响。风吹过，带着青草和泥土的味道，还有一点隐约的香味。走了大概十几步，密西西比停下脚步。</p>
+            <p class="dialogue"><span class="character">密西西比：</span> 可以睁眼了哦，星宿姐。</p>
+            <p>眼前是一小片被废弃温室包围的野花田。夕阳从破损的玻璃顶漏下来，把整个地方染成暖橙色。野花开得肆意，有雏菊、蒲公英、矢车菊，还有一些叫不上名字的小花，在风里轻轻摇晃。温室顶的裂缝里长出了藤蔓，挂着几串野葡萄。</p>
+            <p>空气里全是花香和果子的甜味，安静得只有鸟叫与蜂鸣。密西西比小声的说着，语气带着一点骄傲。</p>
+            <p class="dialogue"><span class="character">密西西比：</span> 怎么样？星宿姐，我上周在课间里面探险时候发现的。没人来，超级安静！ 我想你最近好像一直绷得很紧。就，就想带你来这儿……放松一下。</p>
+            <p>密西西比松开手，转身看着星宿，像在等表扬，又有点紧张。</p>
+            <p class="dialogue"><span class="character">密西西比：</span> 星宿姐……你喜欢吗？</p>
+            <p>星宿没立刻回答。只是静静看着这片小小的、被遗忘的秘密花园。夕阳洒在野花上，像给每一朵都镀了金。风吹过，花瓣轻轻飘落，落在密西西比的头发上、肩膀上。</p>
+            <p class="dialogue"><span class="character">星宿：</span> 喜欢。谢谢你……密西西比。之后还有什么有趣的地方，还带我来，好吗？</p>
+            <p>当天晚上，密西西比又赖在星宿房间不走。星宿坐在书桌前看书，密西西比趴在床上玩手机，玩着玩着忽然抬头。</p>
+            <p class="dialogue"><span class="character">密西西比：</span> 星宿姐。 你说……我们以后，会不会一直这样？</p>
+            <p>星宿的手停在书页上，目光落在书上，没有翻页，静静的思考着密西西比的问题。</p>
+            <p class="dialogue"><span class="character">星宿：</span> 什么样？</p>
+            <p>密西西比翻身躺平，看着天花板，声音难得正经起来。</p>
+            <p class="dialogue"><span class="character">密西西比：</span> 就是……形影不离。一起吃饭，一起上课，之后一起揍怪物，一起……长大。</p>
+            <p class="dialogue"><span class="character">星宿：</span> 不知道.....</p>
+            <p>密西西比看着沉思的星宿，忽然翻身坐起来，一把抱住星宿的腰，把脸埋在她背上。</p>
+            <p class="dialogue"><span class="character">密西西比：</span> 星宿姐！以后不管去哪个部门，不管什么任务还是吃好吃的，我都跟你！我还要你带我呢！</p>
+            <p>今天晚上，星宿终于感觉她自己不再那么孤单。</p>
+            <p>教室的午后阳光从高窗洒进来，落在课桌上，形成一道道长长的光柱。铃声刚响过，李老师推门进来，身后跟着一位少女。</p>
+            <p>少女穿着研究院的灰色制服，却穿出了古典的味道，领口别着一枚小小的红玫瑰胸针，她走路的姿态像从油画里走出来，优雅、克制、带着一点贵族式的疏离。</p>
+            <p class="dialogue"><span class="character">李老师：</span> 同学们安静。这位是新转来的同学，从英国分部过来。代号白金汉，白金汉同学虽然来自十九世纪的英国但已经接受了系统的现代教育，现在来总部继续深造。大家欢迎！</p>
+            <p>稀稀拉拉的掌声响起。白金汉微微欠身，声音清澈而柔和，带着标准的Received Pronunciation（上流英音）。</p>
+            <p class="dialogue"><span class="character">白金汉：</span> 大家好。很荣幸能加入这个班级。希望能与各位愉快相处。</p>
+            <p>老师指了指密西西比前面的空位。</p>
+            <p class="dialogue"><span class="character">李老师：</span> 白金汉，你就坐密西西比前面吧。密西西比是班里最活泼的同学，她旁边是星宿班长，有什么问题都可以请教她们。</p>
+            <p>密西西比用笔帽戳着白金汉，眼睛亮得像发现了新玩具。她冲白金汉露出一个大大的笑。</p>
+            <p class="dialogue"><span class="character">密西西比：</span> 嘿！白金汉！欢迎欢迎！我是密西西比，以后请多关照啦！</p>
+            <p class="dialogue"><span class="character">白金汉：</span> 谢谢你，密西西比同学。</p>
+            <p>上课开始没多久，密西西比就开始骚扰了，她先小声问着。</p>
+            <p class="dialogue"><span class="character">密西西比：</span> 白金汉，感觉你超酷的！能借用历史人物的力量和伦敦塔的渡鸦？那你能借用……比如莎士比亚写诗吗？</p>
+            <p>白金汉转过头回答着，声音平静而礼貌。</p>
+            <p class="dialogue"><span class="character">白金汉：</span> 理论上可以。但我更倾向于借用骑士或学者的力量。诗歌……或许也可以。</p>
+            <p class="dialogue"><span class="character">密西西比：</span> 哇！那你能借用女王的力量吗？像伊丽莎白一世那种，超霸气的！</p>
+            <p class="dialogue"><span class="character">白金汉：</span> 可以。但女王的气场……需要很强的意志力来驾驭。</p>
+            <p>密西西比兴奋得差点站起来，声音不自觉的大了一点，许多同学都看了过来。</p>
+            <p class="dialogue"><span class="character">密西西比：</span> Fuck！这也太帅了吧！下次实战课你演示一下呗！我超想看！</p>
+            <p>白金汉还没回答，星宿从旁边轻轻咳了一声，很轻，却足够清晰。</p>
+            <p class="dialogue"><span class="character">星宿：</span> 密西西比，礼貌一点。</p>
+            <p>声音淡淡的，带着一点提醒。密西西比立刻缩回脖子，对着星宿吐了吐舌头，小声对白金汉说。</p>
+            <p class="dialogue"><span class="character">密西西比：</span> 好啦好啦，我不吵了。星宿姐在瞪我呢。</p>
+            <p>白金汉转头看向星宿。星宿正低头写笔记，侧脸冷冽，如同一尊安静的雕像。白金汉的目光在星宿脸上停留了两秒，眼神里闪过一丝好奇。</p>
+            <p>下课铃响了，密西西比戳着白金汉，继续骚扰。</p>
+            <p class="dialogue"><span class="character">密西西比：</span> 白金汉，你从英国来的？伦敦好玩吗？大本钟真的那么大？你们英国人真的每天都喝下午茶吗？</p>
+            <p>白金汉始终都带着耐心回答着。</p>
+            <p class="dialogue"><span class="character">白金汉：</span> 伦敦很美。大本钟……确实很壮观。下午茶是传统，但我不每天都喝。</p>
+            <p>星宿又咳了一声。</p>
+            <p class="dialogue"><span class="character">密西西比：</span> 星宿姐！我知道啦！我不吵了！</p>
+            <p>但没过两分钟，她又戳着白金汉。</p>
+            <p class="dialogue"><span class="character">密西西比：</span> 白金汉，你那枚胸针好漂亮！是玫瑰吗？有故事吗？</p>
+            <p>白金汉低头摸了摸胸针。</p>
+            <p class="dialogue"><span class="character">白金汉：</span> 是家族的徽记。代表……忠诚与美丽。</p>
+            <p>星宿第三次咳嗽，这次声音稍重。密西西比终于消停了，转头冲星宿做了个鬼脸，小声嘀咕。</p>
+            <p class="dialogue"><span class="character">密西西比：</span> 星宿姐你管得真严……</p>
+            <p>星宿没抬头，只是淡淡说。</p>
+            <p class="dialogue"><span class="character">星宿：</span> 不要老是打搅新同学。</p>
+            <p>密西西比撇撇嘴，却没再说话。白金汉转过头，看向星宿，带着一点试探的回答。</p>
+            <p class="dialogue"><span class="character">白金汉：</span> 星宿同学……谢谢你提醒密西西比。</p>
+            <p>星宿抬眼，与她对视了两秒。她的眼神依旧平静。</p>
+            <p class="dialogue"><span class="character">星宿：</span> 不用谢。她太吵了。</p>
+            <p class="dialogue"><span class="character">白金汉：</span> 是啊，但她很也可爱。</p>
+            <p>星宿没说话，只是低头继续做着题。但她的笔尖，在纸上停顿了一瞬。</p>
+            <p>研究院训练场的下午阳光从高窗洒进来，落在塑胶地板上，反射出刺眼的白光。空气里混着汗味、橡胶味和淡淡的灵能残留的气味。</p>
+            <p>实战课进入自由训练阶段。灵能者们三五成群，有的让火球在掌心跳跃，有的让空气扭曲成盾牌，有的让影子变成利刃，一群在炫耀羽毛的鸟。星宿站在训练场的另一个角落，旁边放着拆卸过的格洛克17和几副护具。她没有灵能，只能练格斗、枪械、近身缠斗、战术走位。</p>
+            <p>她的动作干净利落，枪口对准靶子时，呼吸平稳得如同一台机器。扣动扳机，啪啪啪三连发，全中靶心。</p>
+            <p class="dialogue"><span class="character">密西西比：</span> 星宿姐——！</p>
+            <p>星宿转头，看见密西西比拽着白金汉的手腕，大步冲过来。密西西比笑得眼睛弯成月牙，白金汉却微微皱眉地试图抽回手，却被密西西比拽得更紧。</p>
+            <p>密西西比把白金汉推到星宿面前。</p>
+            <p class="dialogue"><span class="character">密西西比：</span> 星宿姐！你看！白金汉今天学会借用骑士的力量了！超帅的！来来来，让她给你演示一下！</p>
+            <p>白金汉轻轻咳嗽了一声，声音柔和却带着一丝不快。</p>
+            <p class="dialogue"><span class="character">白金汉：</span> 密西西比同学……我只是刚掌握，还不熟练。</p>
+            <p>她看向星宿，眼神复杂有礼貌，有好奇，还有一点不易察觉的求援意味。</p>
+            <p>星宿放下手枪，擦了擦额角的汗。</p>
+            <p class="dialogue"><span class="character">星宿：</span> 白金汉，不用勉强。</p>
+            <p>她顿了顿，看向密西西比，带着一点提醒。</p>
+            <p class="dialogue"><span class="character">星宿：</span> 密西西比，白金汉同学看起来不太想演示。</p>
+            <p>密西西比眨眨眼，这松开手，尴尬的回应着。</p>
+            <p class="dialogue"><span class="character">密西西比：</span> 哎呀，被星宿姐看出来了！好吧好吧，不勉强！</p>
+            <p>她转头冲白金汉笑得更灿烂。</p>
+            <p class="dialogue"><span class="character">密西西比：</span> 白金汉，下次有机会再秀呗！星宿姐肯定也想看！</p>
+            <p>白金汉微微欠身回应着两人。</p>
+            <p class="dialogue"><span class="character">白金汉：</span> 谢谢星宿同学和密西西比同学的体谅。如果有机会，我会尽力。</p>
+            <p>白金汉顿了顿，目光在星宿脸上停留了两秒，在打量什么。星宿没回避，只是平静地回视。她知道白金汉在好奇，好奇一个没有灵能的人，为什么能成为班长，为什么研究院对自己那么特别，为什么……自己总是这么冷。</p>
+            <p class="dialogue"><span class="character">星宿：</span> 实操课，安全第一。密西西比你别太闹了，下节是格斗对抗，别又被扣分。</p>
+            <p>密西西比嘿嘿一笑，伸手揉乱星宿的头发。</p>
+            <p class="dialogue"><span class="character">密西西比：</span> 知道啦星宿姐！你最好了！</p>
+            <p>星宿没躲，任由密西西比乱揉，星宿的肩膀颤抖着，明显感受着那股温暖。</p>
+            <p class="dialogue"><span class="character">密西西比：</span> 星宿姐！来来来，看我给你秀一手！别天天板着个脸了。</p>
+            <p>密西西比用手指戳着星宿的嘴角，想让星宿的脸保持微笑，手松开的一瞬间，星宿又回到了面无表情的样子。密西西比跑到靶场前，把左轮举起来，摆了个经典牛仔拔枪姿势，冲星宿眨眼。</p>
+            <p class="dialogue"><span class="character">摩擦下班：</span> 我跟你说啊，我这能力可不是吹的！来，看好了！</p>
+            <p>她转头对靶场另一端的厚钢板靶子，那是专门给重型灵能者测试的，十几厘米厚的装甲钢，普通子弹打上去顶多留个白印。密西西比深吸一口气，左手扶稳枪身，右手扣动扳机。</p>
+            <p>砰——！</p>
+            <p>一声巨响，远超普通左轮的音爆。子弹像一道银色闪电，瞬间击穿钢板，留下一个拳头大的洞，边缘焦黑，金属碎屑四溅。训练场瞬间安静，所有人都转头看过来。密西西比兴奋地转过身，头发甩出一道弧，冲星宿比了个耶的手势。</p>
+            <p class="dialogue"><span class="character">密西西比：</span> 怎么样星宿姐！帅不帅！这板子可是给重型灵能者准备的，我一枪就给干穿了！</p>
+            <p>她跑过来，把自己的左轮塞到星宿手里，眼睛亮晶晶的，期待着星宿的回应。</p>
+            <p class="dialogue"><span class="character">密西西比：</span> 来来来，姐你也试试！你枪法稳，准能打得更准！</p>
+            <p>星宿接过密西西比的和平使者，手指在枪身上轻轻摩挲。枪身还带着密西西比掌心的温度，沉甸甸的。</p>
+            <p>砰——！</p>
+            <p>子弹精准命中钢板上的同一个洞，洞口扩大了一圈，边缘更焦黑。密西西比吹了个口哨，跳起来拍手。</p>
+            <p class="dialogue"><span class="character">密西西比：</span> 哇！星宿姐你也太稳了吧！没灵能加持都能打成这样！要是你有我的能力，那不得一枪把山打穿？</p>
+            <p class="dialogue"><span class="character">密西西比：</span> 来来来，星宿姐，我再给你秀一手——看好了，这次我用双枪！</p>
+            <p>她从腰间抽出另一把左轮，双手交叉，摆出经典的双枪牛仔姿势，冲星宿眨眼。</p>
+            <p class="dialogue"><span class="character">密西西比：</span> 星宿姐，看我给你表演‘得克萨斯龙卷风’！</p>
+            <p>密西西比几乎是转了起来，对着靶子开始乱射。子弹却不偏不倚的射中了靶子中央，直到最后一发射中了靶场的摄像头。</p>
+            <p class="dialogue"><span class="character">密西西比：</span> 啊啊？射偏了！白金汉，咱们快跑！星宿姐，拜托你啦~</p>
+            <p>密西西比立刻拉着白金汉一溜烟的跑到了自己训练的位置，开始一本正经的装作没看见。不一会，看着监控的工作人员来到了这里开始检修，看着上面的弹孔。</p>
+            <p>唯一在这里训练的星宿成为了罪魁祸首，但是弹孔的温彻斯特弹和星宿使用的9MM帕拉贝鲁姆弹完全不一致。不一会儿，这位牛仔小姐也被拎了过来。</p>
+            <p class="dialogue"><span class="character">星宿：</span> 是我好奇密西西比同学的枪械，于是拿来试了试。</p>
+            <p class="dialogue"><span class="character">靶场管理员：</span> 星宿，不要包庇密西西比同学。</p>
+            <p class="dialogue"><span class="character">星宿：</span> 就是我拿着密西西比同学的枪械。</p>
+            <p class="dialogue"><span class="character">靶场管理员：</span> 行吧，既然你都这么说了。你几乎不会怎么说谎的。下次不要使用灵能者同学的特殊武器了，注意安全。</p>
+            <p>最终靶场管理员没有再说什么，默默地回去继续修复摄像头。密西西比突然冲过来，一把抱住星宿的腰，星宿整个离地转起来。</p>
+            <p class="dialogue"><span class="character">密西西比：</span> 耶！星宿姐你太棒了！我们又逃过一劫啦！</p>
+            <p>她笑得太大声了，声音在靶场里回荡。星宿整个人被转得天旋地转。双手本能地抓住她肩膀，指尖扣得发白，不是生气，是怕自己掉下去。</p>
+            <p class="dialogue"><span class="character">星宿：</span> 苏珊娜！</p>
+            <p>星宿的声音低低的，带着颤和喘。脸烧得厉害，心跳快得像要跳出来。她不知道该怎么办。从小到大，没人这样抱过她。没人这样为她开心过。</p>
+            <p>密西西比转得太快了，世界在星宿眼中如同坏掉的唱片，碎成一片片光影，播放着她未知的曲子。星宿低头，看着密西西比亮晶晶的眼睛，看着她虎牙露出来的笑。她不知道怎么表达，她不知道这是什么感觉，她只是抓紧了她。</p>
+            <p class="dialogue"><span class="character">星宿：</span> 快放我……下来……</p>
+            <p>密西西比终于停下，把星宿放下来。星宿腿软得差点跪下，靠着密西西比才站稳，额头抵在她肩上，急促的呼吸着。</p>
+            <p class="dialogue"><span class="character">星宿：</span> 你……总是这样，但下次……别转那么快。</p>
+            <p>星宿没抬头，只是靠着密西西比，多站了一会儿。训练场的风吹过来，冷得像刀子。可密西西比的温度烫得星宿舍不得离开。</p>
+            <p>不知道过了多久或许一周，或许一个月，时间在星宿的意识中如同的灰色走廊里像被拉长的胶片，模糊得分辨不清。</p>
+            <p>星宿坐在教室最后一排，笔记本摊开，笔尖在纸上停了很久。窗外雪山依旧，阳光却像隔着一层毛玻璃，照不进心里。她转头，看向旁边的座位。密西西比的椅子干干净净，桌上没有乱七八糟的涂鸦，没有她随手扔的巧克力包装纸，没有那本永远翻到一半的漫画书。密西西比已经不在许久了，星宿问着老师。</p>
+            <p class="dialogue"><span class="character">星宿：</span> 老师您好，密西西比呢？</p>
+            <p class="dialogue"><span class="character">李老师：</span> 哦，她啊……可能回美国了？。</p>
+            <p>老师的声音太平静了，平静的在念一份早就准备好的稿子。星宿没再问，只是低头看着空座位。心口像被什么轻轻挖了一块，她感到了前所未有的空。她问着前排的白金汉。</p>
+            <p class="dialogue"><span class="character">白金汉：</span> 我也不清楚……她走得很突然。或许……有什么急事。</p>
+            <p>她问其他同学。有人耸肩，有人低头回避，有人小声说好像是美国那边有任务。没人知道，或者，没人想说。</p>
+            <p>放学后，星宿去了密西西比的宿舍。门虚掩着，推开时发出吱呀一声，一声迟到的叹息。</p>
+            <p>房间空了，床铺整齐得像没人住过，桌上没散落的零食包装，墙上没贴的牛仔海报，衣柜打开。空荡荡的，只剩几根衣架在风里轻轻晃。她走进去，坐在密西西比的床上。床单是冷的，这里似乎从来没被人睡过。</p>
+            <p>她低头，从衣兜里掏出那颗密西西比之前塞给她的巧克力，包装纸皱巴巴的，已经化了又凝固。她当时没有舍得吃，现在才慢慢拆开，塞进嘴里。</p>
+            <p>星宿又问着詹姆部长。詹姆在办公室，桌上一堆文件挡住了詹姆的脸。詹姆没有抬头看她。</p>
+            <p class="dialogue"><span class="character">詹姆：</span> 密西西比……回美国了，是研究院的调整。</p>
+            <p class="dialogue"><span class="character">星宿：</span> 但她没告诉我，她一般什么都要和我说的。</p>
+            <p>世界开始在星宿眼中变得不一样。走廊的灯光像坏掉的霓虹灯，嗡嗡作响。同学们的笑声像隔着一层玻璃，听不真切。雪山还是雪山，冷得像在嘲笑她的幻想。</p>
+            <p>她开始逃课。不是叛逆，是找不到理由再坐在教室里。她开始寻找。翻着密西西比的在自己书上画着的涂鸦，偷看行政处的调令记录，问每一个可能知道的人。没人告诉她真相。或者，真相本身就是，密西西比不见了。</p>
+            <p>夜晚，她站在阳台上，看雪山上的月亮。月亮很冷很远也很淡，几乎映不出她的影子。</p>
+            <p class="dialogue"><span class="character">星宿：</span> 你去哪里了？……我的太阳……去哪里了？</p>
+            <p>她把双手抱紧，幻想着自己正在抱住那个曾经抱着她转圈、喂她汉堡、陪她打闹的女孩。她不知道怎么找到密西西比。但她知道，如果找不到她，她会再变成那个在灾难里孤独燃烧的太阳。</p>
+            <div class="button-container">
+                <button class="prev-btn" onclick="prevScene(2)">上一章</button>
+                <button class="next-btn" onclick="nextScene(2)">下一章</button>
+            </div>
+        </div>
+
+        <div id="scene-3" class="scene">
+            <h2>三</h2>
+            <p>研究院的钟声准时响起，慢慢割开早晨的灰雾。星宿没去教室，她站在自己房间的阳台上，风衣扣得严实，那只陪伴着自己从灵能灾难走出的帆布包背在肩上，里面塞着水、干粮、一把训练匕首，还有那颗皱巴巴的巧克力包装纸。她低头看着包装纸，指尖摩挲着上面的褶皱，在抚摸一个只有她能看见的影子。</p>
+            <p class="dialogue"><span class="character">星宿：</span> 苏珊娜...</p>
+            <p>研究院的走廊空荡荡的，灯光冷白，如同医院的走廊。她没回头，推开侧门，溜进雪山脚下的小径。</p>
+            <p>她开始在总部后面的山里找。她记得密西西比曾经讲过那些冒险故事，密西西比经常毫不掩饰的向自己分享，或着可以是说炫耀着自己的冒险秘密。</p>
+            <p>“星宿姐！总部后面有条小路，通到一个奇怪的水潭！水是绿的，像毒药！我们去探险吧！”</p>
+            <p>“还有一棵超大的树！树洞里能藏两个人！我们以后逃课就去那儿！如果咱们再挖一挖，说不定还能塞下白金汉呢！”</p>
+            <p>“灌木丛后面有个小山洞，我藏了薯片和可乐！那里会变成我们的秘密基地，下次带你去吃！”</p>
+            <p>星宿记得每一个字。她开始去那些地方。先是水潭，但是水面浮着一层薄冰，绿得像腐烂的铜。她蹲在潭边，看着自己的倒影。这里并不像密西西比说的那么传神，那么奇异。这里没有密西西比，没有笑声，只有风吹过水面，荡起一圈圈涟漪，在嘲笑她的痴傻。</p>
+            <p>然后是大树。参天的大树，树洞黑得像张开的嘴。星宿钻了进去，蹲下来，抱住膝盖。树洞里冷得像冰窖，但她总觉得有人抱住了她。她在树洞里面找到一个薯片袋皱巴巴的，沾着泥。再往前，一个巧克力包装纸和她衣兜手里那颗一模一样。</p>
+            <p>星宿蹲下来，指尖颤抖着捡起包装纸。纸上还有一点残留的甜味，或许是密西西比的味道？</p>
+            <p class="dialogue"><span class="character">星宿：</span> 你在这里。</p>
+            <p>声音低低的，像在自言自语。她把包装纸塞进帆布包，贴着胸口。贴着另一个人的心跳。</p>
+            <p>她继续寻找着，灌木丛里，雪地里，岩石缝里。每一处踪迹都像一根线，牵着她往前走。她知道，这些东西可能是别人丢的，可能是幻觉，可能是她疯了。但她不在乎，她只想找到她，她的朋友，她的从未得到感受到的爱。</p>
+            <p>夜色降临，雪山更冷了。星宿坐在一处岩石上，山风吹过，带着松针的苦味。她低头，看着手里的巧克力包装纸，两张皱巴巴的纸，贴在一起，像两颗心贴在一起。</p>
+            <p class="dialogue"><span class="character">星宿：</span> 密西西比，你去哪里了？我找你找得好累。……你说过，要一直陪着我的。</p>
+            <p>日子如同被森林隐藏的路标，一天天消失在绿茫茫的一片里。星宿不知道自己逃课多久了。总部报警铃声在远处响起过几次，她没理。身上的干粮吃完了，她吃着野果，喝融雪的雪水，睡在树洞里。</p>
+            <p>包里早只剩那把匕首和两张皱巴巴的包装纸与薯片袋子。她每天拿出来看，在确认一个人的存在。</p>
+            <p>她认定密西西比就在这里。因为她找到更多踪迹，一个被踩扁的薯片袋子，沾着泥，却印着熟悉的得克萨斯辣味标签，还有密西西比自己做的品客薯片小徽章。</p>
+            <p class="dialogue"><span class="character">星宿：</span> 苏珊娜……你就在这里。</p>
+            <p>她继续往前走，脚步越来越慢，在追一个永远追不上的影子。不知道走了多久森林开始和她说话。不是风声，不是回音，是动物。一只松鼠蹲在树枝上，声音却像密西西比的德克萨斯腔调。</p>
+            <p class="dialogue"><span class="character">松鼠：</span> 嘿，小冰山……那个美国女孩来过。她给咱们分薯片，吃得可开心了。</p>
+            <p>星宿停下脚步，抬头看它，却没有质疑松鼠怎么会她对话，她没惊慌，只是低声问密西西比在哪？</p>
+            <p>松鼠没有回答，尾巴一甩跳走了，声音在风里散了。另一天，一只不可能出现在瑞士的白头海雕落在她的肩上，翅膀冰冷。</p>
+            <p class="dialogue"><span class="character">白头海雕：</span> 她在这儿搭了个小窝。给小兔子清理杂物，还唱歌……得克萨斯牛仔歌。</p>
+            <p>星宿跟着白头海雕走，钻进茂密的灌木丛。那里有个小窝树枝和枯叶堆的，里面铺着旧报纸，还有一个空薯片袋子当枕头。杂物被清理得干干净净，被有人用心整理过。星宿蹲下来，指尖摸着树枝。她知道，这可能是幻觉，可能是她疯了，可能是她太想她了，但她不在乎。</p>
+            <p>在后山的日子，是一场漫长的梦。星宿不再急着找，她开始坐在树下，看着雪落夏。看动物和自己说话，或许是幻觉，或许是真的。她从没有这么放松的感受着这个世界。</p>
+            <p>一只小兔子蹭她手掌，她想起过去。孤儿院里，她总是为了生计忙于奔波，看着街上幸福的孩子。灾难里，她总是躲在阴影里面，看着别人死去。研究院里，她总是坐在最后一排，看别人笑。她封闭自己，因为孤独安全。因为她觉得自己不配拥有幸福。</p>
+            <p>但密西西比来了。那个大大咧咧的女孩，拽着她跑，喂她吃汉堡，抱着她转圈，抄她作业。那个女孩说：我罩着你。 那个女孩，让她第一次觉得被爱是安全的。</p>
+            <p class="dialogue"><span class="character">星宿：</span> 我要找到你，密西西比。因为你教会我……爱不是奢侈。爱是……必须的。</p>
+            <p>她背起帆布包，继续往前走。森林安静下来，只剩她的脚步声，吱吱踩在雪上。动物没再说话。星宿总感觉自己离密西西比越来越近了。</p>
+            <p>后山的森林越来越茂密，雪如同永不融化的灰尘，盖住所有声音。星宿的脚步踩在枯枝上，咔嚓一声。</p>
+            <p>她停在一片空地前，空地中央，有一个水洼。水洼平静得像镜子，映出她的脸苍白、眼睛深陷、头发乱得像鸟巢，让她感觉逃离研究院似乎快几年了。然后，水洼里的脸动了，不是她的动作。水洼里的她站了起来，慢慢走出来。和她一模一样，同样的灰色风衣，同样的冷淡眼神。</p>
+            <p class="dialogue"><span class="character">星宿：</span> 你是谁？</p>
+            <p>幻影笑了笑，带着一种星宿从未有过的嘲讽。</p>
+            <p class="dialogue"><span class="character">幻影：</span> 我是你。真正的你。密西西比从来都不存在。一切都是你的幻想。</p>
+            <p>星宿的心口突然感到一股剧痛。</p>
+            <p class="dialogue"><span class="character">星宿：</span> 不可能。</p>
+            <p>另一个星宿继续说着，毫不留情。</p>
+            <p class="dialogue"><span class="character">幻影：</span> 你在灾难里活下来了。研究院捡到你，你封闭自己，幻想出一个吵闹的女孩，让你觉得不那么孤独。或许，你从未逃离过那次灾难，这一切都是你临死前的幻想。她从来没存在过。你爱的是空气。</p>
+            <p>星宿的眼睛红了，这是她从小到大第一次失态。</p>
+            <p class="dialogue"><span class="character">星宿：</span> 不……不可能！</p>
+            <p>她大喊，声音在森林里回荡，她冲上去，拳头举起，想狠狠揍这个假货一顿，揍碎这个谎言，揍碎这个让她疼痛的真相。拳头几乎要碰到镜像的脸时，另一个自己消失了。</p>
+            <p>星宿扑了个空，摔在雪地里。脸埋进冰冷的雪，双手抓紧泥土。她哭了，不是低低的抽泣，是嚎啕。声音在森林里回荡，野兽一般的哀嚎。</p>
+            <p class="dialogue"><span class="character">星宿：</span> 苏珊娜……密西西比……你在哪里啊！</p>
+            <p>她爬起来，踉跄着往前跑。森林像迷宫，转来转去，却总回到原地。她终于停下，靠着一棵树滑坐下来。手掌张开，里面是一张照片，她不知道什么时候出现的。</p>
+            <p>照片上是她和密西西比。她坐在教室最后一排，冷淡地低头写着笔记，密西西比趴在她旁边，冲镜头做鬼脸。照片背面，是密西西比的字迹，歪歪扭扭，画着涂鸦。</p>
+            <p>“星宿姐！我们说好了！以后一直在一起，一起吃汉堡，一起……不许反悔哦～”</p>
+            <p>星宿看着照片，眼泪掉在照片上，打湿了照片中的密西西比。</p>
+            <p class="dialogue"><span class="character">星宿：</span> 你肯定在这里，我要找到你...</p>
+            <p>森林突然安静下来。雪停了，阳光从云缝漏下来，照在照片上，星宿慢慢站起来。她没再跑，她开始走，慢慢的，稳稳的前进着。</p>
+            <p class="dialogue"><span class="character">星宿：</span> 等我，苏珊娜。我会找到你。</p>
+            <p>后山的森林像一张巨大的灰色网，雪落下来，却是黑色的，染黑了一切。星宿的脚步越来越慢，帆布包的肩带勒进肩膀变成了一根绳子，把她和过去绑在一起。</p>
+            <p>突然，森林消失了。她站在曾经的那片废墟里，晶体怪物游荡，空气里混着血和烧焦的味道。另一个从阴影里走出来，十岁的自己。手里握着那把水果刀，刀刃上沾着干涸的血。</p>
+            <p class="dialogue"><span class="character">年幼的幻影：</span> 你杀了人。你为了活下去，杀了那个还没完全晶体化的男人。你抢了他的巧克力，吃得干干净净。</p>
+            <p>星宿想跑，但却始终迈不开步子，她只能看着那个年幼的自己，声音颤颤的，在辩解，又像在自责。</p>
+            <p class="dialogue"><span class="character">星宿：</span> 那是……为了活下去，他是怪物！</p>
+            <p>小时候的星宿慢慢靠近，刀尖指向的胸口。</p>
+            <p class="dialogue"><span class="character">年幼的幻影：</span> 活下去？然后呢？你配吗？你是个杀人犯，一个孤儿，一个怪物。那个男人有家庭。你拿走了别人的家庭照片，幻想着自己也有人爱自己，你其实已经死在了避难所的沙发上！</p>
+            <p>怪物开始从废墟里爬出来，咔嚓声越来越近。星宿想跑，却动不了。</p>
+            <p class="dialogue"><span class="character">星宿：</span> 或许……你是对的。我什么都不是....</p>
+            <p>风里传来一个声音，熟悉的、带着得克萨斯口音的腔调。</p>
+            <p class="dialogue">星宿姐！别听她的！快跑啊！你还没有吃我做的汉堡呢！</p>
+            <p>幻影扭曲了，星宿冲上去，一刀刺穿幻影。幻影碎了一地消失在地上，缓过神来后，自己站在了孤儿院的大床上，十几个孩子挤在一起，却没人看她。老嬷嬷的声音从远处传来。</p>
+            <p class="dialogue">你是河边捡来的。没人要的孩子。你不配被爱。你只会一个人。</p>
+            <p>星宿捂着耳朵否认着，想要把这些声音赶出大脑。孤儿院消失了，她睁眼的时候发现自己坐在研究院教室的最后一排，周围是其余同学们的笑声和跨母语交流。另一个自己低头写什么，陈述着事实。</p>
+            <p class="dialogue"><span class="character">幻影：</span> 你格格不入，永远是个怪异的普通人，永远孤独。</p>
+            <p>星宿幻影用过去的伤疤攻击星宿。冷酷的自己、无助的自己、孤独的自己，记忆映出星宿最怕的模样。但每次都有密西西比的声音从远处飘来，帮她挣脱束缚。</p>
+            <p class="dialogue">星宿姐！我在前面等你！你快来啊！</p>
+            <p class="dialogue">星宿姐！你最好了！别放弃！</p>
+            <p>周围的一切都消失了，星宿也不知道来到了哪里。她站在空荡的，白茫茫的一片之中，身边只有密西西比的空座位。</p>
+            <p class="dialogue"><span class="character">幻影：</span> 她从来没存在过。你爱的是幻觉。</p>
+            <p>星宿低头，手里还攥着那张照片，她和密西西比的合照。正面是她冷淡的侧脸，密西西比对着镜头做鬼脸，上面写着密西西比的字迹：记住我们的约定，星宿姐！</p>
+            <p>星宿抬头，看着幻影。她终于意识到自己不是孤身一人，她还有密西西比。</p>
+            <p class="dialogue"><span class="character">星宿：</span> 你错了。她存在过。因为……我爱过她。</p>
+            <p>她突然能动了，冲了上去，一拳砸碎另一个自己。森林回来了，她站在一处空地，手里握着照片。风吹过，带着一点薯片的咸味和巧克力的甜，貌似密西西比就在附近。</p>
+            <p class="dialogue"><span class="character">星宿：</span> 密西西比，我要找到你了。</p>
+            <p>她已经学会了爱，爱自己，爱别人，爱那个曾经孤独的自己，爱那个真正的自己，爱那个让她不再孤独的女孩。</p>
+            <p>后山的森林终于走到了尽头。雪山好像一把巨大的刀，插在天空和大地之间。星宿站在崖边，风从深渊吹上来，冷得像无数只手想把她拉下去。她的腿软得像棉花，自己也只剩那张照片，她和密西西比的合照，背面是那句歪歪扭扭的约定。崖边雾气缭绕，雾里走出来一个人，是另一个自己。</p>
+            <p class="dialogue"><span class="character">幻影：</span> 你还在找？密西西比不存在。一切都是你的幻想。你在灾难里疯了。研究院捡到你，你封闭自己，幻想出一个吵闹的女孩，让你觉得……不那么孤独。</p>
+            <p>幻影向星宿伸出手，再次说着那些让星宿难受的话。</p>
+            <p class="dialogue"><span class="character">幻影：</span> 她从来没存在过。你爱的是空气。你做的一切……都是徒劳。</p>
+            <p class="dialogue"><span class="character">星宿：</span> 闭嘴啊！</p>
+            <p>幻影笑得更大声了，在嘲笑着她的无能为力。</p>
+            <p class="dialogue"><span class="character">幻影：</span> 看啊，孤独的太阳。烧了这么久，却只照亮了自己。没人爱你。没人需要你。你只是……一个怪异的普通人。</p>
+            <p>星宿冲上去，一拳砸向另一个自己的脸。拳头没砸中幻影，反而是抓住她的手腕，反扭。她用膝盖前顶，两人撞在一起，滚在崖边的雪地里。</p>
+            <p>雪泥溅起，冰冷刺骨。星宿骑在另一个自己身上，双手掐住对方的脖子，指甲扣进皮肤，却总感觉感觉在掐着自己的脖子。</p>
+            <p class="dialogue"><span class="character">星宿：</span> 你闭嘴！</p>
+            <p>声音带着哭腔，碎碎的，被风撕裂。幻影笑得更疯，各种声音在耳边呢喃。</p>
+            <p class="dialogue"><span class="character">幻影：</span> 你杀了人。你抢了食物。你偷了东西。你不配被爱。</p>
+            <p>星宿哭嚎着，拳头雨点般砸下去，砸在另一个自己的脸上、胸口、肩膀。每一下都带着颤，每一下都带着呜咽。</p>
+            <p class="dialogue"><span class="character">星宿：</span> 她存在！她抱过我！她喂我吃东西！她叫我星宿姐！她说过要罩着我！她说过……一起陪着我！一起陪着我！</p>
+            <p>拳头砸得手背破皮，血滴在雪上，红得刺眼。另一个没还手，只是笑着，任由她打。</p>
+            <p class="dialogue"><span class="character">幻影：</span> 你在爱一个幻觉。徒劳。无能。</p>
+            <p>星宿抓起地上的石块，砸向幻影头。</p>
+            <p class="dialogue"><span class="character">星宿：</span> 我爱她！我爱她！……就算她是幻觉……我也爱！</p>
+            <p>幻影终于动了，她抓住星宿的手腕，反身把她压在雪地里。两人瞬间扭打在一起，血和泪混在一起。</p>
+            <p class="dialogue"><span class="character">幻影：</span> 放弃吧。你永远找不到她。因为她从来没存在。</p>
+            <p>星宿哭着，双手死死抓紧幻影的衣领。她用尽全力，一滚身，两人一起滚到崖边上。深渊在下面，张开黑色的嘴。星宿看着幻影的眼睛，和她一模一样的眼睛。</p>
+            <p>她用尽最后力气一推，幻影的身体从崖边滑下去。幻影的笑声在风里回荡，却越来越远。幻影消失在深渊里，雪花落下来，盖住崖边的脚印。星宿跪在崖边，她哭着，声音低低的，对着深渊嘶吼着。</p>
+            <p class="dialogue"><span class="character">星宿：</span> 密西西比！你到底在哪里！</p>
+            <p>另一个自己坠下崖底时，久久的没发出声音。如同一块石头，砸进深渊，没溅起水花，也没有任何落地的声音。风停了，雪停了。世界安静得像坏掉的唱片，针头卡在最后一圈沟槽里，永远转不出声音。</p>
+            <p>星宿跪在崖边许久，双手抓着雪地，打斗的血渗进白雪，像一朵朵小小的红花。她哭得没声了，只剩身体抽搐着。然后，雾散了。崖边突然出现一条路。不是雪路，不是石路。是一条由光屑和旧照片碎片拼成的路。</p>
+            <p>星宿站起来，她没擦泪，只是往前走。路很软，像踩在云上，每一步，都踩碎一张旧照片，孤儿院的床、灾难里的废墟、研究院的教室、密西西比对着镜头做着鬼脸。路的尽头，是一棵老橡树。树干粗得要几个人才能抱住，树冠遮天，枝叶间漏下斑驳的光。树枝上坐着一个人。背对着她，抱着吉他，弹着德克萨斯牛仔歌谣。声音懒洋洋的，带着得克萨斯拖腔。</p>
+            <p>“……Hey there, cowboy, ride into the sun…”</p>
+            <p>那人转头，是密西西比。她跳下来，不是走，是直接从树枝上跳下来。</p>
+            <p class="dialogue"><span class="character">密西西比：</span> 星宿姐！你终于来了！原来你还记得我们之间的约定啊！</p>
+            <p>声音太大声了，在空旷的林子里回荡，把所有沉默都撕开了。</p>
+            <p>星宿崩溃了。她冲上去，一把抱住密西西比，抱得太紧，脸埋在她肩窝，哭得像个孩子。</p>
+            <p class="dialogue"><span class="character">星宿：</span> 你去哪了……为什么跑掉……为什么离开我……</p>
+            <p>星宿用力的嘶吼着，把所有压抑的痛一次倒出来。</p>
+            <p class="dialogue"><span class="character">星宿：</span> 我找你找得好苦……我以为你不要我了……我以为……一切都是假的……</p>
+            <p>密西西比没像往常一样笑着，她轻轻抱着星宿，手掌在她背上慢慢拍着，在哄一个哭坏的孩子。</p>
+            <p class="dialogue"><span class="character">密西西比：</span> 星宿姐……对不起。我不是不要你了，我只是……想让你学会爱自己。</p>
+            <p>星宿哭得更厉害了，声音断断续续，带着哽咽的停顿。</p>
+            <p class="dialogue"><span class="character">星宿：</span> 我学会了……我好痛……我好想你……</p>
+            <p>密西西比用下巴抵在星宿的发顶，手还在不断的安抚着星宿的抽搐的身体，手指轻轻揉着星宿的后脑勺。</p>
+            <p class="dialogue"><span class="character">密西西比：</span> 你总是把自己关起来。灾难里，孤儿院里，研究院里……你总觉得自己不配被爱。我想让你知道……爱不是奢侈。爱是必须的。你得先爱自己，才能……爱别人。</p>
+            <p>星宿抬头，水汪汪的看着眼前这位德州少女。</p>
+            <p class="dialogue"><span class="character">星宿：</span> 我……学会了。密西西比……我学会了。从你第一次塞给我巧克力开始，从你抱着我转圈开始。不管怎么样，我都爱你。别再离开我……好吗？</p>
+            <p>密西西比没说话，只是抱着她，更紧了些。风吹过老橡树，树叶沙沙响。雪山外的月亮终于升起来了。曾经的灾难、饥饿、杀人、孤独都没让星宿这样崩溃。那些痛是钝刀，自己能够慢慢消化。但眼前的德州女孩，却像一把尖刀，一下子捅进了自己的心脏。</p>
+            <p class="dialogue"><span class="character">星宿：</span> 你答应我……别再走……</p>
+            <p class="dialogue"><span class="character">密西西比：</span> 星宿姐，我答应你，我不走。但你也要答应我哦，星宿姐。</p>
+            <p>密西西比拉开一点，捧起星宿的脸，擦拭着星宿的眼泪。</p>
+            <p class="dialogue"><span class="character">密西西比：</span> 以后……不许再贬低自己。你不是怪物，你不是不配。你是星宿姐，我的星宿姐，最亮的太阳。</p>
+            <p class="dialogue"><span class="character">星宿：</span> 我……发誓。我会……爱自己。</p>
+            <p class="dialogue"><span class="character">密西西比：</span> 好！那说好了哦！</p>
+            <p>周围又开始阴暗起来。另一个自己又出出现了，从树影里走出来。</p>
+            <p class="dialogue"><span class="character">幻影：</span> 她是假的！她是假的！</p>
+            <p>她伸手，抓向密西西比。树林里面延伸出黑色的藤蔓，缠向密西西比的胳膊。密西西比牵着星宿的手，跑得飞快。她没怕，反而一路有说有笑，在经历一场传奇的冒险，就像自己曾经给星宿讲的那些冒险故事一样。</p>
+            <p class="dialogue"><span class="character">密西西比：</span> 星宿姐！左边！跳过去！</p>
+            <p>她拽着星宿跃过一条黑色的溪流，水面映出两人扭曲的脸。</p>
+            <p class="dialogue"><span class="character">密西西比：</span> 哈哈！这也太烂了吧！还不如我在得克萨斯玩的鬼屋！</p>
+            <p>密西西比笑着，回头冲着幻影做了个鬼脸。黑色的藤蔓缠向星宿的腿。星宿差点摔倒，密西西比猛地拉住她，另一只手从包里掏出一颗巧克力扔向幻影。</p>
+            <p class="dialogue"><span class="character">密西西比：</span> 吃巧克力去吧！你这个假货！</p>
+            <p>巧克力砸在幻影脸上，幻影尖叫一声，追击的速度慢了半拍。星宿喘着气奔跑着，看着密西西比的侧脸。她笑得太大声了，眼睛在这片黑暗中亮的像星星。</p>
+            <p class="dialogue"><span class="character">星宿：</span> 密西西比……你……不怕吗？</p>
+            <p class="dialogue"><span class="character">密西西比：</span> 怕啥？有星宿姐在，我什么都不怕的好吧！</p>
+            <p>密西西比拉紧星宿的手，往前跑。</p>
+            <p class="dialogue"><span class="character">密西西比：</span> 前面有光！快到了！</p>
+            <p>幻影在身后尖叫，藤蔓缠上来。前面是一处悬崖，深不见底，星宿下意识的往后退了退。</p>
+            <p class="dialogue"><span class="character">星宿：</span> 密西西比，怎么办！</p>
+            <p>密西西比转身抱住星宿。</p>
+            <p class="dialogue"><span class="character">密西西比:</span> 星宿姐……相信我。</p>
+            <p>星宿看着她点了点头。她们一起跳向亮光，幻影的尖叫在身后渐渐远去终于停了。亮光越来越刺眼，越来越温暖。</p>
+            <p class="dialogue"><span class="character">密西西比：</span> 星宿姐！我们回家啦！</p>
+            <p>星宿睁开眼，头痛得像被锤子砸过，后脑勺肿了一个包。她躺在医务室的病床上，白色的天花板，冷白的灯光，消毒水的刺鼻味。她猛地坐起来，看着周围的一切。</p>
+            <p>旁边坐着的是密西西比。她穿着下午的那件训练服，头发乱乱的，眼睛红红的，像哭过。手里还拿着一个冰袋，轻轻按在星宿后脑勺。</p>
+            <p class="dialogue"><span class="character">密西西比：</span> 星宿姐，你醒了！</p>
+            <p>星宿扑过去，一把抱住密西西比，抱得太紧，怕她又突然消失，脸埋在她肩窝哭着。</p>
+            <p class="dialogue"><span class="character">星宿：</span> 不要离开我了！密西西比...呜呜…我不想再找你了…呜呜呜……我学会了……我学会爱自己了……别走……别再离开我……</p>
+            <p>密西西比愣住了，她不知道发生了什么。她没动，只是慢慢回抱住星宿，手掌轻轻拍着她的背。她手里还拿着冰袋，指尖明明冰凉，心却像被什么猛地烫了一下。星宿姐在哭？ 星宿姐在抱她？星宿姐在说爱？</p>
+            <p>她脑子嗡嗡的，像下午龙卷风收势时那阵乱流。她一直以为，自己是那个主动的，抢着星宿的布丁、抄着星宿的作业、抱着星宿转圈、让星宿帮她处理责罚，她以为星宿只是习惯了她，纵容她。她没想到星宿会先说，会哭着说，会这么脆弱地说。</p>
+            <p>密西西比手掌轻轻拍着她的背，动作有点笨拙，第一次哄着眼前这位曾经在自己眼中如此高冷的班长。</p>
+            <p class="dialogue"><span class="character">密西西比：</span> 星宿姐……我……我没走啊。</p>
+            <p>声音低低的，带着一点鼻音和慌乱。</p>
+            <p class="dialogue"><span class="character">密西西比：</span> 我……我下午训练时，龙卷风收势太急....不小心手肘砸到你后脑勺了……你晕过去了……我吓死了……一直守着你……你做噩梦了？</p>
+            <p>星宿摇着头，哭得更大声了。</p>
+            <p class="dialogue"><span class="character">星宿：</span> 我梦见你不见了……我找了你好久……好久……</p>
+            <p class="dialogue"><span class="character">密西西比：</span> 傻瓜……我在这儿。我一直都在。</p>
+            <p>她深吸一口气再许诺。</p>
+            <p class="dialogue"><span class="character">密西西比：</span> 从你第一天让我抄作业开始。从你帮我担责开始。从你被我转圈时没推开我开始……我就想陪着你了。我不知道这是什么感觉，我只想要陪着你。</p>
+            <p class="dialogue"><span class="character">密西西比：</span> 星宿姐……你太傻了。找我找那么久……我明明一直就在你旁边啊。</p>
+            <p>星宿哭着点头，泪水打湿了密西西比的衣服。</p>
+            <p>密西西比没再说话，只是抱着星宿更紧了些，再也不松开。</p>
+            <div class="button-container">
+                <button class="prev-btn" onclick="prevScene(3)">上一章</button>
+                <button class="next-btn" onclick="nextScene(3)">下一章</button>
+            </div>
+        </div>
+
+        <div id="scene-4" class="scene">
+            <h2>四</h2>
+            <p>那件事成了星宿和密西西比的私事。她们从没对外提过，没有告诉詹姆，没有告诉白金汉。只是偶尔在夜深人静时，两个人窝在星宿的单人间里，星宿低声说着梦境的一些片段。</p>
+            <p class="dialogue"><span class="character">星宿：</span> 谢谢你，密西西比。</p>
+            <p>密西西比总笑得像个傻子一般乐得合不拢嘴。</p>
+            <p class="dialogue"><span class="character">密西西比：</span> 谢啥啊，星宿姐。再讲讲梦里面，我是怎么打败那个假货的！梦里面咱们配合起来肯定很帅吧！</p>
+            <p>似乎从那天起，星宿变了。不是翻天覆地的改变，而是像冰层下慢慢融化的雪，表面还是冷淡平静，面无表情，话少得像从前。但她开始关心自己，不再熬夜写报告到天亮，而是会在十一点准时关灯。不再把饭菜推给别人，而是会默默给自己多盛一勺汤。不再说我不配我只是普通人，而是学会在镜子前，对自己说一句：今天也很好。</p>
+            <p>她没再贬低自己，没再用曾经的痛苦回忆来磨灭自己。那些孤儿院的床、灾难里的血、第一次杀人的刀……。只要有密西西比在的地方，她就会被感染。密西西比的大大咧咧、没心没肺、永远带着笑，太阳一般的光芒照进她心里。星宿还是不爱说话，但她会笑了。不是敷衍的礼貌弧度，是真的笑。</p>
+            <p>有次密西西比和白金汉在争执喝可乐还是喝红茶，星宿看着两人的斗嘴，笑了起来。</p>
+            <p class="dialogue"><span class="character">密西西比：</span> 星……星宿姐……你笑了？！</p>
+            <p>星宿脸红了，低头想否认，却又忍不住嘴角上扬。</p>
+            <p class="dialogue"><span class="character">星宿：</span> 有...有吗？</p>
+            <p>密西西比哇了一声，把可乐瓶扔在一边，一把抱住她开始转圈。</p>
+            <p class="dialogue"><span class="character">密西西比：</span> 笑了笑了！星宿姐笑了！</p>
+            <p>星宿被转得头晕目眩，无力的反抗着。</p>
+            <p class="dialogue"><span class="character">星宿：</span> 密西西比！快放我下来！不然我给大家讲你的得克萨斯龙卷风了！</p>
+            <p>这才让密西西比收敛起来。好不容易正经了一会儿，密西西比忽然抬头。</p>
+            <p class="dialogue"><span class="character">密西西比：</span> 星宿姐...你现在……开心吗？</p>
+            <p class="dialogue"><span class="character">星宿：</span> 嗯。</p>
+            <p class="dialogue"><span class="character">密西西比：</span> 为什么啊？在研究院学习的时候被我肘开窍啦？，从那之后，你就变了好多哦！</p>
+            <p class="dialogue"><span class="character">星宿：</span> 或许吧，谢谢你，密西西比。</p>
+            <div class="button-container">
+                <button class="prev-btn" onclick="prevScene(4)">上一章</button>
+                <button class="next-btn" disabled>故事结束</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function nextScene(current) {
+            const currentScene = document.getElementById(`scene-${current}`);
+            const nextScene = document.getElementById(`scene-${current + 1}`);
+            
+            if (nextScene) {
+                currentScene.classList.remove('active');
+                nextScene.classList.add('active');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        }
+
+        function prevScene(current) {
+            const currentScene = document.getElementById(`scene-${current}`);
+            const prevScene = document.getElementById(`scene-${current - 1}`);
+            
+            if (prevScene) {
+                currentScene.classList.remove('active');
+                prevScene.classList.add('active');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        }
+    </script>
+</body>
+</html>

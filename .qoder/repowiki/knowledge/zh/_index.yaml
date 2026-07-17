@@ -1,0 +1,48 @@
+# 知识卡导出索引文件
+schema_version: 1
+locale: zh-CN
+branch: Q0DeR-MaG1C-BrAnCh-Fo2-NoN-GiT-Or-No-C0MmIt
+exported_at: "2026-06-02T19:41:09Z"
+modules:
+    "":
+        dir_name: 《夙日不再》世界观与角色展示门户
+        title: 《夙日不再》世界观与角色展示门户
+        scope:
+            - pages/
+            - index.html
+            - 阅读需知（必读）.txt
+            - pages\0.png
+            - pages\1.png
+            - pages\characters.html
+            - pages\menu.html
+            - pages\stories.html
+            - pages\time.png
+            - pages\不来梅.png
+            - pages\乡下人的悲歌.html
+            - pages\伦敦的雾霾早已散去.HTML
+            - pages\你好，星宿同志.mp3
+            - pages\卡林卡.png
+            - pages\喀琅施塔得1.png
+            - pages\在废墟中央渴望爱的少女.html
+            - pages\失群的白鹤.html
+            - pages\失重.jpg
+            - pages\密西西比.png
+            - pages\对话实验.mp3
+            - pages\对话实验2.mp3
+            - pages\当路行至尽头.html
+            - pages\星宿.png
+            - pages\星宿2.jpg
+            - pages\白金汉.mp3
+            - pages\白金汉.png
+            - pages\终其一生我们也未能相遇.html
+            - pages\背景.mp3
+            - pages\被困于天空下的白桦树.html
+            - pages\试用1.png
+            - pages\这里的黎明静悄悄.html
+            - 主线剧情\主线剧情内容.docx
+            - 背景.mp3
+            - 请点开index阅读.txt
+        source_files: []
+        children: []
+        depends_on: []
+        related_to: []

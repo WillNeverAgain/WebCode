@@ -1,0 +1,810 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="description" content="《夙日不再》是一款角色扮演策略ACG游戏，回到不同的历史事件之中，探索历史的神秘冒险！">
+    <meta name="keywords" content="夙日不再,灵能,世界观,角色扮演">
+    <meta name="author" content="伴星工作室">
+    <title>夙日不再 | 官方网站</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400;700;900&family=Cinzel+Decorative:wght@400;700;900&family=Dancing+Script:wght@400;700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* ---------- 全局重置 ---------- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+            overflow: hidden;
+            height: 100%;
+        }
+
+        body {
+            font-family: 'Noto Serif SC', 'KaiTi', serif;
+            background: #030507;
+            color: #ccd4dc;
+            overflow: hidden;
+            height: 100%;
+            -webkit-font-smoothing: antialiased;
+            transition: background 0.2s;
+        }
+
+        /* GPU 加速 */
+        .gpu {
+            will-change: transform, opacity;
+            backface-visibility: hidden;
+        }
+
+        /* 全局复古纹理 + 噪点背景（默认效果，非主页时生效） */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background: 
+                linear-gradient(30deg, transparent 48%, rgba(70, 90, 110, 0.08) 50%, transparent 52%),
+                linear-gradient(-30deg, transparent 48%, rgba(70, 90, 110, 0.06) 50%, transparent 52%),
+                repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(30,35,45,0.05) 2px, rgba(30,35,45,0.05) 4px),
+                repeating-linear-gradient(90deg, transparent, transparent 2px, rgba(30,35,45,0.05) 2px, rgba(30,35,45,0.05) 4px),
+                url('https://assets.codepen.io/3522978/noise.png'), 
+                radial-gradient(circle at 30% 20%, #0a0f1a, #010101);
+            background-blend-mode: overlay, screen, multiply, normal;
+            opacity: 0.85;
+            pointer-events: none;
+            z-index: -2;
+            transition: opacity 0.3s ease;
+        }
+
+        /* 半调斑点覆层（默认） */
+        .halftone-overlay {
+            position: fixed;
+            inset: 0;
+            width: 100vw;
+            height: 100vh;
+            object-fit: cover;
+            pointer-events: none;
+            mix-blend-mode: overlay;
+            opacity: 0.12;
+            z-index: -1;
+            transition: opacity 0.3s ease;
+        }
+
+        /* 复古浮动元素组（默认） */
+        .vintage-bg {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 0;
+            overflow: hidden;
+            transition: opacity 0.3s ease;
+        }
+        .vintage-element {
+            position: absolute;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            opacity: 0.25;
+            mix-blend-mode: screen;
+            animation: driftVintage linear infinite, pulseVintage 28s ease-in-out infinite alternate;
+        }
+        @keyframes driftVintage {
+            0% { transform: translate(0, 0) rotate(0deg); }
+            100% { transform: translate(110px, 110px) rotate(360deg); }
+        }
+        @keyframes pulseVintage {
+            0% { opacity: 0.22; filter: brightness(0.95); }
+            100% { opacity: 0.28; filter: brightness(1.05); }
+        }
+        .v1 { background-image: url('https://i0.wp.com/heritagecalling.com/wp-content/uploads/2024/12/DP114585-St-Marys-Church-Kempley-Gloucestershire.jpg?ssl=1'); width: 380px; height: 380px; top: 3%; left: 0%; animation-duration: 170s, 24s; transform: rotate(50deg); }
+        .v2 { background-image: url('https://www.nationalww2museum.org/sites/default/files/2020-05/Riveter.jpg'); width: 550px; height: 180px; top: 18%; right: 4%; animation-duration: 190s, 28s; }
+        .v3 { background-image: url('https://render.fineartamerica.com/images/rendered/default/greeting-card/images/artworkimages/medium/2/andy-warhol-high-resolution-photo-art-collage-andy-warhol-collage.jpg'); width: 280px; height: 450px; bottom: 8%; left: 6%; animation-duration: 150s, 20s; transform: rotate(-32deg); }
+        .v4 { background-image: url('https://rubberdiamond.wordpress.com/wp-content/uploads/2014/01/schwitters.jpg'); width: 420px; height: 420px; top: 38%; left: 48%; animation-duration: 210s, 35s; transform: rotate(22deg); }
+        .v5 { background-image: url('https://www.heritage-print.com/p/731/study-poster-1920-artist-lissitzky-15000613.jpg.webp'); width: 620px; height: 140px; bottom: 4%; right: 8%; animation-duration: 180s, 26s; }
+        .v6 { background-image: url('https://blog.architizer.com/wp-content/uploads/deconstructivism.jpeg'); width: 230px; height: 560px; top: 6%; right: 1%; animation-duration: 160s, 22s; transform: rotate(90deg); }
+        .v7 { background-image: url('https://d31sxl6qgne2yj.cloudfront.net/wordpress/wp-content/uploads/20190102164052/Punk-Album-Covers-11x16.jpg'); width: 460px; height: 330px; bottom: 28%; left: 28%; animation-duration: 200s, 30s; transform: rotate(-28deg); }
+        .v8 { background-image: url('https://smarthistory.org/wp-content/uploads/2021/02/50935568273_37699017c0_o-scaled.jpg'); width: 350px; height: 130px; top: 50%; left: 12%; animation-duration: 140s, 18s; }
+        .v9 { background-image: url('https://postergroup.com/cdn/shop/products/Men-Working-Together-Poster.jpg?v=1746051175'); width: 180px; height: 400px; top: 12%; left: 62%; animation-duration: 230s, 38s; transform: rotate(72deg); }
+        .v10 { background-image: url('https://m.media-amazon.com/images/I/81SOUO-NbkL.jpg'); width: 560px; height: 280px; bottom: 18%; right: 22%; animation-duration: 170s, 27s; }
+        .v11 { background-image: url('https://cdn.britannica.com/94/5594-050-1C1166D6/Annunciation-Fra-Angelico-Florence-Museum-of-San.jpg'); width: 300px; height: 300px; top: 62%; left: 40%; animation-duration: 220s, 32s; transform: rotate(-45deg); }
+        .v12 { background-image: url('https://cdn11.bigcommerce.com/s-yzgoj/images/stencil/1280x1280/products/1320435/1708788/PSTJPA100339M__22686.1519281927.jpg?c=2'); width: 440px; height: 220px; top: 30%; left: 4%; animation-duration: 180s, 25s; }
+        .v13 { background-image: url('https://divinity.uchicago.edu/sites/default/files/styles/sightings_article_featured_image/public/2020-01/2c304455-66ca-4ae4-adc3-ba0ccc06b408_1_201_a.jpeg?itok=9v54XcIG'); width: 400px; height: 350px; top: 8%; left: 55%; animation-duration: 160s, 23s; transform: rotate(30deg); }
+        .v14 { background-image: url('https://www.saic.edu/sites/default/files/shorthand/stories/0Hw0PwtaAa/2025-09-29T19%3A38%3A15.732Z/assets/vpUp9CR2Fi/kurt-schwitters-843x626.jpg'); width: 500px; height: 200px; bottom: 35%; right: 10%; animation-duration: 190s, 27s; }
+        .v15 { background-image: url('https://cdn.kastatic.org/ka-perseus-images/aa552552150213036b99363b0dfb8ae811b8c08d.jpg'); width: 350px; height: 400px; top: 45%; right: 15%; animation-duration: 200s, 30s; transform: rotate(-20deg); }
+
+        /* ----- 固定头部 ----- */
+        .global-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 200;
+            background: rgba(3, 5, 10, 0.88);
+            backdrop-filter: blur(14px);
+            border-bottom: 1px solid rgba(200, 180, 128, 0.4);
+            font-family: 'Cinzel Decorative', cursive;
+            pointer-events: auto;
+        }
+        .logo h1 {
+            font-size: 1.6rem;
+            letter-spacing: 6px;
+            color: #e6cf8c;
+            text-shadow: 0 0 12px rgba(200, 180, 128, 0.6);
+            margin: 0;
+        }
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .nav-links a {
+            text-decoration: none;
+            color: #ccd4dc;
+            font-size: 0.9rem;
+            letter-spacing: 2px;
+            transition: all 0.3s;
+            font-family: 'Noto Serif SC', serif;
+        }
+        .nav-links a#navHome,
+        .nav-links a#navCharacters {
+            color: #e6cf8c;
+        }
+        .nav-links a#navHome:hover,
+        .nav-links a#navCharacters:hover {
+            color: #f5e6b5;
+            text-shadow: 0 0 5px #e6cf8c;
+        }
+        .nav-links a#navStories {
+            color: #ccd4dc;
+        }
+        .nav-links a#navStories:hover {
+            color: #e6cf8c;
+            text-shadow: 0 0 5px #e6cf8c;
+        }
+        .volume-panel {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: #b0c0d0;
+            font-size: 0.8rem;
+        }
+        .volume-btn {
+            width: 38px;
+            height: 38px;
+            background: rgba(20, 30, 45, 0.8);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border: 1px solid #5c6b80;
+            transition: all 0.3s;
+        }
+        .volume-btn:hover { background: #2a3a4e; box-shadow: 0 0 10px #e6cf8c; }
+        .volume-btn svg { width: 20px; fill: #e6cf8c; }
+
+        /* 侧边导航栏 */
+        .sidebar-nav {
+            position: fixed;
+            max-height: 70vh;
+            overflow-y: auto;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 99;
+            background: rgba(0, 0, 0, 0.55);
+            backdrop-filter: blur(10px);
+            padding: 1rem 0.6rem;
+            border-radius: 32px;
+            border-left: 2px solid #c8b280;
+            font-size: 0.7rem;
+            font-weight: 300;
+            font-family: 'Noto Serif SC', serif;
+            pointer-events: auto;
+            transition: opacity 0.3s;
+        }
+        .sidebar-nav ul { list-style: none; }
+        .sidebar-nav li {
+            margin: 1rem 0;
+            writing-mode: vertical-rl;
+            text-orientation: mixed;
+            letter-spacing: 4px;
+            cursor: pointer;
+            color: #acb8c5;
+            transition: all 0.3s;
+            font-size: 0.75rem;
+        }
+        .sidebar-nav li:hover { color: #e6cf8c; text-shadow: 0 0 6px #e6cf8c; transform: scale(1.05); }
+
+        /* 全屏滚动 wrapper */
+        .pages-wrapper {
+            height: 100vh;
+            will-change: transform;
+            transition: transform 0.9s cubic-bezier(0.2, 0.9, 0.3, 1.1);
+            transform: translateZ(0);
+        }
+        .page {
+            height: 100vh;
+            width: 100vw;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            overflow-y: auto;
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+            padding: 5rem 2rem;
+            opacity: 0;
+            transition: opacity 0.5s ease 0.2s;
+        }
+        .page.visible {
+            opacity: 1;
+        }
+        .page::-webkit-scrollbar { width: 5px; }
+        .page::-webkit-scrollbar-track { background: #0a0f18; }
+        .page::-webkit-scrollbar-thumb { background: #5c6b80; border-radius: 4px; }
+        .sidebar-nav::-webkit-scrollbar { width: 3px; }
+        .sidebar-nav::-webkit-scrollbar-track { background: transparent; }
+        .sidebar-nav::-webkit-scrollbar-thumb { background: #5c6b80; border-radius: 4px; }
+
+        /* 默认胶片框风格 */
+        .film-frame {
+            background: rgba(12, 16, 22, 0.85);
+            backdrop-filter: blur(4px);
+            padding: 2.5rem 3rem;
+            margin: 1.5rem auto;
+            max-width: 1100px;
+            width: 90%;
+            box-shadow: 20px 20px 50px rgba(0,0,0,0.8), inset 0 1px 0 rgba(255,255,255,0.05);
+            position: relative;
+            border-left: 28px solid #0a0e14;
+            border-right: 28px solid #0a0e14;
+        }
+        .film-frame::before, .film-frame::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            width: 28px;
+            height: 100%;
+            background: repeating-linear-gradient(to bottom, #0a0e14 0px, #0a0e14 12px, #ffffff20 12px, #ffffff20 28px, #0a0e14 28px, #0a0e14 40px);
+            animation: filmRoll 2s linear infinite;
+        }
+        .film-frame::before { left: 0; }
+        .film-frame::after { right: 0; }
+        @keyframes filmRoll { 0% { background-position: 0 0; } 100% { background-position: 0 40px; } }
+
+        /* ---------- 主页专用背景 (失重.jpg 最高优先级且完全不透明) ---------- */
+        .bg-special-page {
+            position: relative;
+            overflow: hidden;
+            background: #0a0c12;
+        }
+        .bg-special-page::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image: url('pages/失重.jpg');
+            background-size: cover;
+            background-position: center 30%;
+            background-repeat: no-repeat;
+            background-attachment: local;
+            z-index: 0;
+            pointer-events: none;
+        }
+        
+        /* 主页文字容器：增强可读性，同时背景图片完全透出无任何覆盖层干扰 */
+        .bg-special-page .page-content-center {
+            position: relative;
+            z-index: 1;
+            text-align: center;
+            max-width: 900px;
+            margin: 0 auto;
+            background: rgba(0, 0, 0, 0.68);
+            backdrop-filter: blur(10px);
+            padding: 2.5rem;
+            border-radius: 40px;
+            border: 1px solid rgba(230, 207, 140, 0.25);
+            box-shadow: 0 25px 45px rgba(0,0,0,0.5);
+        }
+        
+        /* 主页去除胶片框的额外装饰 */
+        .bg-special-page .film-frame {
+            background: rgba(8, 12, 18, 0.7);
+            backdrop-filter: blur(8px);
+            border: none;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+            border-left: 0;
+            border-right: 0;
+            padding: 2rem 2rem;
+        }
+        .bg-special-page .film-frame::before,
+        .bg-special-page .film-frame::after {
+            display: none;
+        }
+        
+        /* ---- 关键：主页模式下彻底隐藏干扰层，让失重.jpg 成为唯一背景且完全不透明 ---- */
+        body.homepage-clean::before {
+            display: none !important;
+            background: none !important;
+            opacity: 0 !important;
+        }
+        body.homepage-clean .halftone-overlay {
+            display: none !important;
+            opacity: 0 !important;
+        }
+        body.homepage-clean .vintage-bg {
+            display: none !important;
+        }
+        
+        /* 其他页面标题样式 */
+        h4 {
+            font-family: 'Cinzel Decorative', cursive;
+            font-size: 2.2rem;
+            color: #d4bc8c;
+            margin-bottom: 1.2rem;
+            letter-spacing: 4px;
+            border-left: 4px solid #d4bc8c;
+            padding-left: 1rem;
+        }
+        p, ul li {
+            line-height: 1.75;
+            font-size: 1rem;
+            color: #cad2db;
+            margin-bottom: 1rem;
+        }
+        .redacted-inline {
+            display: inline-block;
+            background: #8a9ab0;
+            height: 1.2em;
+            margin: 0 6px;
+            vertical-align: middle;
+            border-radius: 2px;
+        }
+        .redacted-inline.short { width: 70px; }
+        .redacted-inline.medium { width: 120px; }
+        .redacted-inline.long { width: 190px; }
+        .redacted-inline.xlong { width: 260px; }
+        .img-placeholder {
+            background: #0e141f;
+            height: 220px;
+            margin: 2rem 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #5c6b80;
+            border: 1px solid #2e3a48;
+        }
+        .hero-title {
+            font-family: 'Cinzel Decorative', cursive;
+            font-size: clamp(3rem, 10vw, 5.5rem);
+            letter-spacing: 0.2em;
+            color: #e9d6af;
+            text-shadow:
+                0 0 20px rgba(230, 207, 140, 0.6),
+                0 0 60px rgba(200, 170, 90, 0.35),
+                0 0 100px rgba(180, 140, 60, 0.2),
+                0 2px 4px rgba(0, 0, 0, 0.7);
+            animation: titleGlow 3s ease-in-out infinite alternate;
+        }
+        @keyframes titleGlow {
+            0% {
+                text-shadow:
+                    0 0 20px rgba(230, 207, 140, 0.6),
+                    0 0 60px rgba(200, 170, 90, 0.35),
+                    0 0 100px rgba(180, 140, 60, 0.2),
+                    0 2px 4px rgba(0, 0, 0, 0.7);
+            }
+            100% {
+                text-shadow:
+                    0 0 35px rgba(240, 220, 160, 0.75),
+                    0 0 80px rgba(210, 180, 100, 0.5),
+                    0 0 130px rgba(190, 150, 70, 0.3),
+                    0 2px 4px rgba(0, 0, 0, 0.7);
+            }
+        }
+
+        /* 英文花体副标题 */
+        .intro-desc .eng-subtitle {
+            font-family: 'Dancing Script', cursive;
+            font-size: clamp(1.6rem, 4.5vw, 2.4rem);
+            color: #e9d6af;
+            letter-spacing: 0.08em;
+            text-shadow:
+                0 0 15px rgba(230, 207, 140, 0.5),
+                0 0 40px rgba(200, 170, 90, 0.25),
+                0 2px 4px rgba(0, 0, 0, 0.6);
+            animation: subGlow 4s ease-in-out infinite alternate;
+        }
+        @keyframes subGlow {
+            0% {
+                text-shadow:
+                    0 0 15px rgba(230, 207, 140, 0.5),
+                    0 0 40px rgba(200, 170, 90, 0.25),
+                    0 2px 4px rgba(0, 0, 0, 0.6);
+            }
+            100% {
+                text-shadow:
+                    0 0 25px rgba(240, 220, 160, 0.65),
+                    0 0 55px rgba(210, 180, 100, 0.4),
+                    0 2px 4px rgba(0, 0, 0, 0.6);
+            }
+        }
+        footer {
+            position: relative;
+            z-index: 1;
+            margin-top: 2rem;
+            text-align: center;
+            padding: 1rem;
+            color: #79889c;
+            font-size: 0.8rem;
+            width: 100%;
+        }
+
+        /* iframe 容器 */
+        .iframe-container {
+            position: fixed;
+            top: 70px;
+            left: 0;
+            width: 100%;
+            height: calc(100% - 70px);
+            z-index: 50;
+            background: #030507;
+            visibility: hidden;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.25s ease, visibility 0.25s ease;
+        }
+        .iframe-container.active {
+            visibility: visible;
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .iframe-container iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            background: #030507;
+        }
+
+        /* 响应式微调 */
+        @media (max-width: 768px) {
+            .global-header { padding: 0.5rem 1rem; }
+            .logo h1 { font-size: 1.2rem; letter-spacing: 3px; }
+            .nav-links { gap: 0.8rem; }
+            .nav-links a { font-size: 0.7rem; }
+            .sidebar-nav { display: none; }
+            .bg-special-page h4 { font-size: 1.8rem; }
+            .film-frame { padding: 1.2rem; border-left-width: 16px; border-right-width: 16px; }
+            .bg-special-page .page-content-center { padding: 1.5rem; margin: 0 1rem; }
+        }
+        
+        /* 增强文字阴影，背景图完全不被干扰情况下确保阅读性 */
+        .bg-special-page .hero-title {
+            text-shadow:
+                0 0 20px rgba(230, 207, 140, 0.6),
+                0 0 60px rgba(200, 170, 90, 0.35),
+                0 0 100px rgba(180, 140, 60, 0.2),
+                0 2px 5px rgba(0,0,0,0.8);
+        }
+        .bg-special-page .intro-desc .eng-subtitle {
+            text-shadow:
+                0 0 15px rgba(230, 207, 140, 0.5),
+                0 0 40px rgba(200, 170, 90, 0.25),
+                0 2px 5px rgba(0,0,0,0.8);
+        }
+        .bg-special-page .intro-desc p:not(.eng-subtitle) {
+            text-shadow: 0 2px 5px rgba(0,0,0,0.8);
+        }
+    </style>
+</head>
+<body>
+
+<!-- 半调层 + 复古背景（主页模式下会被隐藏） -->
+<img class="halftone-overlay" src="https://gd-hbimg-edge.huaban.com/e136eab1362dfa41c0bf38aa7f48d9be4fe7332b172ae6-yQ7EZk?auth_key=1780243200-7a28c4fd8dba4f27bcbf1202f71a087e-0-cab91a5574991e7dfd11720f9ea5744c" alt="" decoding="async" referrerpolicy="no-referrer">
+<div class="vintage-bg">
+    <div class="vintage-element v1"></div><div class="vintage-element v2"></div><div class="vintage-element v3"></div>
+    <div class="vintage-element v4"></div><div class="vintage-element v5"></div><div class="vintage-element v6"></div>
+    <div class="vintage-element v7"></div><div class="vintage-element v8"></div><div class="vintage-element v9"></div>
+    <div class="vintage-element v10"></div><div class="vintage-element v11"></div><div class="vintage-element v12"></div>
+    <div class="vintage-element v13"></div><div class="vintage-element v14"></div><div class="vintage-element v15"></div>
+</div>
+
+<!-- 固定头部 -->
+<div class="global-header">
+    <div class="logo"><h1>夙日不再</h1></div>
+    <div class="nav-links">
+        <a href="#" id="navHome">首页</a>
+        <a href="#" id="navCharacters">部分角色</a>
+        <a href="#" id="navStories">角色故事</a>
+        <div class="volume-panel">
+            <span>背景音乐</span>
+            <div id="volumeBtn" class="volume-btn">
+                <svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 侧边导航栏 -->
+<div class="sidebar-nav" id="sidebarNav">
+    <ul>
+        <li data-page="0">主页</li>            
+        <li data-page="1">世界观</li>          
+        <li data-page="2">灵能者</li>
+        <li data-page="3">灵能灾难</li>
+        <li data-page="4">晶体化·裂隙</li>
+        <li data-page="5">米斯泰研究院</li>
+        <li data-page="6">隐修会</li>
+        <li data-page="7">塔斯马尼亚协约</li>
+        <li data-page="8">斯卡尼亚都市</li>
+        <li data-page="9">诺维科夫原则</li>
+        <li data-page="10">历史物品与故事</li>
+    </ul>
+</div>
+
+<!-- 全屏滚动主内容 -->
+<div class="pages-wrapper" id="pagesWrapper">
+    <!-- 第0页 主页（背景失重.jpg 最高优先级完全显示） -->
+    <div class="page page-cover bg-special-page" id="page0">
+        <div class="page-content-center">
+            <div class="hero-title">夙日不再</div>
+            <div class="intro-desc" style="background: transparent; margin-top: 1rem;">
+                <p class="eng-subtitle">Ordinary Days Gone</p>
+                <p style="font-size:0.85rem; letter-spacing:2px;">回到不同的历史事件之中，探索灵能与命运交织的隐秘。</p>
+            </div>
+        </div>
+        <footer>伴星工作室</footer>
+    </div>
+
+    <!-- 第1页 世界观 -->
+    <div class="page" id="page1">
+        <div class="film-frame">
+            <h3 style="font-family:'Cinzel Decorative'; font-size:2rem; text-align:center;">世界2048 · 简介</h3>
+            <p>冷战后世界多极化，思潮复兴与灵能全球化，2035年进入后灵能时代；《塔斯马尼亚协约》仅能勉强维持稳定。灵能因便捷强大而受极端组织青睐，致使其频繁发动恐怖袭击。2040年纽约曼哈顿灵能灾难后，世界进入灵能反恐战争。</p>
+            <p>在灵能反恐时代，有些组织将目光放在了历史的长河之中，独属于新时代的作战开始了序幕。</p>
+        </div>
+        <footer>© 伴星工作室</footer>
+    </div>
+
+    <!-- 第2页 灵能者 -->
+    <div class="page" id="page2">
+        <div class="film-frame"><h4>灵能 / 灵能者</h4><p>一种十分古老的超自然能力，拥有灵能的人被称为<span class="redacted-inline medium"></span>或是灵能者，他们都表现出拥有各种各样的<span class="redacted-inline xlong"></span>与特殊能力，他们在许多历史事件与现代社会的关键的角色，例如各种充满传奇色彩故事的历史角色<span class="redacted-inline long"></span><span class="redacted-inline xlong"></span>....。</p><p>灵能者的特殊能力通常与灵能者所属的文化和历史时代有关，<span class="redacted-inline medium"></span></p><p>但灵能者不能免疫灵能灾难所带来的物理上的灾害（例如灵能灾难所带来的重力异常等）<span class="redacted-inline medium"></span></p><p>灵能者即便各自说各自的母语，也能瞬间理解对方想要表达的字面意思。普通人则需要通过常规的翻译才可。<span class="redacted-inline medium"></span></p></div>
+        <footer>© 伴星工作室</footer>
+    </div>
+
+    <!-- 第3页 灵能灾难 -->
+    <div class="page" id="page3">
+        <div class="film-frame">
+            <h4>灵能灾难</h4>
+            <p>世界遵循诺维科夫自洽性原则。使用特殊的灵能能力或装置能回到过去的时间线之中，如果有人想要破坏时间线改变既定的事实，那么当前时间线就会和历史冲突导致<span class="redacted-inline long"></span>或是灵能灾难。<span class="redacted-inline xlong"></span></p>
+            <p>灵能灾难包括但不限于<span class="redacted-inline xlong"></span>以及天气剧变，地质活动，未知灾难，重力异常，甚至是被灵能能力爆发那一瞬间消失等现象<span class="redacted-inline xlong"></span>。</p>
+            <div class="img-placeholder">【灵能灾难概念图】</div>
+        </div>
+        <footer>© 伴星工作室</footer>
+    </div>
+
+    <!-- 第4页 晶体化·裂隙 -->
+    <div class="page" id="page4">
+        <div class="film-frame"><h4>晶体化</h4><p>只有“灵能者”能够在这些灵能能量风暴中长期存活，普通人长期在其中会被灵能腐蚀出现<span class="redacted-inline xlong"></span>或是晶体化，<span class="redacted-inline long"></span></p><p>灵能者能够免疫晶体化但不能免疫灵能灾难所带来的物理上的灾害（例如天气剧变，地质活动，重力异常等）<span class="redacted-inline long"></span>。</p><h4 style="margin-top:1.5rem;">灾难中的裂隙</h4><p>灵能灾难之中时常伴随着时空裂隙，是连接另一个维度的入口。关于该裂隙我们的初步了解为<span class="redacted-inline medium"></span>。</p><p>穿越这些裂隙通常会回到<span class="redacted-inline medium"></span>或与导致发生灵能灾难，被改变的历史事件或时间段之中。</p></div>
+        <footer>© 伴星工作室</footer>
+    </div>
+
+    <!-- 第5页 米斯泰研究院 -->
+    <div class="page" id="page5">
+        <div class="film-frame"><h4>米斯泰研究院</h4><p>米斯泰研究院是人类研究灵能的机构，米斯泰一词也是拉丁语之中神秘（mysterium）的简化音译。在罗马帝国时期就有了米斯泰研究院的雏形，现如今已经发展为全球化的灵能官方组织。</p><p>第二次世界大战后世界秩序趋于稳定，米斯泰研究院经过联合国授权成为各国承认的独立性组织，在现代社会的各个国家中都有相应的研究分支与执行部门，其职责为研究灵能和探索并救援受灵能影响的特殊地区与灾害地区。</p><p>其总部位于瑞士锡永。</p><div class="img-placeholder">【米斯泰研究院总部·锡永古城】</div></div>
+        <footer>© 伴星工作室</footer>
+    </div>
+
+    <!-- 第6页 隐修会 -->
+    <div class="page" id="page6">
+        <div class="film-frame"><h4>隐修会</h4><p>历史上的一个秘密结社团体，有一种说法说他们就是从米斯泰研究院中分离出来的一股势力。虽然隐修会和研究院同样研究和利用灵能来让人类文明更好的发展，但其成员所经历的一切使他们逐渐的走向一种极端精英主义与<span class="redacted-inline xlong"></span>。据记载，历史中的玫瑰十字会等诸多秘密结社的神秘组织可能都与隐修会有诸多联系。</p><p>隐修会为了最终的目标会不择手段，包括但不限于威胁压迫，暗中操控，白色恐怖等。他们认为其余大部分的人没有团结和整合的价值，只有精英化的人才有价值。他们自称会为人类文明消灭任何“绊脚石”与<span class="redacted-inline medium"></span>。</p><p>锡安会的宗旨是极端精英政治甚至是蜂巢思维，他们认为人类目前的一切战争内斗，愚昧，狂热，无知都是因为有着个人自由意志的原因，并且大多数人并不会思考与<span class="redacted-inline xlong"></span>。</p></div>
+        <footer>© 伴星工作室</footer>
+    </div>
+
+    <!-- 第7页 塔斯马尼亚协约 -->
+    <div class="page" id="page7">
+        <div class="film-frame"><h4>塔斯马尼亚协约</h4><p>在第二次世界大战后期，随着盟军在战争之中的节节胜利，世界新格局即将明朗。在战争之中的各种灵能事件和武器也让新成立的联合国越来越重视这种古老的力量，其中历史中长存的米斯泰研究院也成为了盟军对抗轴心国的重要组织。双方与澳大利亚马斯塔尼亚签订了协约规定战争之后有关于灵能力量的管控。其核心条款如下：</p><ul><li>全球范围内的灵能者由各国政府辅助米斯泰研究院进行统筹登记与管理。</li><li>所有人类灵能者必须在居住地的米斯泰研究院分部进行登记，未登记的灵能者将被视为“黑户”。</li><li>米斯泰研究院须向联合国及相关国家定期公布登记灵能者的基本信息与能力评估。</li><li>灵能者本质上为拥有特殊能力的人类个体，受所有国际人权公约保护与各国法律约束。</li><li>灵能者与普通人类享有平等权利，禁止任何形式的歧视或迫害。</li><li>米斯泰研究院拥有独立的行政机构。若出现行政瘫痪等，由联合国灵能监督委员会介入。</li><li>米斯泰研究院为独立于联合国的特殊国际组织，受联合国成员国承认。</li><li>当灵能者涉及违法犯罪时，若当地司法系统无法有效审判，应移交米斯泰研究院特别法庭。</li><li>米斯泰研究院总部永久设于瑞士锡永，该地区为特别行政区。</li><li>米斯泰研究院可组建武装应急部队，部署前须获得事件所在国政府批准。</li><li>禁止任何国家或组织将灵能者能力用于非法军事目的或国际冲突。</li><li>各国须合作共享非机密灵能研究成果。</li><li>协约签署国承诺保护灵能者隐私，禁止未经授权的实验或能力剥夺。</li><li>协约可根据灵能事件与科技发展联合修订，但核心平等原则不可更改。</li></ul></div>
+        <footer>© 伴星工作室</footer>
+    </div>
+
+    <!-- 第8页 斯卡尼亚隐蔽都市 -->
+    <div class="page" id="page8">
+        <div class="film-frame"><h4>斯卡尼亚隐蔽都市</h4><p>在历史之中，灵能者为了更好的研究灵能和保护自身，世界各地的灵能者都不约而同的选择了隐藏自己的行踪；他们聚集起来。</p><p>随着人类的交通、通信技术的发展，全世界各地的灵能者开始交流、互相学习，原本散落的聚集点逐渐变的集中。在第一次世界大战中，灵能者们组建了有史以来最大的隐秘都市“斯卡尼亚”。“斯卡尼亚”位于北欧北极圈深处针叶林中，此地因为灵能者设下的结界因此与现实之中的空间并无关联。关于“斯卡尼亚”，我们仅清楚其<span class="redacted-inline medium"></span>。</p><div class="img-placeholder">【斯卡尼亚隐蔽都市概念图】</div></div>
+        <footer>© 伴星工作室</footer>
+    </div>
+
+    <!-- 第9页 诺维科夫自洽性原则 -->
+    <div class="page" id="page9">
+        <div class="film-frame"><h4>诺维科夫自洽性原则</h4><p>世界遵循诺维科夫自洽性原则，既定的历史事实无法被改变（或已经发生的事情不能改变），即使出现了变动，时间线会自动修正。</p><p>但有别有用心的人人为干预时间线的修正导致历史紊乱则很有可能引起蝴蝶效应，使得诺维科夫自洽性原则相悖。当时间线无法自我修正则会引起当前时代的灵能灾难。</p></div>
+        <footer>© 伴星工作室</footer>
+    </div>
+
+    <!-- 第10页 历史物品与故事 -->
+    <div class="page" id="page10">
+        <div class="film-frame">
+            <h4>历史物品与故事</h4>
+            <p>除了灵能者以外，许多历史中记载的传奇物品也可能蕴含有这种未知的能力，例如朗基努斯之枪，都灵裹尸布，亚述石板....等历史中的物品。圣女贞德，扬·杰式卡，鲍德温等历史人物的传奇故事。他们的故事之中也充满了灵能的传奇色彩，这些故事有着灵能者的参与，这些传奇历史人物也留下了属于自己的圣器，但隐修会当前正在对这些圣器。隐修会的这一举动可能会导致时间线变动引发灵能灾难。。</p>
+        </div>
+        <footer>© 伴星工作室 | 更多传说即将揭晓</footer>
+    </div>
+</div>
+
+<!-- iframe 容器 -->
+<div class="iframe-container" id="iframeContainer">
+    <iframe id="pageIframe" title="子页面内容" src="about:blank"></iframe>
+</div>
+
+<script>
+    // ---------- 全屏滚动逻辑 ----------
+    const pagesWrapper = document.getElementById('pagesWrapper');
+    const pages = document.querySelectorAll('.page');
+    let currentPage = 0;
+    let isTransitioning = false;
+    const totalPages = pages.length;
+
+    // 核心：主页模式完全清除所有干扰层，让失重.jpg 高优先级展示且不透明
+    function setHomepageCleanMode(enable) {
+        if (enable) {
+            document.body.classList.add('homepage-clean');
+        } else {
+            document.body.classList.remove('homepage-clean');
+        }
+    }
+
+    function goToPage(page) {
+        if (isTransitioning || page < 0 || page >= totalPages || page === currentPage) return;
+        isTransitioning = true;
+        currentPage = page;
+        pagesWrapper.style.transform = `translateY(-${page * 100}vh)`;
+        pages.forEach((p, idx) => {
+            if (idx === page) p.classList.add('visible');
+            else p.classList.remove('visible');
+        });
+        // 当切换到主页时，启用纯净背景模式(让失重.jpg完全显示)，离开主页则恢复复古纹理层
+        setHomepageCleanMode(currentPage === 0);
+        setTimeout(() => { isTransitioning = false; }, 800);
+    }
+
+    let wheelLock = false;
+    window.addEventListener('wheel', (e) => {
+        if (wheelLock || isTransitioning) return;
+        const delta = e.deltaY;
+        let nextPage = currentPage;
+        if (delta > 20) nextPage = Math.min(totalPages - 1, currentPage + 1);
+        else if (delta < -20) nextPage = Math.max(0, currentPage - 1);
+        if (nextPage !== currentPage) {
+            wheelLock = true;
+            goToPage(nextPage);
+            setTimeout(() => { wheelLock = false; }, 800);
+        }
+    }, { passive: false });
+
+    document.querySelectorAll('.sidebar-nav li').forEach(li => {
+        li.addEventListener('click', () => {
+            const pageIndex = parseInt(li.getAttribute('data-page'));
+            if (!isNaN(pageIndex)) goToPage(pageIndex);
+        });
+    });
+    pages[0].classList.add('visible');
+
+    // ---------- iframe 页面跳转 ----------
+    const iframeContainer = document.getElementById('iframeContainer');
+    const iframe = document.getElementById('pageIframe');
+    const sidebar = document.getElementById('sidebarNav');
+    const navHome = document.getElementById('navHome');
+    const navCharacters = document.getElementById('navCharacters');
+    const navStories = document.getElementById('navStories');
+
+    function showFullscreenMode() {
+        iframeContainer.classList.remove('active');
+        pagesWrapper.style.display = 'block';
+        sidebar.style.opacity = '1';
+        sidebar.style.pointerEvents = 'auto';
+        currentPage = -1;
+        goToPage(0);
+    }
+
+    function showIframePage(url) {
+        pagesWrapper.style.display = 'none';
+        sidebar.style.opacity = '0';
+        sidebar.style.pointerEvents = 'none';
+        iframe.src = url;
+        iframeContainer.classList.add('active');
+        // 进入子页面时一定要移除homepage-clean模式，恢复复古风格
+        setHomepageCleanMode(false);
+    }
+
+    navHome.addEventListener('click', (e) => { e.preventDefault(); showFullscreenMode(); });
+    navCharacters.addEventListener('click', (e) => { e.preventDefault(); showIframePage('pages/characters.html'); });
+    navStories.addEventListener('click', (e) => { e.preventDefault(); showIframePage('pages/stories.html'); });
+
+    function fitIframe() {
+        try {
+            const doc = iframe.contentWindow.document;
+            const h = Math.max(doc.documentElement.scrollHeight, doc.body?.scrollHeight || 0);
+            iframe.style.height = h + 'px';
+        } catch(e) {}
+    }
+    iframe.addEventListener('load', () => {
+        fitIframe();
+        try {
+            const ro = new ResizeObserver(fitIframe);
+            ro.observe(iframe.contentWindow.document.documentElement);
+        } catch {}
+    });
+    let resizeTimer;
+    window.addEventListener('resize', () => { clearTimeout(resizeTimer); resizeTimer = setTimeout(fitIframe, 100); });
+
+    // 背景音乐逻辑
+    const STORAGE_KEY = 'bgm_playing_state';
+    let bgm = document.getElementById('bgm');
+    if (!bgm) {
+        bgm = document.createElement('audio');
+        bgm.id = 'bgm';
+        bgm.src = '背景.MP3';
+        bgm.loop = true;
+        bgm.preload = 'auto';
+        document.body.appendChild(bgm);
+    }
+    const volumeBtnIcon = document.getElementById('volumeBtn');
+    let isMuted = false;
+
+    // 仅保留静音状态，不再恢复播放进度（每次进入从头播放）
+    function restoreMutedState() {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+            try {
+                const state = JSON.parse(saved);
+                isMuted = state.muted || false;
+                bgm.muted = isMuted;
+                updateVolumeIcon();
+            } catch(e) {}
+        }
+    }
+    function saveMutedState() { try { localStorage.setItem(STORAGE_KEY, JSON.stringify({ muted: isMuted })); } catch(e) {} }
+
+    function updateVolumeIcon() {
+        if (isMuted) volumeBtnIcon.innerHTML = `<svg viewBox="0 0 24 24"><path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM3 9v6h4l5 5V4L7 9H3z"/><line x1="1" y1="1" x2="23" y2="23" stroke="#e6cf8c" stroke-width="2"/></svg>`;
+        else volumeBtnIcon.innerHTML = `<svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>`;
+    }
+
+    // 多重用户交互解锁自动播放
+    let audioUnlocked = false;
+    function unlockAndPlay() {
+        if (!audioUnlocked && bgm.paused && !isMuted) {
+            bgm.play().catch(() => {});
+            audioUnlocked = true;
+        }
+    }
+    document.addEventListener('click', unlockAndPlay);
+    document.addEventListener('keydown', unlockAndPlay);
+    document.addEventListener('touchstart', unlockAndPlay);
+    window.addEventListener('load', () => { if (!isMuted) bgm.play().catch(() => {}); });
+
+    restoreMutedState();
+
+    volumeBtnIcon.addEventListener('click', () => {
+        isMuted = !isMuted;
+        bgm.muted = isMuted;
+        updateVolumeIcon();
+        saveMutedState();
+        if (!isMuted && bgm.paused) bgm.play().catch(()=>{});
+    });
+
+    window.addEventListener('beforeunload', () => saveMutedState());
+    bgm.addEventListener('ended', () => { bgm.currentTime = 0; if(!isMuted) bgm.play(); });
+
+    showFullscreenMode();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="《夙日不再》角色故事，探索叶尼塞等角色的背景与冒险。">
+  <meta name="keywords" content="夙日不再, 战棋手游, ACG, 灵能, 历史, 二次元, 角色故事">
+  <meta name="author" content="群星工作室">
+  <meta name="robots" content="index, follow">
+  <title>夙日不再 | 角色故事</title>
+  <link href="https://unpkg.com/tailwindcss@3.4.1/dist/tailwind.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700&family=Dancing+Script:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Noto Serif SC', serif;
+      margin: 0;
+      background: #0a0a0f;
+      color: #fff;
+    }
+    header {
+      position: fixed;
+      top: 0;
+      width: 100%;
+      padding: 20px 50px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(5px);
+      z-index: 1000;
+      box-sizing: border-box;
+    }
+    header h1 {
+      font-size: 28px;
+      color: #ffb84d;
+      letter-spacing: 3px;
+      margin: 0;
+    }
+    .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 30px;
+    }
+    nav ul {
+      display: flex;
+      list-style: none;
+      gap: 30px;
+      margin: 0;
+      padding: 0;
+      flex-wrap: wrap;
+    }
+    nav ul li a {
+      text-decoration: none;
+      color: #fff;
+      font-size: 16px;
+      transition: color 0.3s;
+    }
+    nav ul li a:hover {
+      color: #ffb84d;
+    }
+    section {
+      padding: 100px 50px;
+      max-width: 800px;
+      margin: auto;
+    }
+    section h3 {
+      font-family: 'Dancing Script', cursive;
+      font-size: 32px;
+      margin-bottom: 30px;
+      color: #ffb84d;
+      text-align: left;
+      margin-left: 1rem;
+    }
+    .story-list {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    .story-item {
+      background: rgba(255, 255, 255, 0.05);
+      padding: 20px;
+      border-radius: 8px;
+      transition: transform 0.3s, background 0.3s;
+    }
+    .story-item:hover {
+      transform: translateY(-5px);
+      background: rgba(255, 184, 77, 0.2);
+    }
+    .story-item a {
+      display: block;
+      color: #ffb84d;
+      font-size: 20px;
+      text-decoration: none;
+      font-weight: bold;
+      text-align: left;
+      margin-left: 1rem;
+    }
+    .story-item p {
+      color: #ddd;
+      font-size: 16px;
+      margin-top: 10px;
+      text-align: left;
+      margin-left: 1rem;
+    }
+    footer {
+      text-align: center;
+      padding: 20px;
+      background: #000;
+      color: #666;
+      font-size: 14px;
+    }
+    footer a {
+      color: #ffb84d;
+      text-decoration: none;
+      margin: 0 10px;
+    }
+    footer a:hover {
+      text-decoration: underline;
+    }
+    html {
+      scroll-behavior: smooth;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .fade-in {
+      animation: fadeIn 1s ease-out;
+    }
+
+    .volume-control {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: #ccc;
+      font-size: 14px;
+    }
+    .volume-btn {
+      width: 36px;
+      height: 36px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    .volume-btn:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+    .volume-btn svg {
+      width: 20px;
+      height: 20px;
+      fill: #ffb84d;
+    }
+
+    @media (max-width: 768px) {
+      header {
+        padding: 10px;
+        flex-direction: column;
+        gap: 10px;
+      }
+      .nav-right {
+        width: 100%;
+        justify-content: center;
+        gap: 15px;
+      }
+      nav ul {
+        gap: 8px;
+        justify-content: center;
+      }
+      nav ul li a {
+        font-size: 14px;
+      }
+      section {
+        padding: 50px 20px;
+      }
+      .volume-control {
+        font-size: 13px;
+      }
+    }
+    @media (max-width: 480px) {
+      header {
+        padding: 5px;
+      }
+      nav ul {
+        gap: 6px;
+      }
+      nav ul li a {
+        font-size: 13px;
+      }
+      .volume-control {
+        gap: 6px;
+      }
+    }
+
+    /* 全局复古纹理 + 噪点背景 */
+    body::before {
+        content: '';
+        position: fixed;
+        inset: 0;
+        background: 
+            linear-gradient(30deg, transparent 48%, rgba(70, 90, 110, 0.08) 50%, transparent 52%),
+            linear-gradient(-30deg, transparent 48%, rgba(70, 90, 110, 0.06) 50%, transparent 52%),
+            repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(30,35,45,0.05) 2px, rgba(30,35,45,0.05) 4px),
+            repeating-linear-gradient(90deg, transparent, transparent 2px, rgba(30,35,45,0.05) 2px, rgba(30,35,45,0.05) 4px),
+            url('https://assets.codepen.io/3522978/noise.png'), 
+            radial-gradient(circle at 30% 20%, #0a0f1a, #010101);
+        background-blend-mode: overlay, screen, multiply, normal;
+        opacity: 0.85;
+        pointer-events: none;
+        z-index: -2;
+        transition: opacity 0.3s ease;
+    }
+
+    .halftone-overlay {
+        position: fixed;
+        inset: 0;
+        width: 100vw;
+        height: 100vh;
+        object-fit: cover;
+        pointer-events: none;
+        mix-blend-mode: overlay;
+        opacity: 0.12;
+        z-index: -1;
+        transition: opacity 0.3s ease;
+    }
+
+    .vintage-bg {
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        z-index: 0;
+        overflow: hidden;
+        transition: opacity 0.3s ease;
+    }
+    .vintage-element {
+        position: absolute;
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        opacity: 0.05;
+        mix-blend-mode: multiply;
+        animation: driftVintage linear infinite, pulseVintage 28s ease-in-out infinite alternate;
+    }
+    @keyframes driftVintage {
+        0% { transform: translate(0, 0) rotate(0deg); }
+        100% { transform: translate(110px, 110px) rotate(360deg); }
+    }
+    @keyframes pulseVintage {
+        0% { opacity: 0.04; filter: brightness(0.9); }
+        100% { opacity: 0.1; filter: brightness(1.1); }
+    }
+    .v1 { background-image: url('https://i0.wp.com/heritagecalling.com/wp-content/uploads/2024/12/DP114585-St-Marys-Church-Kempley-Gloucestershire.jpg?ssl=1'); width: 380px; height: 380px; top: 3%; left: 0%; animation-duration: 170s, 24s; transform: rotate(50deg); }
+    .v2 { background-image: url('https://www.nationalww2museum.org/sites/default/files/2020-05/Riveter.jpg'); width: 550px; height: 180px; top: 18%; right: 4%; animation-duration: 190s, 28s; }
+    .v3 { background-image: url('https://render.fineartamerica.com/images/rendered/default/greeting-card/images/artworkimages/medium/2/andy-warhol-high-resolution-photo-art-collage-andy-warhol-collage.jpg'); width: 280px; height: 450px; bottom: 8%; left: 6%; animation-duration: 150s, 20s; transform: rotate(-32deg); }
+    .v4 { background-image: url('https://rubberdiamond.wordpress.com/wp-content/uploads/2014/01/schwitters.jpg'); width: 420px; height: 420px; top: 38%; left: 48%; animation-duration: 210s, 35s; transform: rotate(22deg); }
+    .v5 { background-image: url('https://www.heritage-print.com/p/731/study-poster-1920-artist-lissitzky-15000613.jpg.webp'); width: 620px; height: 140px; bottom: 4%; right: 8%; animation-duration: 180s, 26s; }
+    .v6 { background-image: url('https://blog.architizer.com/wp-content/uploads/deconstructivism.jpeg'); width: 230px; height: 560px; top: 6%; right: 1%; animation-duration: 160s, 22s; transform: rotate(90deg); }
+    .v7 { background-image: url('https://d31sxl6qgne2yj.cloudfront.net/wordpress/wp-content/uploads/20190102164052/Punk-Album-Covers-11x16.jpg'); width: 460px; height: 330px; bottom: 28%; left: 28%; animation-duration: 200s, 30s; transform: rotate(-28deg); }
+    .v8 { background-image: url('https://smarthistory.org/wp-content/uploads/2021/02/50935568273_37699017c0_o-scaled.jpg'); width: 350px; height: 130px; top: 50%; left: 12%; animation-duration: 140s, 18s; }
+    .v9 { background-image: url('https://postergroup.com/cdn/shop/products/Men-Working-Together-Poster.jpg?v=1746051175'); width: 180px; height: 400px; top: 12%; left: 62%; animation-duration: 230s, 38s; transform: rotate(72deg); }
+    .v10 { background-image: url('https://m.media-amazon.com/images/I/81SOUO-NbkL.jpg'); width: 560px; height: 280px; bottom: 18%; right: 22%; animation-duration: 170s, 27s; }
+    .v11 { background-image: url('https://cdn.britannica.com/94/5594-050-1C1166D6/Annunciation-Fra-Angelico-Florence-Museum-of-San.jpg'); width: 300px; height: 300px; top: 62%; left: 40%; animation-duration: 220s, 32s; transform: rotate(-45deg); }
+    .v12 { background-image: url('https://cdn11.bigcommerce.com/s-yzgoj/images/stencil/1280x1280/products/1320435/1708788/PSTJPA100339M__22686.1519281927.jpg?c=2'); width: 440px; height: 220px; top: 30%; left: 4%; animation-duration: 180s, 25s; }
+    .v13 { background-image: url('https://divinity.uchicago.edu/sites/default/files/styles/sightings_article_featured_image/public/2020-01/2c304455-66ca-4ae4-adc3-ba0ccc06b408_1_201_a.jpeg?itok=9v54XcIG'); width: 400px; height: 350px; top: 8%; left: 55%; animation-duration: 160s, 23s; transform: rotate(30deg); }
+    .v14 { background-image: url('https://www.saic.edu/sites/default/files/shorthand/stories/0Hw0PwtaAa/2025-09-29T19%3A38%3A15.732Z/assets/vpUp9CR2Fi/kurt-schwitters-843x626.jpg'); width: 500px; height: 200px; bottom: 35%; right: 10%; animation-duration: 190s, 27s; }
+    .v15 { background-image: url('https://cdn.kastatic.org/ka-perseus-images/aa552552150213036b99363b0dfb8ae811b8c08d.jpg'); width: 350px; height: 400px; top: 45%; right: 15%; animation-duration: 200s, 30s; transform: rotate(-20deg); }
+  </style>
+</head>
+<body>
+
+<!-- 复古背景层 -->
+<img class="halftone-overlay" src="https://gd-hbimg-edge.huaban.com/e136eab1362dfa41c0bf38aa7f48d9be4fe7332b172ae6-yQ7EZk?auth_key=1780243200-7a28c4fd8dba4f27bcbf1202f71a087e-0-cab91a5574991e7dfd11720f9ea5744c" alt="" decoding="async" referrerpolicy="no-referrer">
+<div class="vintage-bg">
+    <div class="vintage-element v1"></div><div class="vintage-element v2"></div><div class="vintage-element v3"></div>
+    <div class="vintage-element v4"></div><div class="vintage-element v5"></div><div class="vintage-element v6"></div>
+    <div class="vintage-element v7"></div><div class="vintage-element v8"></div><div class="vintage-element v9"></div>
+    <div class="vintage-element v10"></div><div class="vintage-element v11"></div><div class="vintage-element v12"></div>
+    <div class="vintage-element v13"></div><div class="vintage-element v14"></div><div class="vintage-element v15"></div>
+</div>
+
+  <section id="stories" class="fade-in">
+  <h3>角色故事</h3>
+  <div class="story-list">
+    <div class="story-item">
+      <a href="失群的白鹤.html">失群的白鹤（卡林卡轶事一）</a>
+      <p>失群的白鹤飞向了未来，却已不知道到自己落脚的方向。</p>
+    </div>
+
+
+    <div class="story-item">
+      <a href="这里的黎明静悄悄.html">这里的黎明静悄悄（喀琅施塔得轶事一）</a>
+      <p>1917年俄罗斯圣彼得堡，铁与血，未知的希望。</p>
+    </div>
+
+   
+    <div class="story-item">
+      <a href="终其一生我们也未能相遇.html">终其一生我们也未能相遇（喀琅施塔得轶事二）</a>
+      <p>在漫长的时光里，我们擦肩而过，却从未真正相遇。命运的齿轮转动，留下的只有无尽的遗憾与一声迟到的叹息。</p>
+    </div>
+
+
+    <div class="story-item">
+      <a href="当路行至尽头.html">当路行至尽头（不来梅轶事）</a>
+      <p>1914年圣诞前夜，伊普尔前线的短暂和平，星宿小队见证了战壕中的人性。</p>
+    </div>
+
+
+    <div class="story-item">
+      <a href="乡下人的悲歌.html">乡下人的悲歌（密西西比轶事）</a>
+      <p>这是美国南方的挽歌，也是归乡少女的心结。</p>
+    </div>
+
+    <div class="story-item">
+      <a href="伦敦的雾霾早已散去.html">伦敦的雾霾早已散去</a>
+      <p>孤寂的少女第一次投入她人的怀抱</p>
+    </div>
+
+    <div class="story-item">
+      <a href="被困于天空下的白桦树.html">被困于天空下的白桦树（卡林卡轶事二）</a>
+      <p>来自过去的少女终究面对了未来祖国的终章。</p>
+    </div>
+
+  <div class="story-item">
+      <a href="在废墟中央渴望爱的少女.html">在废墟中央渴望着爱的少女（星宿前传小说）</a>
+      <p>在灰暗的废墟之中，她大声的呼喊着与生存着，渴望着爱。</p>
+    </div>
+</section>
+
+  <footer class="fade-in">
+    <p>©  伴星工作室</p>
+  </footer>
+
+ 

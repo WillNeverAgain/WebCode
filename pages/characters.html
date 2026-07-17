@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="description" content="《夙日不再》主要角色介绍，星宿、密西西比、白金汉、卡林卡等角色档案。">
+  <meta name="keywords" content="夙日不再,灵能者,米斯泰研究院">
+  <meta name="author" content="个人作品">
+  <title>夙日不再 | 角色档案</title>
+  <link href="https://unpkg.com/tailwindcss@3.4.1/dist/tailwind.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700&family=Dancing+Script:wght@400;700&family=Cinzel+Decorative:wght@700;900&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Noto Serif SC', 'KaiTi', serif;
+      background: #0d0802;
+      color: #f0dbc0;
+      height: 100vh;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* 复古海报背景 (暖色金橘调) */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: 
+        linear-gradient(30deg, transparent 48%, rgba(200, 130, 40, 0.1) 50%, transparent 52%),
+        linear-gradient(-30deg, transparent 48%, rgba(210, 140, 45, 0.08) 50%, transparent 52%),
+        repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(80, 50, 20, 0.06) 2px, rgba(80, 50, 20, 0.06) 4px),
+        repeating-linear-gradient(90deg, transparent, transparent 2px, rgba(80, 50, 20, 0.06) 2px, rgba(80, 50, 20, 0.06) 4px),
+        url('https://assets.codepen.io/3522978/noise.png'),
+        url('https://assets.codepen.io/3522978/old-paper.png');
+      background-blend-mode: multiply, screen, overlay;
+      opacity: 0.9;
+      pointer-events: none;
+      z-index: 0;
+      filter: sepia(0.35) contrast(1.2) brightness(0.95) hue-rotate(-10deg);
+      animation: vintageFilm 10s steps(12) infinite;
+    }
+    @keyframes vintageFilm {
+      0% { transform: translate(0,0); }
+      100% { transform: translate(15px,15px); }
+    }
+
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(circle at center, transparent 15%, rgba(30, 18, 5, 0.88) 100%);
+      pointer-events: none;
+      z-index: 1;
+      mix-blend-mode: multiply;
+    }
+
+    .vintage-bg {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 2;
+      overflow: hidden;
+    }
+    .vintage-element {
+      position: absolute;
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      opacity: 0.13;
+      mix-blend-mode: multiply;
+      animation: driftVintage linear infinite, pulseVintage 28s ease-in-out infinite alternate;
+      filter: sepia(0.5) brightness(1.1) hue-rotate(-5deg);
+    }
+    @keyframes driftVintage {
+      0% { transform: translate(0, 0) rotate(0deg); }
+      100% { transform: translate(110px, 110px) rotate(360deg); }
+    }
+    @keyframes pulseVintage {
+      0% { opacity: 0.08; filter: brightness(0.85); }
+      100% { opacity: 0.18; filter: brightness(1.05); }
+    }
+    .v1 { background-image: url('https://i0.wp.com/heritagecalling.com/wp-content/uploads/2024/12/DP114585-St-Marys-Church-Kempley-Gloucestershire.jpg?ssl=1'); width: 380px; height: 380px; top: 3%; left: 0%; animation-duration: 170s, 24s; transform: rotate(50deg); }
+    .v2 { background-image: url('https://www.nationalww2museum.org/sites/default/files/2020-05/Riveter.jpg'); width: 550px; height: 180px; top: 18%; right: 4%; animation-duration: 190s, 28s; }
+    .v3 { background-image: url('https://render.fineartamerica.com/images/rendered/default/greeting-card/images/artworkimages/medium/2/andy-warhol-high-resolution-photo-art-collage-andy-warhol-collage.jpg'); width: 280px; height: 450px; bottom: 8%; left: 6%; animation-duration: 150s, 20s; transform: rotate(-32deg); }
+    .v4 { background-image: url('https://rubberdiamond.wordpress.com/wp-content/uploads/2014/01/schwitters.jpg'); width: 420px; height: 420px; top: 38%; left: 48%; animation-duration: 210s, 35s; transform: rotate(22deg); }
+    .v5 { background-image: url('https://www.heritage-print.com/p/731/study-poster-1920-artist-lissitzky-15000613.jpg.webp'); width: 620px; height: 140px; bottom: 4%; right: 8%; animation-duration: 180s, 26s; }
+    .v6 { background-image: url('https://blog.architizer.com/wp-content/uploads/deconstructivism.jpeg'); width: 230px; height: 560px; top: 6%; right: 1%; animation-duration: 160s, 22s; transform: rotate(90deg); }
+    .v7 { background-image: url('https://d31sxl6qgne2yj.cloudfront.net/wordpress/wp-content/uploads/20190102164052/Punk-Album-Covers-11x16.jpg'); width: 460px; height: 330px; bottom: 28%; left: 28%; animation-duration: 200s, 30s; transform: rotate(-28deg); }
+    .v8 { background-image: url('https://smarthistory.org/wp-content/uploads/2021/02/50935568273_37699017c0_o-scaled.jpg'); width: 350px; height: 130px; top: 50%; left: 12%; animation-duration: 140s, 18s; }
+    .v9 { background-image: url('https://postergroup.com/cdn/shop/products/Men-Working-Together-Poster.jpg?v=1746051175'); width: 180px; height: 400px; top: 12%; left: 62%; animation-duration: 230s, 38s; transform: rotate(72deg); }
+    .v10 { background-image: url('https://m.media-amazon.com/images/I/81SOUO-NbkL.jpg'); width: 560px; height: 280px; bottom: 18%; right: 22%; animation-duration: 170s, 27s; }
+    .v11 { background-image: url('https://cdn.britannica.com/94/5594-050-1C1166D6/Annunciation-Fra-Angelico-Florence-Museum-of-San.jpg'); width: 300px; height: 300px; top: 62%; left: 40%; animation-duration: 220s, 32s; transform: rotate(-45deg); }
+    .v12 { background-image: url('https://cdn11.bigcommerce.com/s-yzgoj/images/stencil/1280x1280/products/1320435/1708788/PSTJPA100339M__22686.1519281927.jpg?c=2'); width: 440px; height: 220px; top: 30%; left: 4%; animation-duration: 180s, 25s; }
+    .v13 { background-image: url('https://divinity.uchicago.edu/sites/default/files/styles/sightings_article_featured_image/public/2020-01/2c304455-66ca-4ae4-adc3-ba0ccc06b408_1_201_a.jpeg?itok=9v54XcIG'); width: 400px; height: 350px; top: 8%; left: 55%; animation-duration: 160s, 23s; transform: rotate(30deg); }
+    .v14 { background-image: url('https://www.saic.edu/sites/default/files/shorthand/stories/0Hw0PwtaAa/2025-09-29T19%3A38%3A15.732Z/assets/vpUp9CR2Fi/kurt-schwitters-843x626.jpg'); width: 500px; height: 200px; bottom: 35%; right: 10%; animation-duration: 190s, 27s; }
+    .v15 { background-image: url('https://cdn.kastatic.org/ka-perseus-images/aa552552150213036b99363b0dfb8ae811b8c08d.jpg'); width: 350px; height: 400px; top: 45%; right: 15%; animation-duration: 200s, 30s; transform: rotate(-20deg); }
+
+    /* 角色容器调整顶部留白（原 header 已移除） */
+    .pages-container {
+      position: relative;
+      width: 100%;
+      height: 100vh;
+      overflow: hidden;
+    }
+    .character-slide {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.65s cubic-bezier(0.25, 0.8, 0.25, 1), visibility 0.65s;
+      overflow-y: auto;
+      padding: 80px 85px 70px 60px;
+      z-index: 5;
+    }
+    .character-slide.active {
+      opacity: 1;
+      visibility: visible;
+      z-index: 10;
+    }
+    .character-slide.slide-in {
+      animation: fadeSlideUp 0.65s ease forwards;
+    }
+    @keyframes fadeSlideUp {
+      0% { opacity: 0; transform: translateY(30px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+
+    /* 内容卡片金橘风格 */
+    .profile-container {
+      max-width: 1300px;
+      width: 100%;
+      margin: 0 auto;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: stretch;
+      justify-content: center;
+      gap: 45px;
+      background: rgba(12, 8, 4, 0.78);
+      backdrop-filter: blur(8px);
+      border-radius: 40px;
+      padding: 35px 42px;
+      border-left: 8px solid #e0a83c;
+      border-right: 1px solid rgba(224, 168, 60, 0.4);
+      box-shadow: 30px 35px 80px rgba(0,0,0,0.8);
+    }
+    .illust-area {
+      flex: 1.2;
+      min-width: 240px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+    .illust-carousel {
+      position: relative;
+      width: 100%;
+      max-width: 500px;
+      overflow: hidden;
+      border-radius: 20px;
+      box-shadow: 0 20px 35px rgba(0,0,0,0.6), 0 0 0 2px rgba(224, 168, 60, 0.4);
+    }
+    .illust-track {
+      display: flex;
+      transition: transform 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
+      will-change: transform;
+    }
+    .illust-slide {
+      min-width: 100%;
+      width: 100%;
+      flex-shrink: 0;
+    }
+    .illust {
+      width: 100%;
+      height: auto;
+      max-height: 60vh;
+      object-fit: contain;
+      display: block;
+    }
+    .carousel-arrow {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: rgba(10, 6, 2, 0.75);
+      border: 1px solid rgba(224, 168, 60, 0.6);
+      color: #f5cf8a;
+      font-size: 18px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s ease;
+      z-index: 3;
+      backdrop-filter: blur(4px);
+      opacity: 0;
+      pointer-events: none;
+    }
+    .illust-carousel:hover .carousel-arrow {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .carousel-arrow:hover {
+      background: rgba(224, 168, 60, 0.35);
+      border-color: #e0a83c;
+      box-shadow: 0 0 12px rgba(224, 168, 60, 0.5);
+    }
+    .carousel-prev { left: 12px; }
+    .carousel-next { right: 12px; }
+    .carousel-dots {
+      position: absolute;
+      bottom: 12px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 8px;
+      z-index: 3;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    .illust-carousel:hover .carousel-dots { opacity: 1; }
+    .carousel-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: rgba(245, 207, 138, 0.4);
+      border: 1px solid rgba(224, 168, 60, 0.5);
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    .carousel-dot.active {
+      background: #f5cf8a;
+      border-color: #e0a83c;
+      box-shadow: 0 0 6px rgba(224, 168, 60, 0.6);
+      width: 24px;
+      border-radius: 12px;
+    }
+    .info-dec {
+      flex: 1;
+      background: rgba(10, 7, 3, 0.85);
+      backdrop-filter: blur(10px);
+      border-radius: 32px;
+      padding: 28px 32px 28px 32px;
+      position: relative;
+      border-left: 3px solid #e0a83c;
+      display: flex;
+      flex-direction: column;
+    }
+    /* 切换按钮（简介/详情） */
+    .story-toggle {
+      position: absolute;
+      top: 50%;
+      right: 20px;
+      transform: translateY(-50%);
+      width: 36px;
+      height: 36px;
+      background: rgba(224, 168, 60, 0.25);
+      border-radius: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: 0.2s;
+      border: 1px solid #e0a83c;
+      backdrop-filter: blur(4px);
+      z-index: 2;
+    }
+    .story-toggle:hover {
+      background: #e0a83c;
+      transform: translateY(-50%) scale(1.03);
+    }
+    .story-toggle svg {
+      width: 20px;
+      height: 20px;
+      fill: #f5cf8a;
+      transition: 0.2s;
+    }
+    .story-toggle:hover svg {
+      fill: #1e1508;
+    }
+    
+    .info-name {
+      font-size: 44px;
+      font-weight: 700;
+      color: #f7d98c;
+      font-family: 'Cinzel Decorative', cursive;
+      margin-bottom: 8px;
+      padding-right: 55px;
+      letter-spacing: 3px;
+    }
+    .info-subtitle {
+      font-size: 18px;
+      color: #e6bc7a;
+      border-bottom: 1px dashed rgba(224, 168, 60, 0.7);
+      display: inline-block;
+      padding-bottom: 5px;
+      margin-bottom: 20px;
+      font-style: italic;
+    }
+    .info-skill {
+      font-size: 17px;
+      line-height: 1.5;
+      background: rgba(0,0,0,0.55);
+      padding: 12px 18px;
+      border-radius: 24px;
+      margin: 10px 0 16px;
+      border-left: 3px solid #e0a83c;
+    }
+    .info-skill strong { color: #f5cf8a; margin-right: 8px; }
+    
+    .story-content {
+      margin-top: 8px;
+      flex: 1;
+      min-height: 0;
+    }
+    .story-text {
+      font-size: 16px;
+      line-height: 1.7;
+      color: #f2e3cf;
+    }
+    .hidden-story {
+      display: none;
+    }
+    .scrollable-story {
+      max-height: 260px;
+      overflow-y: auto;
+      padding-right: 8px;
+      scrollbar-width: thin;
+      scrollbar-color: #e0a83c #3a2a18;
+    }
+    .scrollable-story::-webkit-scrollbar {
+      width: 5px;
+    }
+    .scrollable-story::-webkit-scrollbar-track {
+      background: #2b1f0f;
+      border-radius: 8px;
+    }
+    .scrollable-story::-webkit-scrollbar-thumb {
+      background: #e0a83c;
+      border-radius: 8px;
+    }
+    
+    .audio-mini {
+      margin-top: 18px;
+      background: rgba(0,0,0,0.55);
+      border-radius: 50px;
+      padding: 5px 12px;
+      width: 100%;
+      max-width: 280px;
+    }
+    .audio-mini audio { width: 100%; height: 32px; border-radius: 30px; }
+    .audio-group {
+      margin-top: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .audio-group .audio-item {
+      background: rgba(0,0,0,0.55);
+      border-radius: 50px;
+      padding: 5px 12px;
+      width: 100%;
+      max-width: 280px;
+    }
+    .audio-group .audio-item audio { width: 100%; height: 32px; border-radius: 30px; }
+    .audio-group .audio-label {
+      font-size: 12px;
+      color: #dbb067;
+      margin-bottom: 2px;
+      padding-left: 12px;
+      letter-spacing: 1px;
+    }
+
+    /* 右侧进度指示器 */
+    .progress-indicator {
+      position: fixed;
+      right: 28px;
+      top: 50%;
+      transform: translateY(-50%);
+      z-index: 200;
+      background: rgba(10, 6, 2, 0.8);
+      backdrop-filter: blur(12px);
+      padding: 10px 12px;
+      border-radius: 48px;
+      border: 1px solid #e0a83c;
+      text-align: center;
+      font-family: 'Cinzel Decorative', serif;
+      box-shadow: 0 0 12px rgba(0,0,0,0.5);
+      min-width: 72px;
+      pointer-events: none;
+    }
+    .progress-text {
+      font-size: 22px;
+      font-weight: 700;
+      color: #f5cf8a;
+      letter-spacing: 1px;
+    }
+    .progress-current {
+      font-size: 28px;
+      color: #f0bc6e;
+      font-weight: bold;
+    }
+    .progress-total {
+      font-size: 18px;
+      color: #c99845;
+    }
+    .progress-label {
+      font-size: 10px;
+      margin-top: 6px;
+      color: #dbb067;
+      letter-spacing: 1.5px;
+      border-top: 1px dashed #e0a83c;
+      padding-top: 5px;
+    }
+
+    @media (max-width: 900px) {
+      .profile-container { flex-direction: column; padding: 24px 20px; gap: 24px; align-items: center; }
+      .info-name { font-size: 32px; padding-right: 45px; }
+      .character-slide { padding: 90px 70px 60px 25px; }
+      .progress-indicator { right: 12px; padding: 6px 8px; min-width: 58px; }
+      .progress-current { font-size: 24px; }
+      .progress-total { font-size: 16px; }
+      .story-toggle { width: 32px; height: 32px; right: 16px; }
+      .story-toggle svg { width: 18px; height: 18px; }
+      .info-dec { padding: 22px 24px; }
+      .scrollable-story { max-height: 210px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="vintage-bg">
+    <div class="vintage-element v1"></div><div class="vintage-element v2"></div><div class="vintage-element v3"></div>
+    <div class="vintage-element v4"></div><div class="vintage-element v5"></div><div class="vintage-element v6"></div>
+    <div class="vintage-element v7"></div><div class="vintage-element v8"></div><div class="vintage-element v9"></div>
+    <div class="vintage-element v10"></div><div class="vintage-element v11"></div><div class="vintage-element v12"></div>
+    <div class="vintage-element v13"></div><div class="vintage-element v14"></div><div class="vintage-element v15"></div>
+  </div>
+
+  <div class="pages-container" id="rolePagesContainer"></div>
+
+  <div class="progress-indicator" id="progressIndicator">
+    <div class="progress-text">
+      <span class="progress-current" id="currentIdxDisplay">1</span><span class="progress-total">/<span id="totalCountDisplay">0</span></span>
+    </div>
+    <div class="progress-label">卷·录</div>
+  </div>
+
+  <audio id="bgm" src="背景.MP3" loop preload="auto"></audio>
+
+  <script>
+    // ========== 背景音乐逻辑（仅独立打开时启用，iframe内由父页面统一管理） ==========
+    (function initBGM() {
+      // iframe 内不创建/播放 BGM，避免与父页面 index.html 的 BGM 双重叠加
+      if (window.top !== window.self) {
+        const bgmEl = document.getElementById('bgm');
+        if (bgmEl) bgmEl.remove();
+        return;
+      }
+
+      const audio = document.getElementById('bgm');
+
+      // 多重用户交互解锁自动播放（覆盖 click / 键盘 / 触屏）
+      function unlockAndPlay() {
+        if (audio.paused) {
+          audio.play().catch(() => {});
+        }
+      }
+      document.addEventListener('click', unlockAndPlay, { once: true });
+      document.addEventListener('keydown', unlockAndPlay, { once: true });
+      document.addEventListener('touchstart', unlockAndPlay, { once: true });
+
+      // 页面加载后也尝试播放（部分浏览器在历史交互后允许）
+      window.addEventListener('load', () => {
+        audio.play().catch(() => {});
+      });
+
+      // 页面隐藏/恢复时的播放控制
+      document.addEventListener('visibilitychange', () => {
+        if (!document.hidden && audio.paused) {
+          audio.play().catch(() => {});
+        }
+      });
+
+      // 循环播放
+      audio.addEventListener('ended', () => {
+        audio.currentTime = 0;
+        audio.play().catch(() => {});
+      });
+
+      // 清理旧版 localStorage 残留
+      try { localStorage.removeItem('bgm_playing_state'); } catch(e) {}
+    })();
+
+    // ========== 角色数据集（已从新版 characters.html 完整移植详细内容） ==========
+    const characters = [
+      { id: "xingxiu", name: "星宿", subtitle: "Xingxiu · 星宿", skill: "所属 · 米斯泰研究院 特别作战处",
+        brief: "身份神秘的少女，目前唯一免疫灵能的人员。",
+        detail: `<h5 style="color:#f5cf8a; margin:12px 0 8px 0;">简介</h5><p>星宿是从小在研究院被养大的孩子，但她却能免疫灵能所带来的冲击并在灵能风暴的灾害区域中探索。她从小在机构里面辅助各种灵能研究，长大后成为了"星宿"。即组织内负责探索灾害地区回到历史中探寻线索的人的代号。</p><p>星宿从小生活在研究院里面，受到研究院的特殊照顾与教育，熟知人类的绝大部分历史与语言文化。长大后虽接受了部分训练，但战斗方面相较于有特殊能力的灵能者还是杯水车薪。但是研究院给予了星宿许多特殊装备上的选择也让星宿成为了一个不可小觑的作战单位。</p><h5 style="color:#f5cf8a; margin:12px 0 8px 0;">基础信息</h5><p>性别：女   年龄：18岁（2030.6.1）   种族：人类<br>来自于：未知   身高：173cm   来自时代/地区：当前世界</p><h5 style="color:#f5cf8a; margin:12px 0 8px 0;">人物状态报告</h5><p>星宿自从被研究院收留后就生活在研究院中，虽说也有不少的外出时间，但大多时都有着研究院人员的陪同或观察。她虽能完成研究院对她的下达的教育，训练等一切任务，但有时会表现出一种不得已顺从的态度。星宿在平时的言行举止之中十分的有礼貌，对外任务也是如此，如同一位温文尔雅的绅士一般。只有在极个别情况之中才会使用特殊的手段或表现的稍微失礼一些。</p><p>星宿心思缜密，做事严谨。自从让她进行外出任务之后，除了极个别的特殊情况以外，基本上没有失手的情况。她从小被名叫詹姆的研究院特工带大，对詹姆有着特殊的情感，詹姆也对她像是父亲一般呵护。除了詹姆和自己的小队以外，她与研究院内的人在除了任务以外鲜有交流。</p><p>星宿在研究院经过专门的教育，精通多种语言，并熟知多个时间段的历史文化与诸国的社会文化风俗等。</p>`,
+        img: "星宿.png", imgs: ["星宿.png", "星宿2.jpg"], hasAudio: false },
+      
+      { id: "mississippi", name: "密西西比", subtitle: "Susanna · Mississippi", skill: "所属 · 米斯泰研究院 特别作战处",
+        brief: " 来自美国得克萨斯州的灵能者，在一次灵能灾难中失去父母，后被米斯泰研究院收养。",
+        detail: `<h5 style="color:#f5cf8a; margin:12px 0 8px 0;">简介</h5><p>密西西比出生于21世纪的美利坚合众国得克萨斯州，研究院以美国母亲河密西西比作为代号为她命名。她在美国黄石国家公园中的一场灵能灾难中被研究院调查组发现，并确认为灵能者，其父母均在灵能灾难中遇难。这一场与父母的旅游之行彻底改变了密西西比的生活。经过灵能灾难冲击后，密西西比失去了部分的记忆，虽然在后来的康复治疗之中得到了恢复，但是对于自己的身世却知之甚少，我们只知道她来自得克萨斯州。研究院联情局正在调查她的身世。</p><h5 style="color:#f5cf8a; margin:12px 0 8px 0;">基础信息</h5><p>本名：苏珊娜 性别：女 年龄：19岁（2029.7.4） 种族：人类灵能者<br>来自于：美利坚合众国得克萨斯州 身高：175cm 来自时代/地区：当前世界的美利坚合众国得克萨斯州</p><h5 style="color:#f5cf8a; margin:12px 0 8px 0;">人物状态报告</h5><p>虽说生活遭受了巨大的打击，甚至已经改变了密西西比的生活。但是她对于生活的乐趣却丝毫未减，密西西比很能开导自己，她常说，如果自己幸存下来后还整天郁郁寡欢的话，还不如直接去陪自己的父母。自己的父母也希望自己能开开心心的活着吧。</p><p>密西西比大大咧咧不知分寸，喜欢说一些幽默的抽象话，给人一股自来熟的感觉。能和密西西比呆久的人要么是像星宿一样习惯了，要么就是和她一样的自来熟的性格。</p><p>密西西比表面的开朗外向很可能是其创伤后的心理防御机制，表面大大咧咧不知分寸，实则害怕孤独与失去，这也能解释其为什么在研究院学习期间如此的热衷于结交朋友。</p>`,
+        img: "密西西比.png", hasAudio: false },
+      
+      { id: "baiyinhan", name: "白金汉", subtitle: "Philippa Margaret · Buckingham", skill: "所属 · 米斯泰研究院 特别作战处",
+        brief: "拥有英国皇室血统的灵能者，因灵能灾难来到现代，从小被米斯泰研究院收养。",
+        detail: `<h5 style="color:#f5cf8a; margin:12px 0 8px 0;">简介</h5><p>幼年的白金汉被发现于英国的一次灵能灾难之中。在研究院调查组发现之时，她已经独自一人在灵能灾难之中生存了接近了一周之久。被发现时的白金汉还十分的理智，甚至如淑女一般给研究院调查组打招呼。在这周内她目睹了很多因灾难而离去的普通人，她时时刻刻陪伴在这些人的身边，在他们离世之前给予了他们最后的一丝关怀。</p><p>白金汉展现了极强的心理素质和文化水平，她也从小知道自己有这种神奇的力量，只不过自己不懂得如何运用。白金汉来自一家孤儿院，此孤儿院也早被摧毁，现已经无法考察。经过询问，孤儿院地点位于英国白金汉郡，故她的代号为白金汉。</p><h5 style="color:#f5cf8a; margin:12px 0 8px 0;">基础信息</h5><p>本名：菲利帕·玛格丽特 性别：女 生理年龄：20岁 种族：人类灵能者<br>来自于：大不列颠及爱尔兰联合王国白金汉郡 身高：165cm 来自时代/地区：18世纪50年代的大不列颠及爱尔兰联合王国白金汉郡</p><h5 style="color:#f5cf8a; margin:12px 0 8px 0;">人物状态报告</h5><p>很明显白金汉接受过系统性的贵族礼仪教育与高等教育。经过我们的询问，白金汉所处的时代位于工业革命时期的英国，因为一次灵能风暴被困在灵能灾难之中，误打误撞来到了现在我们所处的时代之中。来到研究院的白金汉展现出了极高的学习兴趣，她学习了她所处时代之后的历史以及诸多关于灵能的知识并一直对研究院人员保持着极高的礼仪。</p><p>据白金汉所说，她所在的孤儿院是由一名贵族所资助的，因此她在孤儿院之中能接受良好的贵族教育与礼仪培训并有着明显的TRP口音。但具体的细节她并不所知，但是能确定的一点是这名贵族喜爱红玫瑰，推算这名贵族也与灵能或者兰开斯特家族有着千丝万缕的联系。</p>`,
+        img: "白金汉.png", hasAudio: true, audioSrc: "白金汉对话0.mp3" },
+      
+      { id: "kalinka", name: "卡林卡", subtitle: "Akula · Kalinka", skill: "所属 · 米斯泰研究院 特别作战处",
+        brief: "来自苏联的飞行员，因灵能灾难穿越到现代，研究院对灾难的探寻中收容了她。",
+        detail: `<h5 style="color:#f5cf8a; margin:12px 0 8px 0;">简介</h5><p>卡林卡被发现于叶尼塞河流域的一场灵能灾难之中，其记忆还停留在苏联时期。卡林卡是目前我们唯一发现的一位自己从灵能区域出来的人。研究院调查组的人将卡林卡带回后帮她检查了身体，身体并无大碍，但是记忆受损严重，基本上记不得自己身上的任何事情，甚至名字，因此我们用俄罗斯民歌卡林卡作为其代号。</p><p>卡林卡被发现时身着飞行员套装，身上有着红星并有着战斗的痕迹，在灵能灾区之中我们发现了卡林卡的波2双翼飞机。她很有可能是曾经苏联的588暗夜女巫航空团成员之一。</p><h5 style="color:#f5cf8a; margin:12px 0 8px 0;">基础信息</h5><p>本名：阿库拉·瓦西里耶芙娜·佐里娜 性别：女 生理年龄：22岁 种族：人类灵能者<br>来自于：苏维埃社会主义共和国联盟 身高：180cm 来自时代/地区：20世纪40年代左右的苏维埃社会主义共和国联盟的俄罗斯苏维埃联邦主义共和国</p><h5 style="color:#f5cf8a; margin:12px 0 8px 0;">人物状态报告</h5><p>因为所处时代原因，卡林卡展现了很强的利他主义者与集体主义思想。经过在研究院之中的学习后，卡林卡并未苏联的解体感到过度的伤心与惋惜，她认为这是苏联在错误的抉择后历史发展的选择。她仍然保持着利他主义和集体主义的思想。但在一次接触后解体后俄罗斯人后，卡林卡逐渐的了解到解体后的动荡不安与底层的不易，后朋克文化也让卡林卡了解苏联解体后各加盟共和国现如今的状况有了更多的参考。</p><p>卡林卡很珍惜自己的目前的团队，密西西比，白金汉，星宿.....她一直在扮演着类似大家长一样的角色。无微不至的关心甚至照顾着团队成员的事务，甚至是生活上的一切。在执行任务中也将此项看做重中之重，有时甚至因为密西西比的激进想法和她吵的不可开交。</p><p>在后续的观察之中，我们开始质疑卡林卡的记忆受损，在有关于苏联和俄罗斯的行动之中，她总是知道过于细致的信息。据卡林卡本人所说是在研究院学习中听到的轶事，或许也可能她在假装失忆？</p>`,
+        img: "卡林卡.png", hasAudio: true, audioSrcs: ["卡林卡对话0.mp3", "卡林卡对话1.mp3", "卡林卡对话2.mp3"] },
+      
+      { id: "bulaimei", name: "不来梅", subtitle: "Artur von Bremen", skill: "所属 · 米斯泰研究院 特别作战处",
+        brief: "来自德意志第二帝国时代的少年贵族灵能者，厌恶战争，热爱和平与艺术，在一次亚眠的灵能灾难中被米斯泰研究院收容。",
+        detail: `<h5 style="color:#f5cf8a; margin:12px 0 8px 0;">简介</h5><p>不来梅被发现于亚眠的一次灵能灾难之中。根据他身上的衣着和他的自述，来自德意志第二帝国时期。根据他的穿着和谈吐，我们能确信是一名德国贵族，甚至和德国皇室有关联。不来梅是一名长相偏年轻甚至不成熟的男性，但是他并没有像那个时代的德国一样沉沦于军事和扩张的狂热，而是充满了和平和对美好世界的向往，因为家族原因被迫参加了进队。目前代号“不来梅”的灵能者已经被米斯泰研究院收容并在研究院生活学习。</p><h5 style="color:#f5cf8a; margin:12px 0 8px 0;">基础信息</h5><p>本名：阿尔图尔·冯·布雷恩 性别：男 生理年龄：17岁 种族：人类灵能者<br>来自于：德意志第二帝国不来梅市 身高：163cm 来自时代/地区：德意志第二帝国</p><h5 style="color:#f5cf8a; margin:12px 0 8px 0;">人物状态报告</h5><p>不来梅自幼接受严格的贵族教育，熟稔宫廷礼仪、古典文学与军事战略，但其性格与家族传统格格不入——他厌恶战争与扩张主义，痴迷哲学与艺术，尤其崇拜歌德与席勒作品中的人道主义精神。在研究院的历史课程学习之中，不来梅知道了一战之后德意志的命运，一战后德意志陷入的伤痛导致了二战的爆发。这对于热爱和平与艺术的他产生了巨大的冲击。他不能接受他热爱的德意志成为了一台巨大的战争机器被疯子的带领下冲入了战争的深渊，在有关于任何历史遗留问题的灵能危机，战争的节点的任务他都尽可能的逃避，直到他加入了星宿小队之后在众人的开导下有所好转。</p>`,
+        img: "不来梅.png", hasAudio: false },
+      
+      { id: "kelang", name: "喀琅施塔得", subtitle: "Anna Petrovna · Kronstadt", skill: "所属 · 米斯泰研究院 特别作战处",
+        brief: "来自十月革命时期的喀琅施塔得水兵灵能者，对革命充满信仰，却因历史真相而内心矛盾。",
+        detail: `<h5 style="color:#f5cf8a; margin:12px 0 8px 0;">简介</h5><p>喀琅施塔得被发现之时正是俄罗斯境内拉斯普京的灵能事件闹的最严重的时候。她被发现王冠城喀琅施塔得的港口处，故以此为代号。已知情况为，喀琅施塔得为拉斯普京灵能事件所带来的人物。和灵能灾难之中出现的角色一样，喀琅施塔得失去了大部分的记忆。喀琅施塔得身穿着俄罗斯临时政府的水兵服，喀琅施塔得的立场偏向布尔什维克，据推断其应该是来自十月革命时期左右参加布尔什维克革命的喀琅施塔得水兵。</p><h5 style="color:#f5cf8a; margin:12px 0 8px 0;">基础信息</h5><p>本名：安娜·彼得罗芙娜·马尔蒂诺娃 性别：女 生理年龄：24岁 种族：人类灵能者<br>来自于：俄国临时政府 身高：179cm 来自时代/地区：20世纪初俄罗斯临时政府，圣彼得堡</p><h5 style="color:#f5cf8a; margin:12px 0 8px 0;">人物状态报告</h5><p>喀琅施塔得的性格像冰冷的波罗的海：表面平静，底下暗流汹涌。她说话永远直来直去，带着浓重的乌克兰口音，习惯把“同志”挂在嘴边，哪怕对方是研究院的高级职员也照叫不误。</p><p>她对革命，舰队的记忆支离破碎，却对“背叛”两个字异常敏感。在来到现代后学习到了1921年喀琅施塔得水兵起义事件后，任何试图向她解释该事件的人都会被她吓到，她都会突然暴怒。虽然事后她会平复自己的情绪，再给对方留一张字条：“对不起，同志们，我失态了。”</p><p>卡林卡曾试图用后来的苏联历史去“开导”她，结果两人大吵一架，最后喀琅施塔得红着眼吼出一句：“如果我在1921年，你也会开炮！我也会向你开枪！”然后冲进训练场把靶子打成了蜂窝。</p><p>她是典型的“暴力担当”，喜欢用舰炮思维解决问题，她目前也暂时相信研究院是为了更多人类文明和人类而服务的机构。</p>`,
+        img: "喀琅施塔得1.png", hasAudio: false },
+      
+      { id: "keliang", name: "柯里昂", subtitle: "Vittoria Maria Corleone", skill: "所属 · 米斯泰研究院意大利分部负责人",
+        brief: "罗马地下世界的“教父”，面带微笑的西西里年轻女子，研究院驻意大利分部负责人。",
+        detail: `<h5 style="color:#f5cf8a; margin:12px 0 8px 0;">简介</h5><p>柯里昂是一名来自意大利西西里岛柯里昂镇的灵能者，故代号为“柯里昂”。在罗马斗兽场灵能事件中，她以一己之力协助米斯泰研究院迅速平息危机，因此年仅23岁便被破格提拔为联情局成员，现任研究院驻意大利分部负责人之一。她极度热衷于救助灵能者同胞，哪怕动用分部预算也在所不惜，却总能通过“某些渠道”迅速补回亏空。罗马地下世界私下流传：真正的“教父”早已不是男人，而是一位永远面带微笑的西西里年轻女子。</p><h5 style="color:#f5cf8a; margin:12px 0 8px 0;">基础信息</h5><p>本名：维多莉娅·玛丽亚·柯里昂 性别：女 年龄：23岁 种族：人类灵能者<br>来自于：意大利共和国 身高：170cm 来自时代/地区：当前时代意大利共和国西西里岛柯里昂镇</p><h5 style="color:#f5cf8a; margin:12px 0 8px 0;">人物状态报告</h5><p>维多莉娅外表温婉随和，笑起来像隔壁邻家女孩，说话轻声细语带一点西西里口音，谁也看不出她是罗马黑白两道都卖面子的人。可只要她在某些场合轻轻咳嗽一声，或是随意报出某个名字，原本剑拔弩张的家族会议立刻安静得连掉根针都能听见。她从不威胁，只是礼貌地“提出建议”，对方却总能在最短时间内“自愿”配合。</p><p>她在黑帮、警方、梵蒂冈和研究院四方之间游刃有余，能和红衣主教聊宗教艺术，和黑手党长老谈家族荣誉，和联情局同事用英语开会，再和西西里老家亲戚用方言拉家常，切换自如，仿佛天生就该活在灰色地带。</p><p>研究院内部对她的评价只有两句话:“预算永远赤字，但分部业绩永远第一。”“别问钱从哪儿来，问就是‘西西里传统商业互助’。”</p><p>她最常说的一句话是：“我只是想让同胞们过得好一点，方式无所谓，对吧？”说完总是露出那种让人完全拒绝不了的微笑。</p>`,
+        img: "https://via.placeholder.com/600x800/d99e36/2a1a06?text=柯里昂", hasAudio: false },
+      
+      { id: "xiangbin", name: "香槟", subtitle: "Lucien de Bonaparte", skill: "所属 · 米斯泰研究院特聘外援",
+        brief: "优雅浪漫的法国调酒师，拿破仑家族后裔，擅长料理与照顾团队。",
+        detail: `<h5 style="color:#f5cf8a; margin:12px 0 8px 0;">简介</h5><p>香槟是来自于当前世界法兰西第五共和国的灵能者，因为是来自于法国香槟区的酿酒师，调酒师。故此代号为香槟。香槟被发现于法国巴黎香榭丽舍大街的一家酒吧之中，作为一名调酒师，香槟时不时使用自己的灵能能力为前来饮酒的观众表演一些小的戏法来活跃气氛。在巴黎圣母院事件之中，香槟帮助研究院与星宿调查小队完成了许多重要的任务后被研究院特聘为外援。</p><h5 style="color:#f5cf8a; margin:12px 0 8px 0;">基础信息</h5><p>本名：卢西安·德·波拿巴 性别：男 年龄：25岁 种族：人类灵能者<br>来自于：法兰西第五共和国 身高：178cm 来自时代/地区：当前时代法兰西第五共和国香槟区</p><h5 style="color:#f5cf8a; margin:12px 0 8px 0;">人物状态报告</h5><p>作为一名法国人，调酒师，厨师。香槟整体上下都散发着刻板印象的“优雅”“浪漫”的气质，不乏他自己也随时散发着一些黑色幽默。虽然在工作和为人处事之中香槟经常这样子，但是在进入研究院工作之后香槟还是十分正经的。经过对香槟的调查，发现香槟是拿破仑家族后代并且有非常优秀的灵能契合能力，甚至在一定程度上能抵消掉其余灵能者的灵能能力。</p><p>香槟喜欢享受他高雅的生活，但是在具体的小问题上会和白金汉争的面红耳赤。虽然不知道作为英国背景的白金汉为什么在这些上和香槟争来争去......</p><p>香槟的加入让特殊作战处的伙食好了不少，至少让忙碌的大家不用经常吃预制菜和密西西比带回来的快餐了。香槟在生活问题上总是无微不至的照顾着团队里面的每一个人，这一点和卡林卡很像，甚至是把白金汉拦在厨房外这种危险的事情也在所不辞，当然，早餐除外。</p>`,
+        img: "https://via.placeholder.com/600x800/d99e36/2a1a06?text=香槟", hasAudio: false },
+      
+      { id: "xiangjiang", name: "香江", subtitle: "Lin Ruoxi · Qingxuan", skill: "所属 · 米斯泰研究院编外合作",
+        brief: "师从青城山的道门弟子，守护香港地区的灵能者。",
+        detail: `<h5 style="color:#f5cf8a; margin:12px 0 8px 0;">简介</h5><p>香江是来自中国香港的一名灵能者，香江身上有很浓厚的中国道教元素。香江师从青城山，学成归来之后致力于维护广东、香港地区的稳定。香江通过米斯泰研究院中国分部与中国道教协会的交换生计划在研究院学习过一段时间。在香港政府对九龙城寨进行拆除重建之后，灵能活动就在香港的愈发频繁，香江也主要着手于像个灵能灾难的处理。在和米斯泰研究院特殊作战处的交涉后，香江成为研究院的特别编外人员与研究院合作。</p><h5 style="color:#f5cf8a; margin:12px 0 8px 0;">基础信息</h5><p>本名：林若曦 性别：女 年龄：22岁 种族：人类灵能者<br>来自于：中华人民共和国香港特别行政区 身高：171cm 来自时代/地区：当前时代中华人民共和国香港特别行政区</p><h5 style="color:#f5cf8a; margin:12px 0 8px 0;">人物状态报告</h5><p>香江自幼在香港长大，十三岁时因一次意外被青城山正一派掌门收为关门弟子，法号「清玄」。她深谙雷法、符箓与五行阵法。</p><p>性格外柔内刚，说话轻声细语，粤语、国语、英语随意切换，偶尔冒出几句文言或道门切口，让人摸不着头脑。温婉，护短，对自己生活的这片土地有着近乎执念的守护欲。</p><p>与研究院合作期间，她坚持「道法自然」原则，拒绝使用一切违背阴阳平衡的禁术，却在关键时刻屡次以一己之力扭转战局。</p>`,
+        img: "https://via.placeholder.com/600x800/d99e36/2a1a06?text=香江", hasAudio: false },
+      
+      { id: "yangzi", name: "扬子", subtitle: "Ouyang Miaoke", skill: "所属 · 米斯泰研究院编外合作",
+        brief: "香江的师妹，青城山道门弟子，全国奔走处理城市灵能事件的专家。",
+        detail: `<h5 style="color:#f5cf8a; margin:12px 0 8px 0;">简介</h5><p>与香江一样，扬子也是一名来自青城山道教的灵能者，她是香江的师妹。和香江一样也参加过交换生计划，扬子在学成出关之后也致力于维护社会稳定减小灵能事件对于社会的影响。扬子活动于中国的各个地方，只要是有需要她的地方她就会毫不犹豫的前往。扬子处理了诸多关于中国的因古代历史导致的灵能事件，这也让她积累了丰富的城市间的实战经验和应对手法，这正是研究院需要的。和香江一样，扬子也成为了编外合作人员之一。</p><h5 style="color:#f5cf8a; margin:12px 0 8px 0;">基础信息</h5><p>本名：欧阳缪可 性别：女 年龄：20岁 种族：人类灵能者<br>来自于：中华人民共和国成都市 身高：168cm 来自时代/地区：当前时代中华人民共和国四川省成都市</p><h5 style="color:#f5cf8a; margin:12px 0 8px 0;">人物状态报告</h5><p>扬子讲话永远带点川味普通话或是西南官话。队里开会她要么翘着二郎腿刷手机，要么直接瘫在沙发上，像来研究院打卡领工资的。</p><p>她最讨厌写正式报告，每次交作业只有三行字，包里永远塞着和作战无关的物品。但只要任务群里一响“内地有情况”，她永远是第一个回“收到”的人，比谁都快到现场。你越不催她，她越靠谱。</p><p>嘴上永远在摆烂，心里比谁都清楚大是大非。真有人需要帮忙，她会第一个冲向前去。</p>`,
+        img: "https://via.placeholder.com/600x800/d99e36/2a1a06?text=扬子", hasAudio: false }
+    ];
+
+    const container = document.getElementById('rolePagesContainer');
+    let currentIndex = 0;
+    let slides = [];
+    let isTransitioning = false;
+
+    characters.forEach((char, idx) => {
+      const slideDiv = document.createElement('div');
+      slideDiv.className = 'character-slide';
+      if (idx === 0) slideDiv.classList.add('active');
+      slideDiv.setAttribute('data-index', idx);
+      slideDiv.innerHTML = `
+        <div class="profile-container">
+          <div class="illust-area">
+            <div class="illust-carousel" data-role="${char.id}">
+              <div class="illust-track" id="track-${char.id}">
+                ${(char.imgs && char.imgs.length > 1 ? char.imgs : [char.img, char.img]).map((src, i) => `<div class="illust-slide"><img class="illust" src="${src}" alt="${char.name}" decoding="async" onerror="this.src='https://via.placeholder.com/500x600/d99e36/2a1a06?text=${char.name}'"></div>`).join('')}
+              </div>
+              <button class="carousel-arrow carousel-prev" data-dir="prev">◂</button>
+              <button class="carousel-arrow carousel-next" data-dir="next">▸</button>
+              <div class="carousel-dots" id="dots-${char.id}">
+                ${(char.imgs && char.imgs.length > 1 ? char.imgs : [char.img, char.img]).map((_, i) => `<span class="carousel-dot${i === 0 ? ' active' : ''}" data-idx="${i}"></span>`).join('')}
+              </div>
+            </div>
+          </div>
+          <div class="info-dec">
+            <div class="story-toggle" data-role="${char.id}">
+              <svg viewBox="0 0 24 24"><path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/></svg>
+            </div>
+            <div class="info-name">${char.name}</div>
+            <div class="info-subtitle">${char.subtitle}</div>
+            <div class="info-skill"><strong>${char.skill.split('    ')[0]}</strong><br>${char.skill.split('    ')[1] || ''}</div>
+            <div class="story-content">
+              <div class="scrollable-story">
+                <div class="story-text brief-text" id="brief-${char.id}"><p>${char.brief}</p>${char.hasAudio ? (char.audioSrcs ? `<div class="audio-group">${char.audioSrcs.map((src, i) => `<div class="audio-item"><div class="audio-label">🎙 对话 ${i + 1}</div><audio controls><source src="${src}" type="audio/mpeg">不支持音频</audio></div>`).join('')}</div>` : `<div class="audio-mini"><audio controls><source src="${char.audioSrc}" type="audio/mpeg">不支持音频</audio></div>`) : ''}</div>
+                <div class="story-text detailed-text hidden-story" id="detail-${char.id}">${char.detail}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+      container.appendChild(slideDiv);
+      slides.push(slideDiv);
+    });
+
+    document.getElementById('totalCountDisplay').innerText = characters.length;
+    function updateProgress() {
+      const currentSpan = document.getElementById('currentIdxDisplay');
+      if (currentSpan) currentSpan.innerText = currentIndex + 1;
+    }
+    updateProgress();
+
+    function switchToPage(newIndex) {
+      if (isTransitioning) return;
+      if (newIndex === currentIndex || newIndex < 0 || newIndex >= slides.length) return;
+      isTransitioning = true;
+      const oldSlide = slides[currentIndex];
+      const newSlide = slides[newIndex];
+      oldSlide.classList.remove('active');
+      newSlide.classList.add('active');
+      newSlide.classList.remove('slide-in');
+      void newSlide.offsetWidth;
+      newSlide.classList.add('slide-in');
+      setTimeout(() => {
+        newSlide.classList.remove('slide-in');
+        isTransitioning = false;
+      }, 650);
+      currentIndex = newIndex;
+      updateProgress();
+    }
+
+    function handleWheel(e) {
+      if (isTransitioning) return;
+      let target = e.target;
+      let scrollable = null;
+      while (target && target !== document.body) {
+        if (target.classList && target.classList.contains('scrollable-story')) {
+          scrollable = target;
+          break;
+        }
+        target = target.parentElement;
+      }
+      if (scrollable) {
+        const atTop = scrollable.scrollTop === 0;
+        const atBottom = scrollable.scrollTop + scrollable.clientHeight >= scrollable.scrollHeight - 1;
+        if ((e.deltaY > 0 && !atBottom) || (e.deltaY < 0 && !atTop)) {
+          return;
+        }
+        if ((e.deltaY > 0 && atBottom) || (e.deltaY < 0 && atTop)) {
+          e.preventDefault();
+          if (e.deltaY > 0 && currentIndex + 1 < slides.length) switchToPage(currentIndex + 1);
+          else if (e.deltaY < 0 && currentIndex - 1 >= 0) switchToPage(currentIndex - 1);
+          return;
+        }
+      }
+      e.preventDefault();
+      if (e.deltaY > 0 && currentIndex + 1 < slides.length) switchToPage(currentIndex + 1);
+      else if (e.deltaY < 0 && currentIndex - 1 >= 0) switchToPage(currentIndex - 1);
+    }
+    window.addEventListener('wheel', handleWheel, { passive: false });
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowUp') { e.preventDefault(); if (currentIndex - 1 >= 0) switchToPage(currentIndex - 1); }
+      else if (e.key === 'ArrowDown') { e.preventDefault(); if (currentIndex + 1 < slides.length) switchToPage(currentIndex + 1); }
+    });
+
+    // 简介/详情切换事件委托
+    document.getElementById('rolePagesContainer').addEventListener('click', (e) => {
+      const toggleBtn = e.target.closest('.story-toggle');
+      if (!toggleBtn) return;
+      const roleId = toggleBtn.getAttribute('data-role');
+      if (!roleId) return;
+      const briefDiv = document.getElementById(`brief-${roleId}`);
+      const detailDiv = document.getElementById(`detail-${roleId}`);
+      if (briefDiv && detailDiv) {
+        const isBrief = !briefDiv.classList.contains('hidden-story');
+        if (isBrief) {
+          briefDiv.classList.add('hidden-story');
+          detailDiv.classList.remove('hidden-story');
+        } else {
+          briefDiv.classList.remove('hidden-story');
+          detailDiv.classList.add('hidden-story');
+        }
+        const scroller = briefDiv.closest('.scrollable-story');
+        if (scroller) scroller.scrollTop = 0;
+      }
+    });
+
+    // 立绘轮播切换
+    document.getElementById('rolePagesContainer').addEventListener('click', (e) => {
+      const arrow = e.target.closest('.carousel-arrow');
+      const dot = e.target.closest('.carousel-dot');
+      if (!arrow && !dot) return;
+      const carousel = (arrow || dot).closest('.illust-carousel');
+      if (!carousel) return;
+      const roleId = carousel.getAttribute('data-role');
+      const track = document.getElementById(`track-${roleId}`);
+      const dots = document.getElementById(`dots-${roleId}`);
+      if (!track || !dots) return;
+      const slides = track.querySelectorAll('.illust-slide');
+      const total = slides.length;
+      let current = 0;
+      dots.querySelectorAll('.carousel-dot').forEach((d, i) => {
+        if (d.classList.contains('active')) current = i;
+      });
+      let next;
+      if (arrow) {
+        const dir = arrow.getAttribute('data-dir');
+        next = dir === 'prev' ? (current - 1 + total) % total : (current + 1) % total;
+      } else {
+        next = parseInt(dot.getAttribute('data-idx'));
+      }
+      if (next === current) return;
+      track.style.transform = `translateX(-${next * 100}%)`;
+      dots.querySelectorAll('.carousel-dot').forEach((d, i) => {
+        d.classList.toggle('active', i === next);
+      });
+    });
+
+    window.addEventListener('load', () => {
+      updateProgress();
+      document.body.style.overflow = 'hidden';
+    });
+  </script>
+</body>
+</html>

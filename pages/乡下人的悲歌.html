@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>乡下人的悲歌</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            background-color: #000000;
+            color: #e0e0e0;
+            overflow-x: hidden;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: rgba(26, 26, 26, 0.92);
+            min-height: 100vh;
+            box-shadow: 0 0 10px rgba(255,255,255,0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #f0f0f0;
+        }
+        h2 {
+            color: #d0d0d0;
+            border-bottom: 2px solid #d0d0d0;
+            padding-bottom: 5px;
+            text-align: center;
+        }
+        .scene > p:not(.dialogue):not(.intro) {
+            color: #f5e050; /* Soft yellow for narration */
+            margin: 15px 0;
+        }
+        .intro {
+            color: #a0e7a0; /* Light green for time/location/characters */
+            font-weight: bold;
+            margin: 15px 0;
+        }
+        .dialogue {
+            margin-left: 20px;
+            font-style: italic;
+            color: #e0e0e0; /* Light gray for dialogue */
+        }
+        .dialogue::before {
+            content: '“';
+            font-size: 1.2em;
+        }
+        .dialogue::after {
+            content: '”';
+            font-size: 1.2em;
+        }
+        .character {
+            font-weight: bold;
+            color: #4da8da;
+        }
+        .scene {
+            display: none;
+            animation: fadeIn 1s ease-in-out;
+        }
+        .scene.active {
+            display: block;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .next-btn, .prev-btn {
+            display: inline-block;
+            margin: 20px 10px;
+            padding: 10px 20px;
+            background-color: #34495e;
+            color: #ffffff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            text-align: center;
+            transition: background-color 0.3s;
+        }
+        .next-btn:hover, .prev-btn:hover {
+            background-color: #2c3e50;
+        }
+        .next-btn:disabled, .prev-btn:disabled {
+            background-color: #666666;
+            cursor: not-allowed;
+        }
+        .button-container {
+            text-align: center;
+        }
+
+    /* 全局复古纹理 + 噪点背景 */
+    body::before {
+        content: '';
+        position: fixed;
+        inset: 0;
+        background: 
+            linear-gradient(30deg, transparent 48%, rgba(70, 90, 110, 0.08) 50%, transparent 52%),
+            linear-gradient(-30deg, transparent 48%, rgba(70, 90, 110, 0.06) 50%, transparent 52%),
+            repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(30,35,45,0.05) 2px, rgba(30,35,45,0.05) 4px),
+            repeating-linear-gradient(90deg, transparent, transparent 2px, rgba(30,35,45,0.05) 2px, rgba(30,35,45,0.05) 4px),
+            url('https://assets.codepen.io/3522978/noise.png'), 
+            radial-gradient(circle at 30% 20%, #0a0f1a, #010101);
+        background-blend-mode: overlay, screen, multiply, normal;
+        opacity: 0.85;
+        pointer-events: none;
+        z-index: -2;
+        transition: opacity 0.3s ease;
+    }
+
+    .halftone-overlay {
+        position: fixed;
+        inset: 0;
+        width: 100vw;
+        height: 100vh;
+        object-fit: cover;
+        pointer-events: none;
+        mix-blend-mode: overlay;
+        opacity: 0.12;
+        z-index: -1;
+        transition: opacity 0.3s ease;
+    }
+
+    .vintage-bg {
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        z-index: 0;
+        overflow: hidden;
+        transition: opacity 0.3s ease;
+    }
+    .vintage-element {
+        position: absolute;
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        opacity: 0.05;
+        mix-blend-mode: multiply;
+        animation: driftVintage linear infinite, pulseVintage 28s ease-in-out infinite alternate;
+    }
+    @keyframes driftVintage {
+        0% { transform: translate(0, 0) rotate(0deg); }
+        100% { transform: translate(110px, 110px) rotate(360deg); }
+    }
+    @keyframes pulseVintage {
+        0% { opacity: 0.04; filter: brightness(0.9); }
+        100% { opacity: 0.1; filter: brightness(1.1); }
+    }
+    .v1 { background-image: url('https://i0.wp.com/heritagecalling.com/wp-content/uploads/2024/12/DP114585-St-Marys-Church-Kempley-Gloucestershire.jpg?ssl=1'); width: 380px; height: 380px; top: 3%; left: 0%; animation-duration: 170s, 24s; transform: rotate(50deg); }
+    .v2 { background-image: url('https://www.nationalww2museum.org/sites/default/files/2020-05/Riveter.jpg'); width: 550px; height: 180px; top: 18%; right: 4%; animation-duration: 190s, 28s; }
+    .v3 { background-image: url('https://render.fineartamerica.com/images/rendered/default/greeting-card/images/artworkimages/medium/2/andy-warhol-high-resolution-photo-art-collage-andy-warhol-collage.jpg'); width: 280px; height: 450px; bottom: 8%; left: 6%; animation-duration: 150s, 20s; transform: rotate(-32deg); }
+    .v4 { background-image: url('https://rubberdiamond.wordpress.com/wp-content/uploads/2014/01/schwitters.jpg'); width: 420px; height: 420px; top: 38%; left: 48%; animation-duration: 210s, 35s; transform: rotate(22deg); }
+    .v5 { background-image: url('https://www.heritage-print.com/p/731/study-poster-1920-artist-lissitzky-15000613.jpg.webp'); width: 620px; height: 140px; bottom: 4%; right: 8%; animation-duration: 180s, 26s; }
+    .v6 { background-image: url('https://blog.architizer.com/wp-content/uploads/deconstructivism.jpeg'); width: 230px; height: 560px; top: 6%; right: 1%; animation-duration: 160s, 22s; transform: rotate(90deg); }
+    .v7 { background-image: url('https://d31sxl6qgne2yj.cloudfront.net/wordpress/wp-content/uploads/20190102164052/Punk-Album-Covers-11x16.jpg'); width: 460px; height: 330px; bottom: 28%; left: 28%; animation-duration: 200s, 30s; transform: rotate(-28deg); }
+    .v8 { background-image: url('https://smarthistory.org/wp-content/uploads/2021/02/50935568273_37699017c0_o-scaled.jpg'); width: 350px; height: 130px; top: 50%; left: 12%; animation-duration: 140s, 18s; }
+    .v9 { background-image: url('https://postergroup.com/cdn/shop/products/Men-Working-Together-Poster.jpg?v=1746051175'); width: 180px; height: 400px; top: 12%; left: 62%; animation-duration: 230s, 38s; transform: rotate(72deg); }
+    .v10 { background-image: url('https://m.media-amazon.com/images/I/81SOUO-NbkL.jpg'); width: 560px; height: 280px; bottom: 18%; right: 22%; animation-duration: 170s, 27s; }
+    .v11 { background-image: url('https://cdn.britannica.com/94/5594-050-1C1166D6/Annunciation-Fra-Angelico-Florence-Museum-of-San.jpg'); width: 300px; height: 300px; top: 62%; left: 40%; animation-duration: 220s, 32s; transform: rotate(-45deg); }
+    .v12 { background-image: url('https://cdn11.bigcommerce.com/s-yzgoj/images/stencil/1280x1280/products/1320435/1708788/PSTJPA100339M__22686.1519281927.jpg?c=2'); width: 440px; height: 220px; top: 30%; left: 4%; animation-duration: 180s, 25s; }
+    .v13 { background-image: url('https://divinity.uchicago.edu/sites/default/files/styles/sightings_article_featured_image/public/2020-01/2c304455-66ca-4ae4-adc3-ba0ccc06b408_1_201_a.jpeg?itok=9v54XcIG'); width: 400px; height: 350px; top: 8%; left: 55%; animation-duration: 160s, 23s; transform: rotate(30deg); }
+    .v14 { background-image: url('https://www.saic.edu/sites/default/files/shorthand/stories/0Hw0PwtaAa/2025-09-29T19%3A38%3A15.732Z/assets/vpUp9CR2Fi/kurt-schwitters-843x626.jpg'); width: 500px; height: 200px; bottom: 35%; right: 10%; animation-duration: 190s, 27s; }
+    .v15 { background-image: url('https://cdn.kastatic.org/ka-perseus-images/aa552552150213036b99363b0dfb8ae811b8c08d.jpg'); width: 350px; height: 400px; top: 45%; right: 15%; animation-duration: 200s, 30s; transform: rotate(-20deg); }
+    </style>
+</head>
+<body>
+
+<!-- 复古背景层 -->
+<img class="halftone-overlay" src="https://gd-hbimg-edge.huaban.com/e136eab1362dfa41c0bf38aa7f48d9be4fe7332b172ae6-yQ7EZk?auth_key=1780243200-7a28c4fd8dba4f27bcbf1202f71a087e-0-cab91a5574991e7dfd11720f9ea5744c" alt="" decoding="async" referrerpolicy="no-referrer">
+<div class="vintage-bg">
+    <div class="vintage-element v1"></div><div class="vintage-element v2"></div><div class="vintage-element v3"></div>
+    <div class="vintage-element v4"></div><div class="vintage-element v5"></div><div class="vintage-element v6"></div>
+    <div class="vintage-element v7"></div><div class="vintage-element v8"></div><div class="vintage-element v9"></div>
+    <div class="vintage-element v10"></div><div class="vintage-element v11"></div><div class="vintage-element v12"></div>
+    <div class="vintage-element v13"></div><div class="vintage-element v14"></div><div class="vintage-element v15"></div>
+</div>
+
+    <div class="container">
+        <h1>乡下人的悲歌</h1>
+        <p align="center" style="color: #f5e050;">玉米地里回荡的歌声，既是欢迎的号角，也是南方的悲歌。</p>
+
+        <div id="scene-0" class="scene active">
+            <div class="button-container">
+                <button class="next-btn" onclick="nextScene(0)">开始阅读</button>
+            </div>
+        </div>
+
+        <div id="scene-1" class="scene">
+            <h2>第一幕：当约翰尼迈步回家</h2>
+            <p class="intro"><strong>2049年7月4日</strong><br>美利坚合众国 得克萨斯州 布兰科<br><strong>角色：</strong>星宿 卡林卡 密西西比 白金汉</p>
+            <p>皮卡车扬起一阵红尘，在道路上行驶着。密西西比这一路上不知道给大家说了多少次自己的家乡了。</p>
+            <p class="dialogue"><span class="character">密西西比（激动）：</span>嘿！嘿！星宿姐，大家！等到了得克萨斯布兰科，我要带你们吃烤玉米！可好吃了！一定要去吃小剧场转角的那个摊位！那是最辣的烤玉米！</p>
+            <p class="dialogue"><span class="character">白金汉：</span>谢谢你，密西西比小姐。这已经是你安排的第五项活动了，让我们猜猜第六项活动是什么？</p>
+            <p class="dialogue"><span class="character">卡林卡：</span>估计是牛仔的套索活动吧。</p>
+            <p class="dialogue"><span class="character">密西西比（兴奋）：</span> 对对对！你怎么知道的，叶尼塞姐！你好聪明啊！不过现在不仅可以骑马，还可以骑着摩托车呢！</p>
+            <p class="dialogue"><span class="character">叶尼塞：</span> 密西西比同志，话说你多久没有回来了，看得出来你很激动的样子。</p>
+            <p class="dialogue"><span class="character">密西西比（犹豫）：</span>这个嘛...自从被带到了研究院后，就没有怎么回来过了。除了一次我叔叔来签署登记的时候带我回家看了看......哎呀！不说了，不说了！都是过去的事情了！</p>
+            <p>皮卡车停在了小镇的广场上，密西西比第一个跳下车踩在了红土地上。她深深的吸了一口气，脸上绽放出来了大大的笑容。</p>
+            <p class="dialogue"><span class="character">密西西比：</span>哇哦，伙计们！这就是布兰科，得州之心！闻闻这味儿，烧烤、玉米，还有自由的香气！</p>
+            <p>其余人也从后座下来，擦着额头的汗，皱眉看着灼热的太阳。</p>
+            <p class="dialogue"><span class="character">卡林卡：</span> 这里热得像蒸笼，感觉像进了烤箱。</p>
+            <p class="dialogue"><span class="character">白金汉：</span>确实热情过头了点。但这景色……很有乡野风情。</p>
+            <p class="dialogue"><span class="character">星宿：</span> 研究院联情局和FBI已经进行了初步的勘探，这次大家被邀请来协助调查说明事情没有那么简单，注意异常情况。但现在，密西西比先带我们先融入一下吧。</p>
+            <p>小镇入口不远处，一群镇民已经注意到他们。一个圆润的中年女人，围着格子围裙，挥着手跑过来。</p>
+            <p class="dialogue"><span class="character">玛丽大婶：</span>苏珊娜！我们的小丫头！你终于回来了！之前让你回来都说没空，怎么今天突然想要回来了？这些是你的朋友们？快来快来，镇上今晚有乡村音乐会，正好赶上！</p>
+            <p class="dialogue"><span class="character">密西西比：</span>我们来……呃，旅游，顺便看看老家，没有什么任务啦。玛丽大婶！还是你最热情！</p>
+            <p class="dialogue"><span class="character">玛丽大婶：</span> 刚刚有好多政府的人来到咱们这里，不会是想搞什么阴谋吧。苏珊娜，你应该知道什么吧。</p>
+            <p class="dialogue"><span class="character">密西西比：</span>嗨，知道什么啊....我就是好久没有回到家乡看看大家了，我天天在研究院里面抱怨呢！你说是吧，星宿姐！</p>
+            <p class="dialogue"><span class="character">星宿：</span>嗯？啊！对，密西西比可想家了，一路上和我们聊了好多呢。说专门带我们来旅游一圈。</p>
+            <p class="dialogue"><span class="character">玛丽大婶：</span>旅游好啊！布兰科可美了！玉米地、金色的夕阳，还有我们的南方文化节！走走走，先去Joe’s Diner好好的吃顿，你乔叔可想你了。</p>
+            <p>镇民们围上来，几个年轻人吹着口哨。</p>
+            <p class="dialogue"><span class="character">镇民：</span>苏珊娜，你这丫头，城里混得风生水起啊？带朋友回来炫耀？</p>
+            <p class="dialogue"><span class="character">密西西比：</span>炫耀啥？就是想家了！</p>
+            <p>小队被簇拥着走进小镇，镇民们看着密西西比一行人开始互相的闲聊起来。路边，孩子们追逐着，狗叫声和吉他声混杂。</p>
+            <p class="dialogue"><span class="character">密西西比：</span>星宿姐，别矜持。这里的人就这样，朴实得像玉米棒子。啥事儿都爱聚堆儿聊。</p>
+            <p class="dialogue"><span class="character">星宿：</span>看起来很温暖，但我们得留意异常迹象。</p>            
+            <p class="dialogue"><span class="character">卡林卡：</span>密西西比同志，你这么久没有回来了。你和他们相处的这么融洽，真让人羡慕。</p>
+            <p class="dialogue"><span class="character">密西西比：</span>融洽是融洽，可总觉得……隔了层纱。不知道怎么形容，感觉怪怪的。</p>     
+            <p>晚上，乡村音乐会开始了，小镇的剧院里面传来《The Yellow Rose of Texas》的歌声。玛丽大婶拉着星宿等人来到小剧院。</p> 
+            <p class="dialogue"><span class="character">玛丽大婶：</span>来来来，大家别客气！这是我们的传统！</p> 
+            <p class="dialogue"><span class="character">密西西比：</span>星宿姐，别站着啊！去晚了我最喜欢的歌就演奏完啦！</p>
+            <p>星宿等人勉强跟着密西西比的步伐进入了剧院，来到最后一排的位置上坐下。</p> 
+            <p>此时的表演暂时告一段落，歌手正在接受主持人的采访。</p> 
+            <p class="dialogue"><span class="character">主持人：</span>你演唱的得克萨斯的黄玫瑰给我们带来了很深的印象，您来自哪里？简单地介绍一下？</p>
+            <p class="dialogue"><span class="character">歌手：</span>....谢谢大家.....我来自密西西比州，专门开车来到这里参加乡村音乐会......我最喜欢的食物是姥姥烤的苹果派......我最爱我的家人们，他们给了我很大的支持.....感谢大家......</p>
+            <p>台下一片欢呼，密西西比也激动地晃着身旁的星宿。</p> 
+            <p class="dialogue"><span class="character">密西西比：</span>嘿！嘿！星宿姐！你听，那哥们的家乡和我的代号一样诶！是不是好有缘分！</p>
+            <p>许多节目结束后，演出者基本上都说着千篇一律的话，感谢家人，感谢上帝，感谢国家。喜欢奶奶烤的各种派......</p> 
+            <p class="dialogue"><span class="character">白金汉：</span>密西西比小姐，你们这边基本上都是这些爱好吗？</p>
+            <p class="dialogue"><span class="character">密西西比（尴尬）：</span>额....嗨！咱们这边其实都大差不差嘛......</p>
+            <p>许多镇民也认出了密西西比，激动的和她打着招呼。密西西比一一回应，熟练的就像日常一样。密西西比爽朗地笑着，但眼中闪过一丝落寞。她知道，这份热情是给“本地丫头”的，可她觉得自己不是别人眼中纯粹的南方人了。</p> 
+            <p>大家正从小剧院里面出来的时候，看见了不远处小巷里面闪着警灯。几名镇民和FBI探员起了冲突。</p> 
+            <p class="dialogue"><span class="character">FBI探员：</span>我们是在执行公务！你们这是非法行为！</p>
+            <p class="dialogue"><span class="character">老杰克：</span>非法？你们每次来的时候就没有什么好事情！</p>
+            <p>双方各执一词，眼看即将爆发冲突，密西西比上前打断了双方的争执。</p> 
+            <p class="dialogue"><span class="character">老杰克：</span>苏珊娜？你和你的朋友们快走，这些政府的人来我们这里找麻烦了！</p>
+            <p class="dialogue"><span class="character">密西西比：</span>杰克叔..你先回酒吧去吧，我和我朋友们回处理这件事情的。</p>
+            <p class="dialogue"><span class="character">老杰克：</span>不，苏珊娜。这太危险了.....谁知道他们会怎么样呢！</p>
+            <p class="dialogue"><span class="character">密西西比：</span>好了好了！快回去吧！</p>
+            <p>密西西比拉着老杰克的衣角拽着镇民的袖子把他们拉离了这里。</p>
+            <p class="dialogue"><span class="character">老杰克：</span>小心点！苏珊娜。有什么事情随时联系我们！</p>
+            <p class="dialogue"><span class="character">密西西比：</span>哎呀！知道啦，知道啦！快回去吧，杰克叔！</p>
+            <p class="dialogue"><span class="character">FBI探员：</span>你们这是？</p>
+            <p class="dialogue"><span class="character">星宿：</span>米斯泰研究院特别作战处。</p>
+            <p class="dialogue"><span class="character">FBI探员：</span>真是你们？等我确认一下..........谢天谢地你们来了，原本想让你们休息一天才来找你们对接情况，没想到在这里遇见了。</p>
+            <p class="dialogue"><span class="character">星宿：</span>研究院联情局的情报我们看过了，我们会继续跟踪线索的。</p>
+            <p class="dialogue"><span class="character">警长约翰：</span>嘿！苏珊娜？是你吗？多久回来的？</p>
+            <p class="dialogue"><span class="character">密西西比：</span>约翰叔！我好想你！我好想再坐一次你的警车！</p>
+            <p>密西西比一路小跑过去扑到了约翰的怀里。</p>
+            <p class="dialogue"><span class="character">警长约翰：</span>自从你家出事后，你就再也没有怎么回来了。听梅森说，你被政府的人接走了，现在是确定回来了吗？</p>
+            <p class="dialogue"><span class="character">密西西比：</span>这个嘛....约翰叔，其实是想家啦。顺便回来办点事情。</p>
+            <p class="dialogue"><span class="character">警长约翰：</span>可以啊，苏珊娜！回来办一点事情，都成了大人物了。看来在大城市里面混得蛮不错嘛，这些是你的手下？刚刚我看和老杰克他们有些矛盾？</p>
+            <p class="dialogue"><span class="character">密西西比：</span>别笑话我了，约翰叔。这些是我朋友，我只是带我朋友回来旅游旅游。</p>
+            <p class="dialogue"><span class="character">警长约翰：</span>那些FBI是怎么回事？</p>
+            <p class="dialogue"><span class="character">密西西比：</span>放心啦，约翰叔。这些事情我能解决的，就不劳烦你操心了，你也该去老杰克的酒吧里面看看了。说不定他又喝多了。</p>
+            <p>送走FBI探员和警长约翰后，广场上只剩下小队四人。夜风吹过，远处小剧院里的余音还在回荡。密西西比长长地舒了一口气，肩膀却不由自主地微微下沉。</p>
+            <p class="dialogue"><span class="character">白金汉：</span>密西西比小姐，看来你在小镇里确实很受欢迎呢。刚才那位警长看你的眼神，就像在看自己失散多年的女儿。</p>
+            <p class="dialogue"><span class="character">卡林卡：</span>密西西比同志，你一直说我们是来‘旅游’的……为什么不直接告诉他们我们是来调查异常状况的？我们不是受邀前来调查吗？</p>
+            <p>密西西比抓了抓后脑勺，她努力保持着那副大大咧咧的笑容，却怎么都掩不住眼底的一丝疲惫。</p>
+            <p class="dialogue"><span class="character">密西西比：</span>哎呀，叶尼塞姐、白金汉，你们别贫嘴了……我老家这边的情况，真的蛮复杂的。你们也看见了.....</p>
+            <p class="dialogue"><span class="character">密西西比：</span>咱们这里就是这样，表面上热情得要命，啤酒、烧烤、音乐会随便你玩。可一旦你想碰他们真正的生活、碰他们的规矩……啧，就麻烦了。</p>
+            <p class="dialogue"><span class="character">密西西比：</span>更何况我已经不是他们记忆里的那个苏珊娜了。我几乎从小在研究院长大，烧烤怎么烤、玉米怎么种、星期天该去教堂还是去靶场……我都是后来补的课。</p>
+            <p class="dialogue"><span class="character">密西西比：</span>我感觉我骨子里已经回不去了。</p>
+            <p class="dialogue"><span class="character">星宿：</span>密西西比，你是南方的女儿，这是你的家乡你的文化，你不需要证明给任何人看。</p>
+            <p>密西西比愣了一下，随即又露出她招牌式的大笑，抬手擦了擦眼角并不存在的泪花。</p>
+            <p class="dialogue"><span class="character">密西西比：</span>：星宿姐，你又开始说这些让人想哭的话了！行啦行啦，不说了！玛丽大婶不是说音乐会后有烧烤吗？走走走，一定要让你们尝尝正宗得州肋排，辣到可以让白金汉小姐飞起那种！</p>
+            <p class="dialogue"><span class="character">白金汉：</span>哈？</p>
+            <p>Joe’s Diner里灯光昏黄，木桌上铺满了花生壳和啤酒瓶盖。玛丽大婶亲自端来几份堆得像小山一样的肋排。</p>
+            <p class="dialogue"><span class="character">玛丽大婶：</span>苏珊娜！多吃点！你看你瘦的，在外面肯定没吃好！你的朋友们也多吃！别客气！</p>
+            <p>密西西比立刻扑上去，双手抓起一根肋排，大口咬下去，酱汁顺着嘴角往下淌。</p>
+            <p class="dialogue"><span class="character">密西西比（含糊不清）：</span>呜呜……还是这个味儿！和我小时候吃的一模一样。玛丽大婶，你的手艺还是那么好！星宿姐，快尝尝！叶尼塞姐、白金汉，你们也别光看着啊！</p>
+            <p class="dialogue"><span class="character">卡林卡：</span>密西西比同志，这真的太好吃了，比研究院总部的食物有人情味多了。</p>
+            <p class="dialogue"><span class="character">白金汉：</span>确实很有乡野的浪漫，只是酱汁有点太热情了。</p>
+            <p>星宿只吃了一小口，便放下肋排，目光却一直停在密西西比身上。密西西比吃得正开心，却在抬头的一瞬间与星宿对视。</p>
+            <p class="dialogue"><span class="character">密西西比：</span>星宿姐，你又在用那种‘我看穿了一切’的眼神看我了。</p>
+            <p class="dialogue"><span class="character">星宿：</span>你刚才在广场上说‘我已经回不去了’那句话，不是开玩笑吧？</p>
+            <p>密西西比愣住，手里的肋排悬在半空。周围镇民的笑声、碰杯声、吉他声像潮水一样涌来，却忽然变得遥远。</p>
+            <p class="dialogue"><span class="character">密西西比：</span>我有是南方血统，可我没在这里长大。真正的南方人，是每天踩着红土去教堂、乡村音乐会和烧烤、为了一点小事能吵三天却又立刻抱在一起的那种人。</p>
+            <p class="dialogue"><span class="character">密西西比：</span>我呢？我还要从电影里学怎么拖长音、怎么喊‘yee-haw’。我爱这里，可这里已经不完全是我的家了。</p>
+            <p>密西西比忽然抬起头，重新露出那副夸张的笑脸，声音又大了起来。</p>
+            <p class="dialogue"><span class="character">密西西比：</span>哎呀！不说了不说了！吃肉吃肉！星宿姐，你再不吃我可全包圆了！</p>
+            <p>玛丽大婶端着新的一盘烤玉米走过来，笑着插着话，清理着桌面上的残羹剩饭。</p>
+            <p class="dialogue"><span class="character">玛丽大婶：</span>苏珊娜，刚才老杰克在酒吧里又喝多了，说什么‘政府的人又来搞事了’，还说你带回来的朋友肯定不是简单游客，你可得管管他啊。</p>
+            <p class="dialogue"><span class="character">密西西比：</span>哈哈，杰克叔老样子！放心啦，玛丽大婶，我等会儿去酒吧看看他！</p>
+            <p>夜越来越深，小队跟着密西西比来到老杰克的酒吧。推开门，烟味、啤酒味、乡村音乐混在一起扑面而来。老杰克正趴在吧台上，面前摆着半打空瓶。</p>
+            <p class="dialogue"><span class="character">密西西比：</span>杰克叔！你又喝多了！玛丽大婶让我来接你回家！</p>
+            <p>老杰克抬起头，醉眼朦胧地看了密西西比半天，忽然一笑。</p>
+            <p class="dialogue"><span class="character">老杰克（迷迷糊糊）：</span>哟……这不是我们的小苏珊娜吗？城里的大人物回来了？看你现在跟政府的人混在一起...研究院？FBI？啧啧……</p>
+            <p>老杰克打了个酒嗝，声音忽然低下去，带着一丝说不清的失落。</p>
+            <p class="dialogue"><span class="character">老杰克（迷迷糊糊）：</span>你小时候我还抱过你呢……那会儿你爸妈还在，你天天缠着我教你怎么甩套索……现在倒好，回来一趟还带一堆外人……你是不是已经不认我们这些老家伙了？</p>
+            <p>密西西比站在吧台前，手指下意识抠着木头边缘。</p>
+            <p class="dialogue"><span class="character">密西西比：</span>杰克叔，我只是带我的朋友们回来玩玩而已.....</p>
+            <p class="dialogue"><span class="character">老杰克：</span>玩玩？得了吧…那些FBI又是怎么回事？（打酒嗝）…南方人的事，南方人自己解决。苏珊娜，你要是还认这个家，就别带这些外人来搅和我们的生活。</p>
+            <p class="dialogue"><span class="character">老杰克：</span>那些城里人，带着他们的科技和法规来抢咱们的工作，毁掉咱们的生活！现在又有各种怪事，肯定是他们搞的鬼！</p>
+            <p>老杰克的几个酒友也开始应声附和。</p>
+            <p class="dialogue"><span class="character">镇民A：</span> 对！以前咱们这儿有矿，有农场。现在呢？工厂关了，年轻人全跑城里去了。只剩下我们这些老家伙了。</p>
+            <p class="dialogue"><span class="character">镇民B：</span> 政府说帮我们，可每次来都带走点啥。税、土地、现在还带怪物！</p>
+            <p>密西西比深吸一口气，忽然又露出那副熟悉的爽朗笑容，抬手拍了拍老杰克的肩膀。</p>
+            <p class="dialogue"><span class="character">密西西比：</span> 杰克叔，你喝多了！走，我送你回家！明天我再来找你好好聊聊！</p>
+            <p>密西西比转过身，对着身后的几人挤出一个大大的笑，眼底闪过一丝极浅的落寞。</p>
+            <p class="dialogue"><span class="character">密西西比：</span> 走吧，伙计们。我让小镇的兄弟们把老杰克送回去了。今晚先休息，明天……明天我们再慢慢来。</p> 
+            <p>夜风吹过布兰科的街道，远处玉米地沙沙作响，像在低声哼唱一首谁也听不懂的、属于乡下人的悠长挽歌。</p>
+            <p>夜色已深，布兰科小镇的灯光渐渐稀疏。密西西比开着那辆的旧皮卡，载着小队沿着一条坑坑洼洼的红土路向玉米地深处驶去，车灯照亮了路边摇曳的玉米叶。</p>
+            <p>密西西比把车停在一座老旧却整洁的木栅栏前，熄火后深吸了一口气，声音里带着久违的轻松。</p>
+            <p class="dialogue"><span class="character">密西西比：</span> 到了！这就是我叔叔梅森的农场。从小我爸妈出事后，我就住在了我叔叔这边。走吧，他肯定已经把烤炉点起来了。</p> 
+            <p class="dialogue"><span class="character">密西西比：</span> 叔——！我回来啦！带朋友来了！</p>
+            <p>木屋的门立刻打开，一个身材壮实的中年男人大步走出来，脸上满是惊喜的皱纹。他张开双臂，像老鹰抓小鸡一样把密西西比整个抱了起来，在空中转了一圈。</p>
+            <p class="dialogue"><span class="character">梅森：</span> 苏珊娜！我的宝贝侄女！老天爷，你终于肯回来了！让我看看……嗯，还好，没瘦！来来来，快进来！</p>
+            <p>梅森把密西西比放下，又热情地朝小队伸出手，一一用力握过去。</p>
+            <p class="dialogue"><span class="character">梅森：</span> 你们就是苏珊娜的朋友吧？欢迎欢迎！我是梅森，她叔叔！别客气，把这儿当自己家！星宿，叶尼塞，白金汉对吧？我听苏珊娜在电话里提过好多次了！</p>
+            <p class="dialogue"><span class="character">白金汉：</span> 梅森先生，感谢您的盛情招待。这里的夜色真美。</p>
+            <p class="dialogue"><span class="character">卡林卡：</span> 你好！</p>
+            <p class="dialogue"><span class="character">星宿：</span> 梅森先生，打扰了。</p>
+            <p class="dialogue"><span class="character">梅森：</span> 来来，先坐下！烤炉已经热了，今晚吃肋排、玉米棒、苹果派，全是我自己做的！</p>
+            <p>梅森把众人领到屋前的一张长木桌旁，桌上已经摆满了冒着热气的食物。炭火在烤炉里噼啪作响，空气里全是烧烤酱和烟熏的香味。</p>
+            <p class="dialogue"><span class="character">梅森：</span> 苏珊娜啊，你上次回来都有十几年了吧？那时候你才刚被研究院带走没多久，整个人瘦得像根玉米秆，我去奥斯汀签字带你回来看了最后一眼故乡。</p>
+            <p class="dialogue"><span class="character">梅森：</span> 现在看着气色好多了……哎，你爸妈走得早，我这个当叔叔的也没能好好照顾你……</p>
+            <p class="dialogue"><span class="character">密西西比：</span> 叔，别说了……都是过去的事了。</p>
+            <p class="dialogue"><span class="character">梅森：</span> 镇上这些年变化也不大，就是越来越怪了。玉米地里三天两头丢牲畜，前几天老杰克家的牛一夜之间没了，只剩下一摊紫色的晶体渣子。镇民们都说那是‘上帝的惩罚’，可我总觉得不对劲……</p>
+            <p class="dialogue"><span class="character">梅森：</span> 还有更邪门的……老矿洞那边，最近总有紫光冒出来。拓荒时代留下的老东西，1849年那批矿工挖银矿的时候，据说挖出过怪东西。后来矿洞塌了，那怪东西就再也没人见过。</p>
+            <p class="dialogue"><span class="character">梅森：</span> 可这几个月，有些牲畜一靠近就发狂……镇上人都不敢靠近，我前天晚上还听见里面有东西在吼……</p>
+            <p class="dialogue"><span class="character">密西西比：</span> 叔！老矿洞你还知道具体位置吗。</p>
+            <p class="dialogue"><span class="character">梅森：</span> 知道是知道……可我劝你们别去。镇民们现在最讨厌外来人，尤其是政府和研究院的人。老杰克昨天还在酒吧里骂，说‘苏珊娜带回来那帮城里人，肯定是来搞事的’。你要是真想查，最好低调点……</p>
+            <p class="dialogue"><span class="character">梅森：</span> 丫头，你从小没在这儿长大，很多南方人的脾气你摸不透。他们表面热情，可一旦觉得你‘变了’，就会把你当外人……你可别往心里去。叔永远站在你这边。</p>
+            <p class="dialogue"><span class="character">密西西比：</span> 知道啦叔！我不往心里去！</p>
+            <p class="dialogue"><span class="character">星宿：</span> 密西西比你回来后终于真正的笑了。</p>
+            <p class="dialogue"><span class="character">密西西比：</span> 星宿姐，我必须笑啊……不然我怕自己会哭出来。</p>
+            <p>炭火噼啪作响，烤肉的香气在夜风中飘散。梅森还在热情地讲镇上的趣事，可空气里已经悄无声息地多了一层谁也说不清的、淡淡的裂痕。</p>
+            <div class="button-container">
+                <button class="prev-btn" onclick="prevScene(1)">上一幕</button>
+                <button class="next-btn" onclick="nextScene(1)">下一幕</button>
+            </div>
+        </div>
+
+        <div id="scene-2" class="scene">
+            <h2>第二幕：孤星雏鹰</h2>
+            <p>密西西比带着小队在镇上“秘密”调查。表面上是四个游客在闲逛，实际上却在玉米地边缘、废弃谷仓、老水塔附近仔细搜寻紫色晶体的痕迹。</p>
+            <p>和镇上几个老人闲谈的时候了解到最近连玉米都长得歪歪扭扭，三头牛一夜间消失，只留下紫色晶体碎渣；老矿洞方向每到午夜就会飘出淡淡紫光。</p>
+            <p>密西西比蹲在老人们说出现异常的玉米地里面，用手指拨开被堆起的土堆，里面有一小块半埋的紫色晶体。</p> 
+            <p class="dialogue"><span class="character">星宿：</span>和研究院报告的一样晶体化初期症状。</p>
+            <p class="dialogue"><span class="character">星宿：</span>我们已经在这附近转悠了太久了，很可能会引起小镇镇民的疑心。</p>
+            <p class="dialogue"><span class="character">卡林卡：</span>同志们，已经有人在看我们了，那边的老太太已经盯了我们十分钟。</p>
+            <p class="dialogue"><span class="character">白金汉：</span>希望我们的‘游客’身份还能再撑一天。</p>
+            <p>中午时分，四人走进镇上唯一的老酒馆“Jack’s Place”。一推开门，烟味、啤酒味和乡村音乐扑面而来。</p> 
+            <p>吧台后，老杰克正擦着酒杯，十几个镇民散坐在桌边，一看见他们进来，原本热闹的酒馆瞬间安静下来。</p> 
+            <p class="dialogue"><span class="character">老杰克：</span>哟，这不是苏珊娜和她的‘旅游团’吗？昨天刚到，今天就已经在玉米地里转悠了一上午？游客都这么勤快？</p>
+            <p class="dialogue"><span class="character">留着络腮胡的壮汉：</span>就是！昨天还说只是回来看看，今天就跑到矿洞附近去了？苏珊娜，你们到底想干什么？</p>
+            <p class="dialogue"><span class="character">另一个镇民：</span>老杰克说得对！苏珊娜，你带这些外人来，是不是想把我们这儿卖给政府？那些紫色晶体的事，是不是你们研究院搞出来的？</p>
+            <p>密西西比站在吧台前，努力保持着她一贯的爽朗笑容，却明显有些僵硬。</p>
+            <p class="dialogue"><span class="character">密西西比：</span>大家听我说……我们真的只是旅游！顺便……顺便看看老家。我叔叔梅森也知道的，我们没干坏事啊……</p>
+            <p class="dialogue"><span class="character">老杰克（冷笑）：</span>旅游？苏珊娜，你当我们是傻子吗？你从小就没在这儿长大，书本里学来的那点南方味儿，骗骗外人还行。</p>
+            <p class="dialogue"><span class="character">老杰克：</span>在我们面前装什么本地丫头？现在倒好，带着一帮研究院的人回来，东挖西挖，还想让我们相信你是来‘旅游’的？</p>
+            <p class="dialogue"><span class="character">激动的镇民：</span>看看她现在这副样子！说话都带着城里腔调了！还敢说自己是布兰科的女儿？她早就不属于这儿了！就是个披着得州皮的外来户！</p>
+            <p>酒馆里瞬间响起一片附和声。</p>
+            <p class="dialogue"></span>对！让她走！</p>
+            <p class="dialogue"></span>别在这儿祸害我们！</p>
+            <p>密西西比的脸色刷地白了。她站在原地，手指死死抠着吧台边缘，指节发白。刚才还挂在脸上的笑容彻底碎掉，嘴唇微微颤抖，却一个字也说不出来。胸口像被一块巨石压住，呼吸都变得困难。</p>
+            <p>密西西比低声、几乎是自言自语地喃喃。</p>
+            <p class="dialogue"><span class="character">密西西比：</span>我……我只是想回家……我只是想帮大家……我真的……</p>
+            <p>老杰克还想继续冷嘲热讽，酒馆门忽然被大力推开。梅森满头大汗地冲进来，一把抓住杰克的衣领。</p>
+            <p class="dialogue"><span class="character">梅森：</span>杰克！你他妈闭嘴！苏珊娜是我侄女！你敢这么欺负她？！</p>
+            <p>两个人瞬间扭打在一起。梅森的拳头砸在对方身上，酒瓶倒了一地，酒馆里乱成一团。</p>
+            <p class="dialogue"><span class="character">密西西比（慌乱）：</span>梅森叔！杰克叔！别打了！</p>
+            <p>密西西比猛地冲上前，用尽全力拉住两人。</p>
+            <p class="dialogue"><span class="character">密西西比：</span>够了！都给我停下！都是我的错……都是我的错……别打了……求你们……</p>
+            <p>梅森和杰克喘着粗气，衣服被扯得凌乱，却终于慢慢松开对方。整个酒馆陷入死一般的寂静，只剩下密西西比压抑的喘息声。</p>
+            <p class="dialogue"><span class="character">密西西比：</span>我知道……我已经不是你们记忆里的那个苏珊娜了……</p>
+            <p>酒馆的灯光昏黄，乡村音乐还在吧台的旧收音机里低低地响着，演奏着一首谁也唱不完的、属于乡下人的悲歌。</p>
+            <p>酒馆的骚动结束后，空气像结了冰。杰克甩下毛巾，头也不回地进了后厨。镇民们三三两两散开，却没有一个人再跟小队说话。</p>
+            <p>整个酒馆只剩下收音机里低低的乡村音乐，在嘲笑这场尴尬的冷战。</p>
+            <p>密西西比站在原地，肩膀还在微微发抖。她用力吸了吸鼻子，强行把眼角的湿意压回去。</p>
+            <p class="dialogue"><span class="character">密西西比：</span>……走吧。别在这儿杵着了，耽误大家喝酒。</p>
+            <p class="dialogue"><span class="character">星宿：</span>苏珊娜，你需要喘口气……</p>
+            <p class="dialogue"><span class="character">密西西比（突然激动）：</span>不用！</p>
+            <p>密西西比打断星宿，强装镇定，笑得更僵硬。</p>
+            <p class="dialogue"><span class="character">密西西比：</span>我没事！真的没事！走，出去透透气！</p>
+            <p>四人走出酒馆，门外阳光刺眼。镇民们三三两两站在街边，有人故意把头扭过去，有人则用眼角余光盯着他们，空气里弥漫着一种无声的敌意。</p>
+            <p>接下来的几个小时，小队只能在玉米地边缘和老水塔附近，根据FBI和联情局的线索慢慢搜集着情报。</p>
+            <p>一个稍微温和的老农拎着一壶水走过来，犹豫了半天，才把水递给叶尼塞。</p>
+            <p class="dialogue"><span class="character">老农：</span>姑娘……杰克那家伙脾气臭，但镇上大多数人其实没恶意。只是……你们来得太突然，又总在矿洞那边转悠，大家心里发慌。</p> 
+            <p class="dialogue"><span class="character">卡林卡：</span>谢谢。我们只是想帮忙。你们这里最近的异常……能再多说一点吗？</p>
+            <p class="dialogue"><span class="character">老农：</span>牲畜失踪是真事。老杰克家的牛、玛丽大婶家的马，都是一夜之间没了，只留下一地紫晶渣子。还有……矿洞那边，午夜总有紫光冒出来。</p>
+            <p class="dialogue"><span class="character">老农：</span>镇上人说，那是1849年那些矿工的怨魂在作祟。可杰克不让大家靠近，说‘外来人一插手，事情只会更糟’。</p>
+            <p class="dialogue"><span class="character">白金汉：</span>能带我们去看看那些晶体残渣吗？哪怕远一点也行。</p>
+            <p>老农为难地挠挠头，看了看不远处几个还在冷眼旁观的镇民。</p>
+            <p class="dialogue"><span class="character">老农：</span>…我...哎，晚上再说吧。你们现在先走吧。杰克要是知道，又得骂我‘吃里扒外’。</p>
+            <p>大家坐上皮卡车驶出了小镇来到不远处小队下榻的汽车旅馆。</p>
+            <p class="dialogue"><span class="character">白金汉：</span>密西西比小姐，你刚才在酒馆……还好吗？</p>
+            <p>密西西比愣了一下，随即又大笑起来，笑声却带着一丝空洞。她站起来拍拍裤子上的土，故作轻松地。</p>
+            <p class="dialogue"><span class="character">密西西比：</span>没事没事！杰克叔就是刀子嘴豆腐心！他以前还教我甩套索呢！过两天气消了就好了！</p>
+            <p>可她的笑容只维持了两秒，就慢慢淡了下去。她转过身，背对着大家，望着远处一望无际的玉米地。</p>
+            <p class="dialogue"><span class="character">密西西比：</span>大家也不要怪罪他们，他们不是坏人。他们只是习惯了只相信自己人....我突然带你们回来，又总在矿洞附近转悠，他们自然会觉得我‘变了’。</p>
+            <p>星宿走到她身后，轻轻把手放在她肩上，没有说话，只是静静陪着她。</p>
+            <p class="dialogue"><span class="character">卡林卡：</span>星宿同志，FBI那边传来消息，灵能读数快要突破阈值了，我们要加快行动了</p>
+            <p>这时，一辆福特猛禽开到了汽车旅馆门口，是刚刚那位递水的老农。小队在老农的带领下，绕到玉米地深处一处隐蔽的洼地。一路上果然散落着几块指甲盖大小的紫色晶体，边缘还带着淡淡的荧光。</p>
+            <p class="dialogue"><span class="character">密西西比：</span>和FBI报告的一模一样……这里越来越严重了。</p>
+            <p class="dialogue"><span class="character">星宿：</span>但现在镇民对我们戒心太重。照这个进度，明天之前恐怕进不了矿洞。</p>
+            <p class="dialogue"><span class="character">卡林卡：</span>同志们，这样下去不是办法。杰克的影响力太大，很多人都听他的。</p>
+            <p class="dialogue"><span class="character">老农：</span>姑娘们，快点吧。再待久了，杰克那帮人又该过来了。</p>
+            <p>小队只能匆匆收集了几块晶体样本，退回镇上。整个夜晚，密西西比几人又走访了三户稍微好说话的人家，却只得到零星线索。</p>
+            <p>太阳冒头的时候，密西西比靠在皮卡车旁，望着被朝阳染成金色的玉米地。</p>
+            <p class="dialogue"><span class="character">密西西比：</span>……看来今天只能到这儿了。杰克的影响力比我想象中大多了。大家先回汽车旅馆那边休息一会儿吧，晚点咱们再去看看。</p>
+            <p>小队按照老农提供的模糊路线，悄悄绕到老矿洞外围的一处高地，继续采集晶体样本。空气中已经能闻到淡淡的焦糊味。</p>
+            <p class="dialogue"><span class="character">密西西比：</span>越来越密集了，附近应该就有矿洞主入口。</p>
+            <p>星宿点头，正要开口，地面忽然猛地一颤。</p>
+            <p>轰——</p>
+            <p>霎那间地动山摇。紧接着，一头由晶体化的野兽与穿着拓荒矿工服饰的怪物撞碎了不远处被掩埋的洞口，咆哮着冲了出来。</p>  
+            <p class="dialogue"></span>“怪物！！！”</p>
+            <p>远处正在农场放牛的两个镇民尖叫着转身就跑，其中一个年轻人脚下一滑，直接摔倒在地,拿着手慌乱的朝着怪物射击，眼看就要被怪物扑中。</p>
+            <p class="dialogue"></span>“别过来！！”</p>
+            <p>密西西比猛地扑向那个年轻人，用身体把他压在身下，同时举起左轮枪连开三枪。子弹打在怪物肩甲上，溅起大片紫色碎晶，却也彻底激怒了它。怪物尾巴横扫而来，正中密西西比的左肩。</p>
+            <p>密西西比痛哼一声，整个人被抽飞出去。她在空中翻滚一圈，落地时仍死死护着那个年轻人，把他推向安全的方向。</p>
+            <p class="dialogue"><span class="character">密西西比：</span>快跑！!</p>
+            <p>叶尼塞迅速将密西西比拖到了安全的地方。星宿和白金汉也同时出手。怪物被短暂阻挡，却更加狂暴地朝着镇民聚集的方向冲去。</p>
+            <p>镇民们闻讯赶来，十几个人提着猎枪和铁锹冲到现场。看到满身是伤痕的密西西比和不远处那头狰狞怪物，现场瞬间炸了锅。</p>
+            <p class="dialogue"><span class="character">老杰克（愤怒）：</span>看吧！就是这些外来人招来的！苏珊娜带她们回来，才把怪物引出来！都是她们的错！</p>
+            <p>镇民们立刻附和，举着枪指向星宿几人。</p>
+            <p class="dialogue"><span class="character">镇民：</span>对！赶走他们！把外来人赶出布兰科！</p>
+            <p class="dialogue"><span class="character">被救下来的镇民：</span>胡说八道！苏珊娜刚才拼了命救小汤米！她自己都受伤了！怪物明明是从矿洞里出来的，跟苏珊娜有什么关系？！</p>
+            <p class="dialogue"><span class="character">玛丽大婶：</span>杰克！你瞎说什么！苏珊娜是我们的孩子！她刚才差点把命搭进去！</p>
+            <p>双方瞬间吵得不可开交，枪口对枪口，铁锹对铁锹，场面眼看就要失控。怪物趁着混乱，咆哮着朝着人群奔来。</p>
+            <p class="dialogue"><span class="character">密西西比（几乎咆哮）：</span>都给我闭嘴啊！！！</p>
+            <p>密西西比的声音带着哭腔，却异常响亮，压过了所有争吵。现场瞬间安静下来，所有人都看向她。她喘着粗气，肩膀的血顺着胳膊往下淌，死死盯着杰克和镇民们。</p>
+            <p class="dialogue"><span class="character">密西西比：</span>你们吵够了没有？！怪物就在眼前，它要吃人！你们还在这儿争谁对谁错？！是不是外来人带来的，我是不是变了，现在重要吗？！</p>
+            <p class="dialogue"><span class="character">密西西比：</span>我不管你们认不认我……今天，我苏珊娜·李·哈珀，要和我的朋友们一起，保护布兰科！</p>
+            <p>空气凝固了一秒，杰克的枪口慢慢垂下。</p>
+            <p class="dialogue"><span class="character">警长约翰：</span>Bullshit……苏珊娜，你这丫头……我们信你一次！大家上啊！</p>
+            <p class="dialogue"><span class="character">镇民们：</span>天佑美利坚！！上啊！！</p>
+            <p class="dialogue"><span class="character">镇民们：</span>为了消防员！（此处为十分经典的美国小镇社群文化梗）</p>
+            <p>枪口、铁锹、木棍，所有人同时转向怪物。社群主义让他们在这一刻紧紧抱团，哪怕前一秒还在互相指责。</p>
+            <p>镇民们牵制着怪物，小队攻击着怪物的弱点。怪物在枪声、喊杀声和灵能光芒中疯狂挣扎，最终轰然倒地。</p>
+            <p class="dialogue"><span class="character">警长约翰：</span>God，damn....掩护苏珊娜！咱们对付不了这个怪物！</p>
+            <p class="dialogue"><span class="character">卡林卡：</span>星宿同志！美国研究院分部和政府的支援正在路上！小心行事！</p>
+            <p class="dialogue"><span class="character">密西西比：</span>叶尼塞姐！再等下去就来不及了！</p>
+            <p class="dialogue"><span class="character">白金汉：</span>密西西比小姐！小心！</p>
+            <p class="dialogue"><span class="character">密西西比：</span>嗯啊啊啊啊！去死吧！</p>
+            <p>密西西比一跃而上，跳到了怪物的背部，用着全部的火力对着怪物最薄弱的背脊狠狠地输出，怪物嘶吼的把密西西比甩了下来。没过多久，怪物一头栽倒在了小镇的广场中央。</p>
+            <p>战斗结束后，现场一片死寂。只剩下众人粗重的喘息。密西西比靠在广场的雕像上，肩膀还在流血，却对着杰克露出一个疲惫却灿烂的笑。</p>
+            <p class="dialogue"><span class="character">密西西比（喘气）：</span>杰克叔……你伤的严重吗？我让我的朋友们帮你看看。</p>
+            <p class="dialogue"><span class="character">杰克：</span>苏珊娜，你命都不要了还护着我们……我....我....哎，你是布兰科的女儿，永远都是。</p>
+            <p>密西西比看着满地晶体碎片，看着这些淳朴却封闭的乡亲，眼眶微微发红，却最终大笑起来，笑声里带着鼻音。</p>
+            <div class="button-container">
+                <button class="prev-btn" onclick="prevScene(2)">上一幕</button>
+                <button class="next-btn" onclick="nextScene(2)">下一幕</button>
+            </div>
+        </div>
+
+        <div id="scene-3" class="scene">
+            <h2>第三幕：挽歌</h2>
+            <p>小镇的喧嚣还未平息，远处便传来沉重的车轮声与引擎轰鸣。两辆深绿色的国民警卫队装甲车和三辆FBI黑色SUV沿着红土路疾驰而来，车顶的警灯在黄昏中闪烁，像一片不祥的红云。</p>
+            <p class="dialogue"><span class="character">老杰克：</span> 该死……政府的人终于来了。</p>
+            <p>国民警卫队士兵迅速下车保持警戒。领头的FBI探员正是之前在广场与老杰克发生冲突的那位，他快步走向星宿小队。</p>
+            <p class="dialogue"><span class="character">FBI探员：</span>星宿小姐，密西西比小姐……谢天谢地你们没事。联情局把所有情报都传给我们了。老矿洞的异常等级已经提升到橙色。我们奉命协助封锁并处理根源。</p>
+            <p class="dialogue"><span class="character">国民警卫队上尉：</span>大家听着！从现在起，老矿洞区域由我们接管。所有平民必须撤离。但……如果你们愿意，我们需要本地向导。毕竟这是你们的家。</p>
+            <p class="dialogue"><span class="character">梅森：</span> 我去。我是本地人，我知道矿洞里的老路。……走吧。布兰科的事，布兰科人自己解决一半。剩下的一半……交给你们这些外来户。</p>
+            <p>就这样，一支奇异的联合队伍组成了：国民警卫队、FBI探员、星宿小队、以及十几个愿意跟来的镇民。</p>
+            <p>隧道幽深潮湿，紫色晶体在岩壁上像血管一样蔓延。越往里走，空气越压抑。国民警卫队士兵举着强光灯开路，FBI探员用仪器不断扫描。</p>
+            <p class="dialogue"><span class="character">国民警卫队士兵：</span>异常能量指数上升。保持队形，大家小心脚下。这些晶体可能随时激活。</p>
+            <p class="dialogue"><span class="character">镇民A：</span> 这些东西真是魔鬼，不会是上帝派来惩罚我们的吧。</p>
+            <p class="dialogue"><span class="character">镇民B：</span> 要不是苏珊娜，我才不跟这些外人一起呢。</p>
+            <p class="dialogue"><span class="character">老杰克：</span> 该死……我这辈子没进过这么邪门的地方。苏珊娜，你确定这不是你们研究院的鬼把戏？</p>
+            <p class="dialogue"><span class="character">梅森：</span> 矿洞从拓荒时代就废弃了。1849年那些矿工挖金子时，诅咒就开始了。</p>
+            <p>怪物残影不时从黑暗中扑出，枪声、喊杀声、灵能的光芒在狭窄的隧道里炸开。</p>
+            <p class="dialogue"><span class="character">密西西比：</span> 看吧，大家在一起不就赢了吗……</p>
+            <p class="dialogue"><span class="character">镇民们：</span> 苏珊娜……你还是我们的小丫头……永远都是。</p>
+            <p>队伍走了没多久，第二波麻烦就来了。隧道拐角处，一群小型晶体化老鼠从岩缝中涌出，眼睛血红，尖牙闪烁紫光。它们像潮水一样扑向队伍后方，直奔玛丽大婶和几个镇民。</p>
+            <p>国民警卫队士兵立刻开火，突突的枪声震耳欲聋。但老鼠太多，太灵活，子弹打碎了几只，却有更多从侧面绕过来。</p>
+            <p>杰克举起猎枪轰出一发，炸飞三只，却被一只从盲角扑上肩膀，尖牙撕开他的衣袖，鲜血直流。</p>
+            <p class="dialogue"><span class="character">老杰克：</span> 啊——该死的畜生！</p>
+            <p class="dialogue"><span class="character">密西西比：</span> 叔！杰克叔！坚持住！</p>
+            <p class="dialogue"><span class="character">星宿：</span> 集中火力！国民警卫队封锁入口，镇民从高处射击！</p>
+            <p>FBI探员扔出一枚闪光弹，紫光中爆开白芒，短暂眩晕了怪物。镇民们终于反应过来，铁锹和猎枪齐上，砸碎了最后几只老鼠。</p>
+            <p class="dialogue"><span class="character">老杰克：</span> 谢谢你，苏珊娜，你又救了我们一命……</p>
+            <p class="dialogue"><span class="character">密西西比：</span> 叔……我们是一家人，你说什么呢。</p>
+            <p>队伍继续深入，由于矿洞年久失修，紫色晶体腐蚀了岩壁。FBI探员的仪器刚发出警报，一大块岩石就从头顶砸下。</p>
+            <p class="dialogue"><span class="character">国民警卫队士兵：</span> 塌方！！小心！！</p>
+            <p>一位FBI探员大喊着推开一个镇民，自己却被碎石压住腿。杰克和梅森冲上去，用铁锹拼命的挖。</p>
+            <p class="dialogue"><span class="character">梅森：</span>该死的诅咒……这地方要命！</p>
+            <p>星宿带队稳住上方岩层。终于，FBI探员被挖出来，但腿骨折了。</p>
+            <p class="dialogue"><span class="character">FBI探员：</span>谢谢…以前我们可没有这么相处的那么融洽。</p>
+            <p>队伍终于找到那处奇怪的矿脉，埋藏在巨大紫色晶体核心中。但矿脉蕴含的灵能力量让大部分不是灵能者的镇民受到了异常状况。一道精神冲击波袭来，放大了队伍中的负面情绪。</p>
+            <p class="dialogue"><span class="character">镇民们（突然）：</span>都是你们！外来人带来的灾难！</p>
+            <p class="dialogue"><span class="character">老杰克：</span>对！赶走他们！布兰科的事我们自己解决！</p>
+            <p class="dialogue"><span class="character">FBI探员：</span>别乱来！这是异常影响！冷静！</p>
+            <p class="dialogue"><span class="character">密西西比：</span>停下！！这是矿脉的把戏！它在放大我们的害怕、封闭！我们都是家人！</p>
+            <p>密西西比的吼声像一记重锤，震慑住了大家。趁着密西西比牵制着，星宿趁机压制矿脉的能量。国民警卫队士兵将特殊的炸药扔进晶体中心。</p>
+            <p>轰——爆炸声震天动地。银徽章碎裂，紫光崩散，整个矿洞开始坍塌。</p>
+            <p class="dialogue"><span class="character">国民警卫队士兵：</span>快撤！！</p>
+            <p>队伍互相搀扶着冲出矿洞。最后一刻，杰克拉住快要掉队的密西西比，把她扛在肩上跑出。</p>
+            <p>矿洞入口彻底封死，异常能量指数归零。队伍瘫坐在玉米地里，夕阳余晖洒在他们身上。</p>
+            <p class="dialogue"><span class="character">FBI探员：</span>多亏了你，密西西比小姐。否则我们全完了。</p>
+            <p class="dialogue"><span class="character">FBI探员：</span>谢谢大家。</p>
+            <p class="dialogue"><span class="character">老杰克：</span>苏珊娜…你是我们所有人的英雄。</p>
+            <p class="dialogue"><span class="character">梅森：</span>苏珊娜，叔为你骄傲。</p>
+            <p class="dialogue"><span class="character">密西西比：</span>说什么呢？我们都是家人。</p>
+            <p>小镇的灯光重新亮起，《The Yellow Rose of Texas》再次响起。乡下人的悲歌，继续在玉米地里回荡。</p>
+            <p>第二天清晨，布兰科小镇恢复了平静。国民警卫队和FBI的车队已经撤离，只留下一份“例行地质调查”的官方报告。玉米地里，紫色晶体的痕迹正在被阳光慢慢蒸发。</p>
+            <p>小镇广场上，篝火再次燃起。镇民们围坐在一起，烧烤的香气重新飘散。杰克亲自端着两杯啤酒走过来，递给密西西比一杯。 </p>
+            <p class="dialogue"><span class="character">老杰克：</span> 丫头……昨天的事……就不提了。你是布兰科的女儿，永远都是。以后想家了就回来看看。</p>
+            <p class="dialogue"><span class="character">密西西比：</span> 谢了，杰克叔。你们这帮老顽固……我还挺想你们的。</p>
+            <p class="dialogue"><span class="character">梅森：</span> 为了苏珊娜！为了得克萨斯！</p>
+            <p>镇民们齐声回应，笑声响彻夜空。星宿坐在一边看着欢聚的时刻，平时不怎么喝酒的她也拿起了啤酒杯。</p>
+            <p class="dialogue"><span class="character">星宿：</span> 同质化、封闭、不爱动脑……却又那么淳朴、善良、护家……这就是乡下人的悲歌…</p>
+            <p class="dialogue"><span class="character">星宿：</span> 欢迎回家，苏珊娜。</p>
+            <p>乡下人的悲歌，仍在继续。一百多年前，他们为了金子互相残杀。今天，他们差点因为害怕改变也自相残杀……</p>
+            <div class="button-container">
+                <button class="prev-btn" onclick="prevScene(3)">上一幕</button>
+                <button class="next-btn" disabled>故事结束</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function nextScene(current) {
+            const currentScene = document.getElementById(`scene-${current}`);
+            const nextScene = document.getElementById(`scene-${current + 1}`);
+            
+            if (nextScene) {
+                currentScene.classList.remove('active');
+                nextScene.classList.add('active');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        }
+
+        function prevScene(current) {
+            const currentScene = document.getElementById(`scene-${current}`);
+            const prevScene = document.getElementById(`scene-${current - 1}`);
+            
+            if (prevScene) {
+                currentScene.classList.remove('active');
+                prevScene.classList.add('active');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        }
+    </script>
+</body>
+</html>
