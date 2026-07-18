@@ -96,8 +96,8 @@
             100% { transform: translate(110px, 110px) rotate(360deg); }
         }
         @keyframes pulseVintage {
-            0% { opacity: 0.22; filter: brightness(0.95); }
-            100% { opacity: 0.28; filter: brightness(1.05); }
+            0% { opacity: 0.20; filter: brightness(0.95); }
+            100% { opacity: 0.30; filter: brightness(1.05); }
         }
         .v1 { background-image: url('https://i0.wp.com/heritagecalling.com/wp-content/uploads/2024/12/DP114585-St-Marys-Church-Kempley-Gloucestershire.jpg?ssl=1'); width: 380px; height: 380px; top: 3%; left: 0%; animation-duration: 170s, 24s; transform: rotate(50deg); }
         .v2 { background-image: url('https://www.nationalww2museum.org/sites/default/files/2020-05/Riveter.jpg'); width: 550px; height: 180px; top: 18%; right: 4%; animation-duration: 190s, 28s; }
@@ -456,6 +456,7 @@
             left: 0;
             width: 100%;
             height: calc(100% - 70px);
+            overflow: hidden;
             z-index: 50;
             background: #030507;
             visibility: hidden;
@@ -471,6 +472,7 @@
         .iframe-container iframe {
             width: 100%;
             height: 100%;
+            display: block;
             border: none;
             background: #030507;
         }
@@ -724,6 +726,7 @@
         pagesWrapper.style.display = 'none';
         sidebar.style.opacity = '0';
         sidebar.style.pointerEvents = 'none';
+        iframe.style.height = '100%';
         iframe.src = url;
         iframeContainer.classList.add('active');
         // 进入子页面时一定要移除homepage-clean模式，恢复复古风格
@@ -735,19 +738,9 @@
     navStories.addEventListener('click', (e) => { e.preventDefault(); showIframePage('pages/stories.html'); });
 
     function fitIframe() {
-        try {
-            const doc = iframe.contentWindow.document;
-            const h = Math.max(doc.documentElement.scrollHeight, doc.body?.scrollHeight || 0);
-            iframe.style.height = h + 'px';
-        } catch(e) {}
+        iframe.style.height = '100%';
     }
-    iframe.addEventListener('load', () => {
-        fitIframe();
-        try {
-            const ro = new ResizeObserver(fitIframe);
-            ro.observe(iframe.contentWindow.document.documentElement);
-        } catch {}
-    });
+    iframe.addEventListener('load', fitIframe);
     let resizeTimer;
     window.addEventListener('resize', () => { clearTimeout(resizeTimer); resizeTimer = setTimeout(fitIframe, 100); });
 
