@@ -138,6 +138,7 @@
             color: #e6cf8c;
             text-shadow: 0 0 12px rgba(200, 180, 128, 0.6);
             margin: 0;
+            white-space: nowrap;
         }
         .nav-links {
             display: flex;
@@ -452,10 +453,10 @@
         /* iframe 容器 */
         .iframe-container {
             position: fixed;
-            top: 70px;
+            top: var(--header-h, 70px);
             left: 0;
             width: 100%;
-            height: calc(100% - 70px);
+            height: calc(100% - var(--header-h, 70px));
             z-index: 50;
             background: #030507;
             visibility: hidden;
@@ -811,6 +812,15 @@
     navHome.addEventListener('click', (e) => { e.preventDefault(); showFullscreenMode(); });
     navCharacters.addEventListener('click', (e) => { e.preventDefault(); showIframePage('pages/characters.html'); });
     navStories.addEventListener('click', (e) => { e.preventDefault(); showIframePage('pages/stories.html'); });
+
+    // 头部高度自适应：移动端头部换行变高时，iframe 容器顶部随之调整
+    const globalHeader = document.querySelector('.global-header');
+    function syncHeaderHeight() {
+        document.documentElement.style.setProperty('--header-h', globalHeader.offsetHeight + 'px');
+    }
+    syncHeaderHeight();
+    window.addEventListener('resize', syncHeaderHeight);
+    window.addEventListener('load', syncHeaderHeight);
 
     // 背景音乐逻辑
     const STORAGE_KEY = 'bgm_playing_state';

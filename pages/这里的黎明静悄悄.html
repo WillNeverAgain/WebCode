@@ -173,7 +173,16 @@
     .v13 { background-image: url('https://divinity.uchicago.edu/sites/default/files/styles/sightings_article_featured_image/public/2020-01/2c304455-66ca-4ae4-adc3-ba0ccc06b408_1_201_a.jpeg?itok=9v54XcIG'); width: 400px; height: 350px; top: 8%; left: 55%; animation-duration: 160s, 23s; transform: rotate(30deg); }
     .v14 { background-image: url('https://www.saic.edu/sites/default/files/shorthand/stories/0Hw0PwtaAa/2025-09-29T19%3A38%3A15.732Z/assets/vpUp9CR2Fi/kurt-schwitters-843x626.jpg'); width: 500px; height: 200px; bottom: 35%; right: 10%; animation-duration: 190s, 27s; }
     .v15 { background-image: url('https://cdn.kastatic.org/ka-perseus-images/aa552552150213036b99363b0dfb8ae811b8c08d.jpg'); width: 350px; height: 400px; top: 45%; right: 15%; animation-duration: 200s, 30s; transform: rotate(-20deg); }
-    </style>
+    
+    /* 移动端适配 */
+    @media (max-width: 768px) {
+        .container { padding: 12px; }
+        h1 { font-size: 1.5rem; }
+        h2 { font-size: 1.2rem; }
+        .dialogue { margin-left: 10px; }
+        .next-btn, .prev-btn { padding: 10px 14px; font-size: 14px; margin: 14px 6px; }
+    }
+</style>
 </head>
 <body>
 
