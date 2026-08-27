@@ -509,7 +509,7 @@
 <body>
 
 <!-- 半调层 + 复古背景（主页模式下会被隐藏） -->
-<img class="halftone-overlay" src="https://gd-hbimg-edge.huaban.com/e136eab1362dfa41c0bf38aa7f48d9be4fe7332b172ae6-yQ7EZk?auth_key=1780243200-7a28c4fd8dba4f27bcbf1202f71a087e-0-cab91a5574991e7dfd11720f9ea5744c" alt="" decoding="async" referrerpolicy="no-referrer">
+<img class="halftone-overlay" src="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20width%3D'6'%20height%3D'6'%3E%3Ccircle%20cx%3D'1.5'%20cy%3D'1.5'%20r%3D'1'%20fill%3D'white'%20fill-opacity%3D'0.55'%2F%3E%3C%2Fsvg%3E" alt="" decoding="async">
 <div class="vintage-bg">
     <div class="vintage-element v1"></div><div class="vintage-element v2"></div><div class="vintage-element v3"></div>
     <div class="vintage-element v4"></div><div class="vintage-element v5"></div><div class="vintage-element v6"></div>
@@ -812,30 +812,13 @@
     navCharacters.addEventListener('click', (e) => { e.preventDefault(); showIframePage('pages/characters.html'); });
     navStories.addEventListener('click', (e) => { e.preventDefault(); showIframePage('pages/stories.html'); });
 
-    function fitIframe() {
-        try {
-            const doc = iframe.contentWindow.document;
-            const h = Math.max(doc.documentElement.scrollHeight, doc.body?.scrollHeight || 0);
-            iframe.style.height = h + 'px';
-        } catch(e) {}
-    }
-    iframe.addEventListener('load', () => {
-        fitIframe();
-        try {
-            const ro = new ResizeObserver(fitIframe);
-            ro.observe(iframe.contentWindow.document.documentElement);
-        } catch {}
-    });
-    let resizeTimer;
-    window.addEventListener('resize', () => { clearTimeout(resizeTimer); resizeTimer = setTimeout(fitIframe, 100); });
-
     // 背景音乐逻辑
     const STORAGE_KEY = 'bgm_playing_state';
     let bgm = document.getElementById('bgm');
     if (!bgm) {
         bgm = document.createElement('audio');
         bgm.id = 'bgm';
-        bgm.src = '背景.MP3';
+        bgm.src = '背景.mp3';
         bgm.loop = true;
         bgm.preload = 'auto';
         document.body.appendChild(bgm);
