@@ -237,7 +237,7 @@
             width: 100vw;
             display: flex;
             flex-direction: column;
-            justify-content: center;
+            justify-content: flex-start;
             align-items: center;
             position: relative;
             overflow-y: auto;
@@ -246,6 +246,12 @@
             padding: 5rem 2rem;
             opacity: 0;
             transition: opacity 0.5s ease 0.2s;
+        }
+        /* 内容不足一屏时上下均分空白实现垂直居中；超出一屏时占位收起，保证从顶部完整可读 */
+        .page::before,
+        .page::after {
+            content: '';
+            margin: auto;
         }
         .page.visible {
             opacity: 1;
