@@ -314,7 +314,6 @@
             background-repeat: no-repeat;
             background-attachment: local;
             filter: blur(6px);
-            transform: scale(1.02);
             z-index: 0;
             pointer-events: none;
         }
@@ -723,12 +722,13 @@
     }
 
     // 找到事件目标所在的可滚动容器（当前页 .page 或侧边栏 .sidebar-nav）
+    // 加 2px 容差：避免模糊/缩放等产生的几像素"幽灵溢出"被误判为可滚动，导致翻页逻辑死锁
     function findScrollableContainer(el) {
         let target = el;
         while (target && target !== document.body) {
             if (target.classList &&
                 (target.classList.contains('page') || target.classList.contains('sidebar-nav')) &&
-                target.scrollHeight > target.clientHeight) {
+                target.scrollHeight > target.clientHeight + 2) {
                 return target;
             }
             target = target.parentElement;
@@ -777,7 +777,7 @@
         else return;
 
         e.preventDefault();
-        const scrollable = activePage.scrollHeight > activePage.clientHeight;
+        const scrollable = activePage.scrollHeight > activePage.clientHeight + 2;
         if (scrollable && !isAtScrollEdge(activePage, dir)) {
             const step = largeStep ? activePage.clientHeight * 0.9 : 80;
             activePage.scrollBy({ top: dir * step, behavior: 'smooth' });
@@ -808,7 +808,7 @@
         touchStartX = touchStartY = null;
         if (Math.abs(dy) < 60 || Math.abs(dx) > Math.abs(dy)) return;
         const activePage = pages[currentPage];
-        if (activePage && activePage.scrollHeight > activePage.clientHeight && !isAtScrollEdge(activePage, dy)) return;
+        if (activePage && activePage.scrollHeight > activePage.clientHeight + 2 && !isAtScrollEdge(activePage, dy)) return;
         const nextPage = dy > 0 ? Math.min(totalPages - 1, currentPage + 1) : Math.max(0, currentPage - 1);
         if (nextPage !== currentPage) {
             wheelLock = true;
@@ -901,15 +901,19 @@
         else volumeBtnIcon.innerHTML = `<svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>`;
     }
 
-    // 多重用户交互解锁自动播放
+    // 浏览器禁止无用户手势的带声音自动播放：load 时先尝试（允许的场景直接出声），
+    // 被拦截则由首次用户交互（按下/键盘/触摸）解锁。pointerdown 比 click 更早触发。
     let audioUnlocked = false;
     function unlockAndPlay() {
-        if (!audioUnlocked && bgm.paused && !isMuted) {
-            bgm.play().catch(() => {});
+        if (audioUnlocked || isMuted) return;
+        const p = bgm.play();
+        if (p && typeof p.then === 'function') {
+            p.then(() => { audioUnlocked = true; }).catch(() => {});
+        } else {
             audioUnlocked = true;
         }
     }
-    document.addEventListener('click', unlockAndPlay);
+    document.addEventListener('pointerdown', unlockAndPlay);
     document.addEventListener('keydown', unlockAndPlay);
     document.addEventListener('touchstart', unlockAndPlay);
     window.addEventListener('load', () => { if (!isMuted) bgm.play().catch(() => {}); });
